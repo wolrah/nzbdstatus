@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<!DOCTYPE overlay SYSTEM "chrome://sabnzbdstatus/locale/sabnzbdstatus.dtd">
+<?xml-stylesheet href="chrome://sabnzbdstatus/content/sabnzbdstatus.css" type="text/css"?>
+<overlay id='sabnzbdstatus-overlay' xmlns='http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul'>
+	<script type='application/x-javascript' src='chrome://sabnzbdstatus/content/sabnzbdstatus.js' />
+	<statusbar id='status-bar'>
+		<statusbarpanel id='sabstatus' context='sabstatus-context' tooltip='sabstatus-idle'
+		 insertafter='adblock-status,statusbar-updates,statusbarpanel-progress,security-button,privacy-button,offline-status,popupIcon,statusbar-display,component-bar'>
+			<image id='sabstatus-image' />
+			<label id='sabstatus-label' />
+			<tooltip id='sabstatus-idle' noautohide='true'>
+				<description value='&sabstatus.tooltip_idle.value;' />
+			</tooltip>
+			<tooltip id='sabstatus-pause' noautohide='true'>
+				<description value='&sabstatus.tooltip_pause.value;' />
+			</tooltip>
+			<tooltip id='sabstatus-info' noautohide='true'>
+				<grid>
+					<columns>
+						<column />
+						<column flex='1' />
+					</columns>
+					<rows>
+						<row>
+							<description value='&sabstatus.tooltip_kbpersec.value;' />
+							<description id='sabstatus-kbpersec' />
+						</row>
+						<row>
+							<description value='&sabstatus.tooltip_jobs0.value;' />
+							<description id='sabstatus-jobs0' />
+						</row>
+						<row>
+							<description value='&sabstatus.tooltip_jobs0_time.value;' />
+							<description id='sabstatus-jobs0-time' />
+						</row>
+						<row>
+							<description value='&sabstatus.tooltip_mbleft.value;' />
+							<progressmeter id='sabstatus-mbleft' mode='determined' />
+						</row>
+						<row>
+							<description value='&sabstatus.tooltip_diskspace1.value;' />
+							<description id='sabstatus-diskspace1' />
+						</row>
+					</rows>
+				</grid>
+			</tooltip>
+		</statusbarpanel>
+		<menupopup id='sabstatus-context'>
+			<menuitem label='&sabstatus.menu_config;' oncommand='window.openDialog("chrome://sabnzbdstatus/content/configuration.xul", "sabnzb-prefs", "chrome,dependent,titlebar,toolbar,centerscreen,resizable", "sabnzb-gen")' />
+			<menuitem label='&sabstatus.menu_pause;' oncommand='SABnzbdStatus.togglePause()' type='checkbox' id='sabstatus-context-pause' />
+		</menupopup>
+	</statusbar>
+</overlay>

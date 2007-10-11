@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://sabnzbdstatus/content/configuration.css" type="text/css"?>
+<!DOCTYPE overlay SYSTEM "chrome://sabnzbdstatus/locale/configuration.dtd">
+<prefwindow id='sabnzb-prefs' title='&sabstatus.window_config.title;' buttons='accept,cancel' type='prefwindow'
+ xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" onload='prefonload'>
+
+<prefpane id='sabnzb-gen' label='&sabstatus.gen_prefpane.label;' image='chrome://sabnzbdstatus/skin/config.png'>
+	<preferences>
+		<preference id='refreshrate' name='extensions.sabnzbdstatus.refreshRate' type='int' />
+		<preference id='alwaysshow' name='extensions.sabnzbdstatus.alwaysShowIcon' type='bool' />
+		<preference id='onlyshow' name='extensions.sabnzbdstatus.onlyShowIcon' type='bool' />
+	</preferences>
+
+<groupbox>
+	<caption label='&sabstatus.gen_caption.label;' />
+	<hbox align='center'>
+		<label control='refreshrate' value='&sabstatus.pref_refreshrate.value;' />
+		<textbox preference='refreshrate' id='refreshrate' flex='1' />
+		<label value='&sabstatus.pref_refreshrate_units.value;' />
+	</hbox>
+	<hbox align='center'>
+		<checkbox label='&sabstatus.pref_alwaysshow.value;' preference='alwaysshow' id='alwaysshow' />
+	</hbox>
+	<hbox align='center'>
+		<checkbox label='&sabstatus.pref_onlyshow.value;' preference='onlyshow' id='onlyshow' />
+	</hbox>
+</groupbox>
+</prefpane>
+
+<prefpane id='sabnzb-sab' label='SABnzbd' image='chrome://sabnzbdstatus/skin/sabnzbd.png'>
+	<preferences>
+		<preference id='sabuser' name='extensions.sabnzbdstatus.sabusername' type='string' />
+		<preference id='sabpass' name='extensions.sabnzbdstatus.sabpassword' type='string' />
+		<preference id='saburl' name='extensions.sabnzbdstatus.sabUrl' type='string' />
+		<preference id='sabtheme' name='extensions.sabnzbdstatus.template' type='string' />
+	</preferences>
+
+<groupbox>
+	<caption label='&sabstatus.login_caption.label;' />
+	<hbox align='center'>
+		<label control='sabuser' value='&sabstatus.pref_sabuser.value;' />
+		<textbox preference='sabuser' id='sabuser' flex='1' />
+	</hbox>
+	<hbox align='center'>
+		<label control='sabpass' value='&sabstatus.pref_sabpass.value;' />
+		<textbox preference='sabpass' id='sabpass' type='password' flex='1' />
+	</hbox>
+</groupbox>
+<groupbox>
+	<caption label='&sabstatus.nzbd_caption.label;' />
+	<hbox align='center'>
+		<label control='sabtheme' value='&sabstatus.pref_sabtheme.value;' />
+		<menulist preference='sabtheme' id='sabtheme' flex='1'>
+			<menupopup>
+				<menuitem label='Nova 0.3.2' value='Nova 0.3' />
+				<menuitem label='Nova 0.4.*' value='Nova 0.4' />
+			</menupopup>
+		</menulist>
+	</hbox>
+	<hbox align='center'>
+		<label control='saburl' value='&sabstatus.pref_saburl.value;' />
+		<textbox preference='saburl' id='saburl' flex='1' />
+	</hbox>
+</groupbox>
+
+</prefpane>
+
+<script type="application/x-javascript" src="chrome://sabnzbdstatus/content/configuration.js" />
+
+</prefwindow>

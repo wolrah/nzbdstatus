@@ -1,0 +1,4 @@
+content	sabnzbdstatus	chrome/content/
+locale	sabnzbdstatus	en-US	chrome/locale/en-US/
+skin	sabnzbdstatus	classic/1.0	skin/content/
+overlay	chrome://browser/content/browser.xul	chrome://sabnzbdstatus/content/sabnzbdstatus.xul

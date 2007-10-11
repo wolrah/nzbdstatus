@@ -1,0 +1,15 @@
+<!ENTITY sabstatus.window_config.title "SABnzbdStatus Configuration">
+<!ENTITY sabstatus.gen_prefpane.label "Config">
+<!ENTITY sabstatus.gen_caption.label "General Settings">
+<!ENTITY sabstatus.pref_refreshrate.value "Refresh Rate:">
+<!ENTITY sabstatus.pref_refreshrate_units.value "minutes">
+<!ENTITY sabstatus.pref_alwaysshow.value "Always Show SAB Icon">
+<!ENTITY sabstatus.pref_onlyshow.value "Remove Timer">
+
+<!ENTITY sabstatus.login_caption.label "Login Infomation">
+<!ENTITY sabstatus.pref_sabuser.value "Username:">
+<!ENTITY sabstatus.pref_sabpass.value "Password:">
+
+<!ENTITY sabstatus.nzbd_caption.label "Settings">
+<!ENTITY sabstatus.pref_sabtheme.value "Theme:">
+<!ENTITY sabstatus.pref_saburl.value "URL:">
