@@ -9,7 +9,7 @@
 		<em:iconURL>chrome://sabnzbdstatus/skin/icon.png</em:iconURL>
 		<em:optionsURL>chrome://sabnzbdstatus/content/configuration.xul</em:optionsURL>
 		<!-- WIP/Beta Update URL -->
-		<em:updateURL>https://svn.bountysource.com/nzbdstatus/trunk/nzbdstatus-wip.rdf</em:updateURL>
+		<em:updateURL>https://svn.bountysource.com/nzbdstatus/trunk/nzbdstatus-stable.rdf</em:updateURL>
 
 		<!-- Supported Applications -->
 		<em:targetApplication>
