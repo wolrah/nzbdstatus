@@ -190,6 +190,7 @@ SABnzbdStatusObject.prototype = {
 
 	goIdle: function()
 	{
+		document.getElementById('sabstatus-context-pause').setAttribute('checked', false);
 		this.statusicon.src = this.getPreference('iconIdle');
 		this.statusbar.setAttribute('tooltip', 'sabstatus-idle');
 		this.statuslabel.value = '';
@@ -210,7 +211,7 @@ SABnzbdStatusObject.prototype = {
 
 	goPaused: function()
 	{
-		document.getElementById('sabstatus-context-pause').setAttribute('checked', true)
+		document.getElementById('sabstatus-context-pause').setAttribute('checked', true);
 		this.statusicon.src = this.getPreference('iconPaused');
 		this.statusbar.setAttribute('tooltip', 'sabstatus-pause');
 		if (this.countdownId != null)
@@ -221,6 +222,7 @@ SABnzbdStatusObject.prototype = {
 
 	goActive: function()
 	{
+		document.getElementById('sabstatus-context-pause').setAttribute('checked', false);
 		this.statusicon.src = this.getPreference('iconDownload');
 		this.statusbar.setAttribute('tooltip', 'sabstatus-info');
 		this.statusbar.style.visibility = 'visible';
