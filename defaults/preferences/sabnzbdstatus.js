@@ -1,5 +1,5 @@
 pref('extensions.sabnzbdstatus.disable', false);
-pref('extensions.sabnzbdstatus.version', '1.0');
+pref('extensions.sabnzbdstatus.version', '1.0.0');
 pref('extensions.sabnzbdstatus.refreshRate', 5);
 pref('extensions.sabnzbdstatus.alwaysShowIcon', true);
 pref('extensions.sabnzbdstatus.onlyShowIcon', false);
@@ -16,10 +16,3 @@ pref('extensions.sabnzbdstatus.unpauseUrl', 'queue/resume');
 pref('extensions.sabnzbdstatus.template', 'Nova 0.4');
 pref('extensions.sabnzbdstatus.sabusername', '');
 pref('extensions.sabnzbdstatus.sabpassword', '');
-
-
-	if (target=="newtab") {
-		getBrowser().addTab(url);
-	} else if (target=="current") {
-		loadURI(url);
-	}
