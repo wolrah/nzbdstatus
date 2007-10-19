@@ -16,12 +16,6 @@
 // Based off inpheaux's SABnzbd/Newzbin Greasemonkey script
 // (c) 2007 Ben Dusinberre
 
-// @include       http://v3.newzbin.com/*
-// @include       https://v3.newzbin.com/*
-// @include       http://www.newzxxx.com/*
-// @include       https://www.newzxxx.com/*
-// @namespace     http://www.skizzers.org/
-
 // The SABnzbdStatusObject definition itself
 function SABnzbdStatusObject()
 {
@@ -107,6 +101,25 @@ SABnzbdStatusObject.prototype = {
 				success = false;
 		}
 		return success;
+	},
+
+	// Applies the given XPath and returns the first single node
+	selectSingleNode: function(doc, context, xpath)
+	{
+		var nodeList = doc.evaluate(xpath, context, null, 9 /* XPathResult.FIRST_ORDERED_NODE_TYPE */, null);
+		return nodeList.singleNodeValue;
+	},
+
+	// Applies the given XPath and returns all the nodes in it
+	selectNodes: function(doc, context, xpath)
+	{
+		var nodes = doc.evaluate(xpath, context, null, 7 /* XPathResult.ORDERED_NODE_SNAPSHOT_TYPE */, null);
+		var result = new Array(nodes.snapshotLength);
+		for (var i=0; i<result.length; i++)
+		{
+			result[i] = nodes.snapshotItem(i);
+		}
+		return result;
 	},
 
 	sendPause: function()
@@ -363,6 +376,71 @@ SABnzbdStatusObject.prototype = {
 		} catch(e) { dump('refresh error:' + e); }
 	},
 
+	// This happens every page load
+	onPageLoad: function(e)
+	{
+		try {
+		var doc = e.originalTarget;
+		// Make sure we are on the right site or close to it
+		if ((doc.location.href.search('newzbin') == -1) && (doc.location.href.search('newzxxx') == -1))
+		{
+			return;
+		}
+		var engine = doc.location.hostname.split('.')[0];
+		if (engine == 'www')
+		{
+			if (doc.location.href.search('newzxxx') == -1)
+			{
+				engine = 'v2';
+			}
+			else
+			{
+				engine = 'v3';
+			}
+		}
+		var results = SABnzbdStatus.selectNodes(doc, doc, '//table[@summary="Post query results"]/tbody/tr');
+		if (results == null || results.length == 0)
+		{
+			return;
+		}
+		if (results.length == 1 && (results[0].textContent.search('No results') > -1))
+		{
+			return;
+		}
+		var row, postId, pattern, sendTo, oldTo, rowcount = results.length;
+		for (i = 0; i < rowcount; i++)
+		{
+			row = results[i];
+			// Cheap way to get the post id
+			pattern = new RegExp('\/browse\/post\/(\\d+)\/' + (engine == 'v3'?'nzb':''));
+			postId = row.innerHTML.match(pattern);
+			if (postId == null)
+			{
+				continue;
+			}
+			postId = postId[1];
+			sendTo = doc.createElement('img');
+			sendTo.src = SABnzbdStatus.getPreference('iconDownload');
+			sendTo.alt = postId;
+			sendTo.className = 'sabsend';
+			sendTo.title = 'Send to SABnzbd';
+			sendTo.style.cursor = 'pointer';
+			switch (engine)
+			{
+				case 'v3':
+					oldTo = SABnzbdStatus.selectSingleNode(doc, row, 'td/a[@title="Download report NZB"]');
+					oldTo.parentNode.replaceChild(sendTo, oldTo);
+					break;
+				case 'v2':
+					sendTo.style.marginRight = '1em';
+					oldTo = row.getElementsByTagName('td')[1];
+					oldTo.insertBefore(sendTo, oldTo.getElementsByTagName('img')[0]);
+					break;
+			}
+		}
+		} catch(e) { dump('onPageLoad error: '+e+'\n'); }
+	},
+
 	// Initialization and starting of timers are done here
 	startup: function()
 	{
@@ -379,6 +457,11 @@ SABnzbdStatusObject.prototype = {
 		this.refreshRate = this.getPreference('refreshRate');
 		this.refreshStatus();
 		this.refreshId = window.setInterval(this.refreshStatus, this.refreshRate*60*1000);
+		var appcontent = document.getElementById('appcontent');   // browser
+		if (appcontent)
+		{
+			appcontent.addEventListener('load', this.onPageLoad, true);
+		}
 	},
 
 	// Shutdown stuff done here
@@ -439,6 +522,7 @@ if (SABnzbdStatus)
 	window.addEventListener("load", function(e) { SABnzbdStatus.startup(); }, false);
 	window.addEventListener("unload", function(e) { SABnzbdStatus.shutdown(); }, false);
 }
+
 
 
 /**
