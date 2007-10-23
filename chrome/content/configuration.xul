@@ -66,6 +66,33 @@
 
 </prefpane>
 
+
+<prefpane id='sabnzb-newzbin' label='Newzbin' image='chrome://sabnzbdstatus/skin/newzbin.png'>
+	<preferences>
+		<preference id='enableinnewzbin' name='extensions.sabnzbdstatus.enableInNewzbin' type='bool' />
+		<preference id='newzbintosab' name='extensions.sabnzbdstatus.newzbinToSAB' type='string' />
+	</preferences>
+
+<groupbox>
+	<caption label='&sabstatus.newzbin_caption.label;' />
+	<hbox align='center'>
+		<checkbox label='&sabstatus.pref_enableinnewzbin.value;' preference='enableinnewzbin' id='enableinnewzbin' />
+	</hbox>
+	<hbox align='center'>
+		<label control='newzbintosab' value='&sabstatus.pref_newzbintosab.label;' />
+		<menulist preference='newzbintosab' id='newzbintosab' flex='1'>
+			<menupopup>
+				<menuitem label='&sabstatus.pref_newzbintosab.value3;' value='3' />
+				<menuitem label='&sabstatus.pref_newzbintosab.value2;' value='2' />
+				<menuitem label='&sabstatus.pref_newzbintosab.value1;' value='1' />
+				<menuitem label='&sabstatus.pref_newzbintosab.value0;' value='0' />
+			</menupopup>
+		</menulist>
+	</hbox>
+</groupbox>
+
+</prefpane>
+
 <script type="application/x-javascript" src="chrome://sabnzbdstatus/content/configuration.js" />
 
 </prefwindow>

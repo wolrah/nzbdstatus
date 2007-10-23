@@ -13,3 +13,11 @@
 <!ENTITY sabstatus.nzbd_caption.label "Settings">
 <!ENTITY sabstatus.pref_sabtheme.value "Theme:">
 <!ENTITY sabstatus.pref_saburl.value "URL:">
+
+<!ENTITY sabstatus.newzbin_caption.label "General Settings">
+<!ENTITY sabstatus.pref_enableinnewzbin.value "Enable Send To SABnzbd Icon">
+<!ENTITY sabstatus.pref_newzbintosab.label "After Download:">
+<!ENTITY sabstatus.pref_newzbintosab.value3 "Verify, Extract, Delete">
+<!ENTITY sabstatus.pref_newzbintosab.value2 "Verify, Extract">
+<!ENTITY sabstatus.pref_newzbintosab.value1 "Verify">
+<!ENTITY sabstatus.pref_newzbintosab.value0 "Nothing">

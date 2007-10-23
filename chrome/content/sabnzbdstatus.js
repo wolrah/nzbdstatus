@@ -425,6 +425,7 @@ SABnzbdStatusObject.prototype = {
 			sendTo.className = 'sabsend';
 			sendTo.title = 'Send to SABnzbd';
 			sendTo.style.cursor = 'pointer';
+			sendTo.addEventListener('click', SABnzbdStatus.sendToSAB, false);
 			switch (engine)
 			{
 				case 'v3':
@@ -439,6 +440,17 @@ SABnzbdStatusObject.prototype = {
 			}
 		}
 		} catch(e) { dump('onPageLoad error: '+e+'\n'); }
+	},
+
+	sendToSAB: function(e)
+	{
+		try {
+		var postid = this.alt;
+		var fullUrl = SABnzbdStatus.getPreference('sabUrl') + SABnzbdStatus.getPreference('addUrl') +
+		 '?id=' + postid + '&pp=' + SABnzbdStatus.getPreference('newzbinToSAB');
+		SABnzbdStatus.xmlHttp.open('GET', fullUrl, true);
+		SABnzbdStatus.xmlHttp.send(null);
+		} catch(e) { dump('onclick error: '+e+'\n'); }
 	},
 
 	// Initialization and starting of timers are done here
