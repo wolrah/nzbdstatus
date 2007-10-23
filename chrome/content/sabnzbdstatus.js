@@ -198,6 +198,7 @@ SABnzbdStatusObject.prototype = {
 		{
 			this.goIdle();
 			this.sendResume();
+			this.refreshStatus();
 		}
 	},
 
