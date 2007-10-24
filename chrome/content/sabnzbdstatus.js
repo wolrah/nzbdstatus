@@ -131,9 +131,13 @@ SABnzbdStatusObject.prototype = {
 
 	sendResume: function()
 	{
+		try {
+
 		var sabUrl = this.getPreference('sabUrl') + this.getPreference('unpauseUrl');
 		this.xmlHttp.open('GET', sabUrl, true);
 		this.xmlHttp.send(null);
+
+		} catch(e) { dump('sendResume error:'+e); }
 	},
 
 	loginToSAB: function()
@@ -198,13 +202,12 @@ SABnzbdStatusObject.prototype = {
 		{
 			this.goIdle();
 			this.sendResume();
-			this.refreshStatus();
 		}
 	},
 
 	goIdle: function()
 	{
-		document.getElementById('sabstatus-context-pause').setAttribute('checked', false);
+		document.getElementById('sabstatus-context-pause').removeAttribute('checked');
 		this.statusicon.src = this.getPreference('iconIdle');
 		this.statusbar.setAttribute('tooltip', 'sabstatus-idle');
 		this.statuslabel.value = '';
@@ -236,7 +239,7 @@ SABnzbdStatusObject.prototype = {
 
 	goActive: function()
 	{
-		document.getElementById('sabstatus-context-pause').setAttribute('checked', false);
+		document.getElementById('sabstatus-context-pause').removeAttribute('checked');
 		this.statusicon.src = this.getPreference('iconDownload');
 		this.statusbar.setAttribute('tooltip', 'sabstatus-info');
 		this.statusbar.style.visibility = 'visible';
@@ -381,9 +384,18 @@ SABnzbdStatusObject.prototype = {
 	onPageLoad: function(e)
 	{
 		try {
+
 		var doc = e.originalTarget;
+		if (!doc.location)
+		{
+			return;
+		}
 		// Make sure we are on the right site or close to it
 		if ((doc.location.href.search('newzbin') == -1) && (doc.location.href.search('newzxxx') == -1))
+		{
+			return;
+		}
+		if (!SABnzbdStatus.getPreference('enableInNewzbin'))
 		{
 			return;
 		}
@@ -440,17 +452,20 @@ SABnzbdStatusObject.prototype = {
 					break;
 			}
 		}
+
 		} catch(e) { dump('onPageLoad error: '+e+'\n'); }
 	},
 
 	sendToSAB: function(e)
 	{
 		try {
+
 		var postid = this.alt;
 		var fullUrl = SABnzbdStatus.getPreference('sabUrl') + SABnzbdStatus.getPreference('addUrl') +
 		 '?id=' + postid + '&pp=' + SABnzbdStatus.getPreference('newzbinToSAB');
 		SABnzbdStatus.xmlHttp.open('GET', fullUrl, true);
 		SABnzbdStatus.xmlHttp.send(null);
+		this.parentNode.parentNode.parentNode.style.opacity = '.5';
 		} catch(e) { dump('onclick error: '+e+'\n'); }
 	},
 
