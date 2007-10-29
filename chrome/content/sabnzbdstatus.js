@@ -441,11 +441,45 @@ SABnzbdStatusObject.prototype = {
 				engine = 'v3';
 			}
 		}
+		if (doc.getElementById('ReportInfoPH'))
+		{
+			SABnzbdStatus.reportSummaryPage(doc, engine);
+		}
 		var results = SABnzbdStatus.selectNodes(doc, doc, '//table[@summary="Post query results"]/tbody/tr');
 		if (results == null || results.length == 0)
 		{
 			return;
 		}
+		else
+		{
+			SABnzbdStatus.listingsPage(doc, engine);
+		}
+
+		} catch(e) { dump('onPageLoad error: '+e+'\n'); }
+	},
+
+	reportSummaryPage: function(doc, engine)
+	{
+		var isFinished = SABnzbdStatus.selectSingleNode(doc, doc, '//span[text()="Finished"]');
+		if (isFinished == null)
+		{
+			return;
+		}
+		var postId = doc.location.pathname.match(/(\d+)/)[1];
+		sendTo = doc.createElement('img');
+		sendTo.src = SABnzbdStatus.getPreference('iconDownload');
+		sendTo.alt = postId;
+		sendTo.className = 'sabsend';
+		sendTo.title = 'Send to SABnzbd';
+		sendTo.style.cursor = 'pointer';
+		sendTo.style.paddingLeft = '1em';
+		sendTo.addEventListener('click', SABnzbdStatus.sendToSAB, false);
+		isFinished.appendChild(sendTo);
+	},
+
+	listingsPage: function(doc, engine)
+	{
+		var results = SABnzbdStatus.selectNodes(doc, doc, '//table[@summary="Post query results"]/tbody/tr');
 		if (results.length == 1 && (results[0].textContent.search('No results') > -1))
 		{
 			return;
@@ -482,8 +516,6 @@ SABnzbdStatusObject.prototype = {
 					break;
 			}
 		}
-
-		} catch(e) { dump('onPageLoad error: '+e+'\n'); }
 	},
 
 	sendToSAB: function(e)
@@ -495,7 +527,7 @@ SABnzbdStatusObject.prototype = {
 		 '?id=' + postid + '&pp=' + SABnzbdStatus.getPreference('newzbinToSAB');
 		SABnzbdStatus.xmlHttp.open('GET', fullUrl, true);
 		SABnzbdStatus.xmlHttp.send(null);
-		this.parentNode.parentNode.parentNode.style.opacity = '.5';
+		this.style.opacity = '.25';
 
 		} catch(e) { dump('onclick error: '+e+'\n'); }
 	},
