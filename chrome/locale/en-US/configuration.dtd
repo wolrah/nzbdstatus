@@ -3,8 +3,15 @@
 <!ENTITY sabstatus.gen_caption.label "General Settings">
 <!ENTITY sabstatus.pref_refreshrate.value "Refresh Rate:">
 <!ENTITY sabstatus.pref_refreshrate_units.value "minutes">
-<!ENTITY sabstatus.pref_alwaysshow.value "Always Show SAB Icon">
+
+<!ENTITY sabstatus.sbar_caption.label "Statusbar Settings">
 <!ENTITY sabstatus.pref_onlyshow.value "Remove Timer">
+<!ENTITY sabstatus.pref_alwaysshow.value "Always Show SAB Icon">
+<!ENTITY sabstatus.pref_leftclick.label "Left Click:">
+<!ENTITY sabstatus.pref_middleclick.label "Middle Click:">
+<!ENTITY sabstatus.pref_sbarclick_refresh.value "Refresh Information">
+<!ENTITY sabstatus.pref_sbarclick_newtab.value "Open SABnzbd In New Tab">
+<!ENTITY sabstatus.pref_sbarclick_sametab.value "Open SABnzbd In Same Tab">
 
 <!ENTITY sabstatus.login_caption.label "Login Infomation">
 <!ENTITY sabstatus.pref_sabuser.value "Username:">
@@ -17,7 +24,10 @@
 <!ENTITY sabstatus.newzbin_caption.label "General Settings">
 <!ENTITY sabstatus.pref_enableinnewzbin.value "Enable Send To SABnzbd Icon">
 <!ENTITY sabstatus.pref_newzbintosab.label "After Download:">
+<!ENTITY sabstatus.pref_newzbintosab.value6 "Verify, Extract, Delete, Script">
+<!ENTITY sabstatus.pref_newzbintosab.value5 "Verify, Extract, Script">
+<!ENTITY sabstatus.pref_newzbintosab.value4 "Verify, Script">
 <!ENTITY sabstatus.pref_newzbintosab.value3 "Verify, Extract, Delete">
 <!ENTITY sabstatus.pref_newzbintosab.value2 "Verify, Extract">
 <!ENTITY sabstatus.pref_newzbintosab.value1 "Verify">
-<!ENTITY sabstatus.pref_newzbintosab.value0 "Nothing">
+<!ENTITY sabstatus.pref_newzbintosab.value0 "Do Nothing">
