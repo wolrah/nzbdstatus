@@ -190,6 +190,36 @@ SABnzbdStatusObject.prototype = {
 	} catch(e) { dump('countdown error:'+e); }
 	},
 
+	clickedOn: function(e)
+	{
+		try {
+
+		var SABurl = this.getPreference('sabUrl');
+		if (e.button == 0)
+		{
+			var action = this.getPreference('leftClick');
+		}
+		else if (e.button == 1)
+		{
+			var action = this.getPreference('middleClick');
+		}
+		switch (action)
+		{
+			case 'refresh':
+				this.refreshStatus();
+				break;
+			case 'newtab':
+				getBrowser().addTab(SABurl);
+				break;
+			case 'sametab':
+				loadURI(SABurl);
+				break;
+		}
+
+
+		} catch(e) { dump('clickedOn error:'+e); }
+	},
+
 	togglePause: function()
 	{
 		var toPause = (document.getElementById('sabstatus-context-pause').getAttribute('checked') != '');
@@ -466,6 +496,7 @@ SABnzbdStatusObject.prototype = {
 		SABnzbdStatus.xmlHttp.open('GET', fullUrl, true);
 		SABnzbdStatus.xmlHttp.send(null);
 		this.parentNode.parentNode.parentNode.style.opacity = '.5';
+
 		} catch(e) { dump('onclick error: '+e+'\n'); }
 	},
 

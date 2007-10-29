@@ -4,7 +4,7 @@
 <overlay id='sabnzbdstatus-overlay' xmlns='http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul'>
 	<script type='application/x-javascript' src='chrome://sabnzbdstatus/content/sabnzbdstatus.js' />
 	<statusbar id='status-bar'>
-		<statusbarpanel id='sabstatus' context='sabstatus-context' tooltip='sabstatus-idle'
+		<statusbarpanel id='sabstatus' context='sabstatus-context' tooltip='sabstatus-idle' onclick='SABnzbdStatus.clickedOn(event)'
 		 insertafter='adblock-status,statusbar-updates,statusbarpanel-progress,security-button,privacy-button,offline-status,popupIcon,statusbar-display,component-bar'>
 			<image id='sabstatus-image' />
 			<label id='sabstatus-label' />
