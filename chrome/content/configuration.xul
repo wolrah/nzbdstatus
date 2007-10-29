@@ -10,6 +10,8 @@
 		<preference id='refreshrate' name='extensions.sabnzbdstatus.refreshRate' type='int' />
 		<preference id='alwaysshow' name='extensions.sabnzbdstatus.alwaysShowIcon' type='bool' />
 		<preference id='onlyshow' name='extensions.sabnzbdstatus.onlyShowIcon' type='bool' />
+		<preference id='leftclick' name='extensions.sabnzbdstatus.leftClick' type='string' />
+		<preference id='middleclick' name='extensions.sabnzbdstatus.middleClick' type='string' />
 	</preferences>
 
 <groupbox>
@@ -19,11 +21,34 @@
 		<textbox preference='refreshrate' id='refreshrate' flex='1' />
 		<label value='&sabstatus.pref_refreshrate_units.value;' />
 	</hbox>
+</groupbox>
+<groupbox>
+	<caption label='&sabstatus.sbar_caption.label;' />
 	<hbox align='center'>
 		<checkbox label='&sabstatus.pref_alwaysshow.value;' preference='alwaysshow' id='alwaysshow' />
 	</hbox>
 	<hbox align='center'>
 		<checkbox label='&sabstatus.pref_onlyshow.value;' preference='onlyshow' id='onlyshow' />
+	</hbox>
+	<hbox align='center'>
+		<label control='leftclick' value='&sabstatus.pref_leftclick.label;' />
+		<menulist preference='leftclick' id='leftclick' flex='1'>
+			<menupopup>
+				<menuitem label='&sabstatus.pref_sbarclick_refresh.value;' value='refresh' />
+				<menuitem label='&sabstatus.pref_sbarclick_newtab.value;' value='newtab' />
+				<menuitem label='&sabstatus.pref_sbarclick_sametab.value;' value='sametab' />
+			</menupopup>
+		</menulist>
+	</hbox>
+	<hbox align='center'>
+		<label control='middleclick' value='&sabstatus.pref_middleclick.label;' />
+		<menulist preference='middleclick' id='middleclick' flex='1'>
+			<menupopup>
+				<menuitem label='&sabstatus.pref_sbarclick_refresh.value;' value='refresh' />
+				<menuitem label='&sabstatus.pref_sbarclick_newtab.value;' value='newtab' />
+				<menuitem label='&sabstatus.pref_sbarclick_sametab.value;' value='sametab' />
+			</menupopup>
+		</menulist>
 	</hbox>
 </groupbox>
 </prefpane>
@@ -70,7 +95,7 @@
 <prefpane id='sabnzb-newzbin' label='Newzbin' image='chrome://sabnzbdstatus/skin/newzbin.png'>
 	<preferences>
 		<preference id='enableinnewzbin' name='extensions.sabnzbdstatus.enableInNewzbin' type='bool' />
-		<preference id='newzbintosab' name='extensions.sabnzbdstatus.newzbinToSAB' type='string' />
+		<preference id='newzbintosab' name='extensions.sabnzbdstatus.newzbinToSAB' type='int' />
 	</preferences>
 
 <groupbox>
@@ -82,6 +107,9 @@
 		<label control='newzbintosab' value='&sabstatus.pref_newzbintosab.label;' />
 		<menulist preference='newzbintosab' id='newzbintosab' flex='1'>
 			<menupopup>
+				<menuitem label='&sabstatus.pref_newzbintosab.value6;' value='6' />
+				<menuitem label='&sabstatus.pref_newzbintosab.value5;' value='5' />
+				<menuitem label='&sabstatus.pref_newzbintosab.value4;' value='4' />
 				<menuitem label='&sabstatus.pref_newzbintosab.value3;' value='3' />
 				<menuitem label='&sabstatus.pref_newzbintosab.value2;' value='2' />
 				<menuitem label='&sabstatus.pref_newzbintosab.value1;' value='1' />
