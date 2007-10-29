@@ -3,6 +3,8 @@ pref('extensions.sabnzbdstatus.version', '1.0.0');
 pref('extensions.sabnzbdstatus.refreshRate', 5);
 pref('extensions.sabnzbdstatus.alwaysShowIcon', true);
 pref('extensions.sabnzbdstatus.onlyShowIcon', false);
+pref('extensions.sabnzbdstatus.leftClick', 'refresh');
+pref('extensions.sabnzbdstatus.middleClick', 'newtab');
 
 pref('extensions.sabnzbdstatus.iconIdle', 'chrome://sabnzbdstatus/skin/sab.png');
 pref('extensions.sabnzbdstatus.iconDownload', 'chrome://sabnzbdstatus/skin/download.png');
