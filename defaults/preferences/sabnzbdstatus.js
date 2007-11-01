@@ -14,7 +14,8 @@ pref('extensions.sabnzbdstatus.sabUrl', 'http://localhost:8080/sabnzbd/');
 pref('extensions.sabnzbdstatus.queueUrl', 'queue/');
 pref('extensions.sabnzbdstatus.pauseUrl', 'queue/pause');
 pref('extensions.sabnzbdstatus.unpauseUrl', 'queue/resume');
-pref('extensions.sabnzbdstatus.addUrl', 'addID');
+pref('extensions.sabnzbdstatus.addUrl', 'addURL');
+pref('extensions.sabnzbdstatus.addID', 'addID');
 
 pref('extensions.sabnzbdstatus.template', 'Nova 0.4');
 pref('extensions.sabnzbdstatus.sabusername', '');

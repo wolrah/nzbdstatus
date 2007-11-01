@@ -50,4 +50,8 @@
 			<menuitem label='&sabstatus.menu_pause;' oncommand='SABnzbdStatus.togglePause()' type='checkbox' id='sabstatus-context-pause' />
 		</menupopup>
 	</statusbar>
+	<!-- Add our submenu to the main Context menu -->
+	<popup id='contentAreaContextMenu'>
+		<menuitem id='sabstatus-context-sendlink' oncommand='SABnzbdStatus.sendUrl()' label='&sabstatus.menu_sendurl.label;' />
+	</popup>
 </overlay>

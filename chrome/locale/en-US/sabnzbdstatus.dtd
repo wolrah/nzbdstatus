@@ -7,3 +7,4 @@
 <!ENTITY sabstatus.tooltip_diskspace1.value "Diskspace Free:">
 <!ENTITY sabstatus.menu_pause "Pause SABnzbd">
 <!ENTITY sabstatus.menu_config "Configure SABnzbStatus">
+<!ENTITY sabstatus.menu_sendurl.label "Send URL to SABnzbd">

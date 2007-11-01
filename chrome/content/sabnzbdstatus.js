@@ -154,7 +154,7 @@ SABnzbdStatusObject.prototype = {
 		this.xmlHttp.onload = SABnzbdStatus.processLogin;
 		this.xmlHttp.send(postVars);
 
-	} catch(e) {dump('logsab:'+e);}
+		} catch(e) {dump('logsab:'+e);}
 	},
 
 	processLogin: function()
@@ -165,6 +165,7 @@ SABnzbdStatusObject.prototype = {
 		{
 			window.openDialog('chrome://sabnzbdstatus/content/configuration.xul','sabnzb-prefs','chrome,dependent,titlebar,toolbar,centerscreen,resizable','sabnzb-sab');
 		}
+		SABnzbdStatus.refreshStatus();
 	},
 
 	countdown: function()
@@ -374,7 +375,7 @@ SABnzbdStatusObject.prototype = {
 			SABnzbdStatus.goPaused();
 			return;
 		}
-		if (Math.floor(totalMbRemain) == 0)
+		if ((Math.floor(totalMbRemain) == 0) || speed == 0)
 		{
 			SABnzbdStatus.goIdle();
 			return;
@@ -518,23 +519,91 @@ SABnzbdStatusObject.prototype = {
 		}
 	},
 
+	checkForNZB: function()
+	{
+		try {
+
+		if (!gContextMenu.onLink)
+		{
+			return false;
+		}
+		if (gContextMenu && gContextMenu.getLinkURL)
+		{
+			var href = gContextMenu.getLinkURL();
+		}
+		else if (gContextMenu && gContextMenu.linkURL)
+		{
+			var href = gContextMenu.linkURL();
+		}
+		if (!href)
+		{
+			return false;
+		}
+		if (href.match(/\.nzb$/i))
+		{
+			return true;
+		}
+
+		} catch(e) { dump('checkForNZB error: '+e+'\n'); }
+	},
+
+	// Runs when the context menu popup opens
+	contextPopupShowing: function()
+	{
+		if (SABnzbdStatus.checkForNZB())
+		{
+			document.getElementById('sabstatus-context-sendlink').hidden = false;
+		}
+		else
+		{
+			document.getElementById('sabstatus-context-sendlink').hidden = true;
+		}
+	},
+
 	sendToSAB: function(e)
 	{
 		try {
 
 		var postid = this.alt;
-		var fullUrl = SABnzbdStatus.getPreference('sabUrl') + SABnzbdStatus.getPreference('addUrl') +
+		var fullUrl = SABnzbdStatus.getPreference('sabUrl') + SABnzbdStatus.getPreference('addID') +
 		 '?id=' + postid + '&pp=' + SABnzbdStatus.getPreference('newzbinToSAB');
 		SABnzbdStatus.xmlHttp.open('GET', fullUrl, true);
 		SABnzbdStatus.xmlHttp.send(null);
 		this.style.opacity = '.25';
 
-		} catch(e) { dump('onclick error: '+e+'\n'); }
+		} catch(e) { dump('sendtosab error: '+e+'\n'); }
+	},
+
+	sendUrl: function(e)
+	{
+		try {
+
+		if (gContextMenu && gContextMenu.getLinkURL)
+		{
+			var href = gContextMenu.getLinkURL();
+		}
+		else if (gContextMenu && gContextMenu.linkURL)
+		{
+			var href = gContextMenu.linkURL();
+		}
+		if (!href)
+		{
+			return false;
+		}
+		var fullUrl = SABnzbdStatus.getPreference('sabUrl') + SABnzbdStatus.getPreference('addUrl') +
+		 '?url=' + encodeURIComponent(href) + '&pp=' + SABnzbdStatus.getPreference('newzbinToSAB');
+		SABnzbdStatus.xmlHttp.open('GET', fullUrl, true);
+		SABnzbdStatus.xmlHttp.send(null);
+		gContextMenu.target.style.opacity = '.25';
+
+		} catch(e) { dump('sendurl error: '+e+'\n'); }
 	},
 
 	// Initialization and starting of timers are done here
 	startup: function()
 	{
+		var menu = document.getElementById("contentAreaContextMenu");
+		menu.addEventListener("popupshowing", this.contextPopupShowing, false);
 		this.statusbar = document.getElementById('sabstatus');
 		this.statusicon = document.getElementById('sabstatus-image');
 		this.statuslabel = document.getElementById('sabstatus-label');
