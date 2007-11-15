@@ -331,6 +331,24 @@ SABnzbdStatusObject.prototype = {
 		var status, speed, totalTimeRemain, totalMb, totalMbRemain, totalPer, curDL, curTime, curMbRemain, finSpace, queue;
 		switch (SABnzbdStatus.getPreference('template'))
 		{
+			case 'Nova 0.5':
+				try {
+				queue = eval('('+output.match(/JSON for nzbdStatus Firefox Extension\s+((?:.|\s)*)\s+-->/)[1]+')');
+				} catch(e) { return; }
+				speed = queue.kbpersec;
+				totalMbRemain = queue.mbleft;
+				totalMb = queue.mb;
+				if (queue.noofslots > 0)
+				{
+					curDL = queue.jobs[0].filename.replace(/\.nzb/ig, '');
+					curMbRemain = queue.jobs[0].mbleft;
+				}
+				finSpace = queue.diskspace1;
+				if (queue.paused == 'True')
+				{
+					status = 'pause';
+				}
+				break;
 			case 'Nova 0.4':
 				try {
 				queue = eval('('+output+')');
