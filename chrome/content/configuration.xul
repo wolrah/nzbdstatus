@@ -80,6 +80,7 @@
 			<menupopup>
 				<menuitem label='Nova 0.3.2' value='Nova 0.3' />
 				<menuitem label='Nova 0.4.*' value='Nova 0.4' />
+				<menuitem label='Plush' value='Plush' />
 			</menupopup>
 		</menulist>
 	</hbox>
