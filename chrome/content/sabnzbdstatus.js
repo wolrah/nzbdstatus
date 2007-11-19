@@ -36,6 +36,7 @@ SABnzbdStatusObject.prototype = {
 	 .getService(Components.interfaces.nsIPrefService)
 	 .getBranch("extensions.sabnzbdstatus."),
 	_xmlHttp: new XMLHttpRequest(),
+	_askForPass: false,
 
 
 	// Getters
@@ -143,6 +144,16 @@ SABnzbdStatusObject.prototype = {
 	loginToSAB: function()
 	{
 		try {
+
+		// To prevent getting stuck in an endless loop
+		if (this._askForPass)
+		{
+			return;
+		}
+		else
+		{
+			this._askForPass = true;
+		}
 
 		var username = this.getPreference('sabusername');
 		var password = this.getPreference('sabpassword');
@@ -331,9 +342,9 @@ SABnzbdStatusObject.prototype = {
 		var status, speed, totalTimeRemain, totalMb, totalMbRemain, totalPer, curDL, curTime, curMbRemain, finSpace, queue;
 		switch (SABnzbdStatus.getPreference('template'))
 		{
-			case 'Nova 0.5':
+			case 'Plush':
 				try {
-				queue = eval('('+output.match(/JSON for nzbdStatus Firefox Extension\s+((?:.|\s)*)\s+-->/)[1]+')');
+				queue = eval('('+output.match(/nzbdStatus\s+((?:.|\s)*)\s+-->/)[1]+')');
 				} catch(e) { return; }
 				speed = queue.kbpersec;
 				totalMbRemain = queue.mbleft;
@@ -459,6 +470,12 @@ SABnzbdStatusObject.prototype = {
 			{
 				engine = 'v3';
 			}
+		}
+		var loggedIn = SABnzbdStatus.selectNodes(doc, doc, '//input[@name="username"]');
+		loggedIn = (loggedIn.length == 0);
+		if (!loggedIn)
+		{
+			return;
 		}
 		if (doc.getElementById('ReportInfoPH'))
 		{
