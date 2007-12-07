@@ -32,9 +32,11 @@ SABnzbdStatusObject.prototype = {
 	statuslabel: null, // Shortcut
 
 	// Private variables
-	_preferences: Components.classes["@mozilla.org/preferences;1"]
+	_preferences: Components.classes['@mozilla.org/preferences;1']
 	 .getService(Components.interfaces.nsIPrefService)
-	 .getBranch("extensions.sabnzbdstatus."),
+	 .getBranch('extensions.sabnzbdstatus.'),
+	_observerService: Components.classes['@mozilla.org/observer-service;1']
+	 .getService(Components.interfaces.nsIObserverService),
 	_xmlHttp: new XMLHttpRequest(),
 	_askForPass: false,
 
@@ -45,6 +47,12 @@ SABnzbdStatusObject.prototype = {
 	get preferences()
 	{
 		return this._preferences;
+	},
+
+	// Our link to the observer service
+	get observerService()
+	{
+		return this._observerService;
 	},
 
 	// Ajax!
@@ -433,7 +441,7 @@ SABnzbdStatusObject.prototype = {
 		try {
 
 		var queueUrl = SABnzbdStatus.getPreference('sabUrl') + SABnzbdStatus.getPreference('queueUrl');
-		SABnzbdStatus.xmlHttp.open("GET", queueUrl, true);
+		SABnzbdStatus.xmlHttp.open('GET', queueUrl, true);
 		SABnzbdStatus.xmlHttp.onload = SABnzbdStatus.queueReceived;
 		SABnzbdStatus.xmlHttp.send(null);
 
@@ -482,13 +490,16 @@ SABnzbdStatusObject.prototype = {
 			SABnzbdStatus.reportSummaryPage(doc, engine);
 		}
 		var results = SABnzbdStatus.selectNodes(doc, doc, '//table[@summary="Post query results"]/tbody/tr');
-		if (results == null || results.length == 0)
-		{
-			return;
-		}
-		else
+		if (results != null && results.length > 0)
 		{
 			SABnzbdStatus.listingsPage(doc, engine);
+			return;
+		}
+		results = SABnzbdStatus.selectNodes(doc, doc, '//table[@summary="File query results"]/tbody/tr');
+		if (results != null && results.length > 0)
+		{
+			SABnzbdStatus.filesPage(doc, engine);
+			return;
 		}
 
 		} catch(e) { dump('onPageLoad error: '+e+'\n'); }
@@ -552,6 +563,16 @@ SABnzbdStatusObject.prototype = {
 					break;
 			}
 		}
+	},
+
+	filesPage: function(doc, engine)
+	{
+		var results = SABnzbdStatus.selectNodes(doc, doc, '//table[@summary="File query results"]/tbody/tr');
+		if (results.length == 1 && (results[0].textContent.search('No results') > -1))
+		{
+			return;
+		}
+
 	},
 
 	checkForNZB: function()
@@ -634,11 +655,43 @@ SABnzbdStatusObject.prototype = {
 		} catch(e) { dump('sendurl error: '+e+'\n'); }
 	},
 
+	uploadFile: function(filename, content)
+	{
+		try {
+
+		var justname = filename.split(/(\/|\\)/)[filename.split(/(\/|\\)/).length-1];
+		var fullUrl = this.getPreference('sabUrl') + this.getPreference('addFile');
+
+		var d = new Date();
+		var boundary = '--------' + d.getTime();
+		var requestbody = '--' + boundary + '\nContent-Disposition: form-data; name="nzbfile"; filename="' + justname + '"\n' +
+		 'Content-Type: application/octet-stream\n\n' + content + '\n' +
+		 '--' + boundary +'\nContent-Disposition: form-data; name="pp"\n\n' +
+		 this.getPreference('filesToSAB') + '\n' + '--' + boundary + '--\n';
+
+		// We don't use the object's one so that we can have multiple going
+		var xmlHttp = new XMLHttpRequest();
+		xmlHttp.onreadystatechange = function() { dump('\nresponse:'+xmlHttp.responseText); };
+		xmlHttp.open('POST', fullUrl, true);
+		xmlHttp.setRequestHeader('Referer', this.getPreference('sabUrl'));
+		xmlHttp.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
+		xmlHttp.setRequestHeader('Connection', 'close');
+		xmlHttp.setRequestHeader('Content-Length', requestbody.length);
+		xmlHttp.send(requestbody);
+
+		} catch(e) { dump('uploadFile:'+e+'\n'); }
+	},
+
 	// Initialization and starting of timers are done here
 	startup: function()
 	{
-		var menu = document.getElementById("contentAreaContextMenu");
-		menu.addEventListener("popupshowing", this.contextPopupShowing, false);
+		try {
+
+		// Put an observer on all downloads
+		this.observerService.addObserver(this, 'dl-done', false);
+
+		var menu = document.getElementById('contentAreaContextMenu');
+		menu.addEventListener('popupshowing', this.contextPopupShowing, false);
 		this.statusbar = document.getElementById('sabstatus');
 		this.statusicon = document.getElementById('sabstatus-image');
 		this.statuslabel = document.getElementById('sabstatus-label');
@@ -647,6 +700,7 @@ SABnzbdStatusObject.prototype = {
 		{
 			this.statuslabel.style.visibility = 'collapse';
 		}
+		// Put an observer on the preferences
 		this.preferences.QueryInterface(Components.interfaces.nsIPrefBranch2);
 		this.preferences.addObserver('', this, false);
 		this.refreshRate = this.getPreference('refreshRate');
@@ -657,21 +711,65 @@ SABnzbdStatusObject.prototype = {
 		{
 			appcontent.addEventListener('load', this.onPageLoad, true);
 		}
+
+		} catch(e) { dump('startup error:'+e+'\n'); }
 	},
 
 	// Shutdown stuff done here
 	shutdown: function()
 	{
 		this.preferences.removeObserver('', this);
+		this.observerService.removeObserver(this, 'dl-done');
 	},
 
-	// This gets fired every time the preferences get changed
+	// This gets fired every time one of our observers gets tripped
 	observe: function(subject, topic, data)
 	{
-		if (topic != 'nsPref:changed')
+		switch (topic)
+		{
+			case 'nsPref:changed':
+				SABnzbdStatus.observePreferences(subject, topic, data);
+				break;
+			case 'dl-done':
+				SABnzbdStatus.observeFileDownload(subject, topic, data);
+				break;
+		}
+	},
+
+	// File download observer
+	observeFileDownload: function(subject, topic, data)
+	{
+		try {
+dump('in ofd\n');
+		var dlCom = subject.QueryInterface(Components.interfaces.nsIDownload);
+		var fileDetails = null;
+		fileDetails = dlCom.targetFile;
+		if (fileDetails.path.search(/\.nzb$/) == -1)
 		{
 			return;
 		}
+		var file = Components.classes['@mozilla.org/file/local;1']
+		 .createInstance(Components.interfaces.nsILocalFile);
+		file.initWithPath(fileDetails.path);
+		var fiStream = Components.classes['@mozilla.org/network/file-input-stream;1']
+		 .createInstance(Components.interfaces.nsIFileInputStream);
+		var siStream = Components.classes['@mozilla.org/scriptableinputstream;1']
+		 .createInstance(Components.interfaces.nsIScriptableInputStream);
+		var data = new String();
+		fiStream.init(file, 1, 0, false);
+		siStream.init(fiStream);
+		data += siStream.read(-1);
+		siStream.close();
+		fiStream.close();
+		dump(fileDetails.path+'\n');
+		this.uploadFile(fileDetails.path, data);
+
+		} catch(e) { dump('observeFileDownload:'+e+'\n'); }
+	},
+
+	// Preferences observer
+	observePreferences: function(subject, topic, data)
+	{
 		switch (data)
 		{
 			case 'refreshRate':
@@ -713,9 +811,7 @@ SABnzbdStatus = new SABnzbdStatusObject();
 
 if (SABnzbdStatus)
 {
-	dump("SABnzbdStatus Loaded\n");
-	window.addEventListener("load", function(e) { SABnzbdStatus.startup(); }, false);
-	window.addEventListener("unload", function(e) { SABnzbdStatus.shutdown(); }, false);
+	dump('SABnzbdStatus Loaded\n');
+	window.addEventListener('load', function(e) { SABnzbdStatus.startup(); }, false);
+	window.addEventListener('unload', function(e) { SABnzbdStatus.shutdown(); }, false);
 }
-
-
