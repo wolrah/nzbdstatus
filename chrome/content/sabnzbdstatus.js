@@ -37,8 +37,8 @@ SABnzbdStatusObject.prototype = {
 	 .getBranch('extensions.sabnzbdstatus.'),
 	_observerService: Components.classes['@mozilla.org/observer-service;1']
 	 .getService(Components.interfaces.nsIObserverService),
-	_xmlHttp: new XMLHttpRequest(),
 	_askForPass: false,
+	_queueHttp: new XMLHttpRequest(), // One httpRequest object for the queue tracking
 
 
 	// Getters
@@ -55,10 +55,16 @@ SABnzbdStatusObject.prototype = {
 		return this._observerService;
 	},
 
-	// Ajax!
+	// Ajax for little things that shouldn't conflict
 	get xmlHttp()
 	{
-		return this._xmlHttp;
+		return new XMLHttpRequest();
+	},
+
+	// Ajax for the queue only to keep conflicts to a minimum
+	get queueHttp()
+	{
+		return this._queueHttp;
 	},
 
 
@@ -134,8 +140,9 @@ SABnzbdStatusObject.prototype = {
 	sendPause: function()
 	{
 		var sabUrl = this.getPreference('sabUrl') + this.getPreference('pauseUrl');
-		this.xmlHttp.open('GET', sabUrl, true);
-		this.xmlHttp.send(null);
+		var xmlHttp = this.xmlHttp;
+		xmlHttp.open('GET', sabUrl, true);
+		xmlHttp.send(null);
 	},
 
 	sendResume: function()
@@ -143,8 +150,10 @@ SABnzbdStatusObject.prototype = {
 		try {
 
 		var sabUrl = this.getPreference('sabUrl') + this.getPreference('unpauseUrl');
-		this.xmlHttp.open('GET', sabUrl, true);
-		this.xmlHttp.send(null);
+		var xmlHttp = this.xmlHttp;
+		xmlHttp.open('GET', sabUrl, true);
+		xmlHttp.send(null);
+		this.refreshStatus();
 
 		} catch(e) { dump('sendResume error:'+e); }
 	},
@@ -167,18 +176,19 @@ SABnzbdStatusObject.prototype = {
 		var password = this.getPreference('sabpassword');
 		var postVars = 'ma_username='+username+'&ma_password='+password;
 		var sabUrl = this.getPreference('sabUrl');
-		this.xmlHttp.open('POST', sabUrl, true);
-		this.xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-		this.xmlHttp.setRequestHeader('Content-Length', postVars.length);
-		this.xmlHttp.onload = SABnzbdStatus.processLogin;
-		this.xmlHttp.send(postVars);
+		var xmlHttp = this.queueHttp;
+		xmlHttp.open('POST', sabUrl, true);
+		xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		xmlHttp.setRequestHeader('Content-Length', postVars.length);
+		xmlHttp.onload = SABnzbdStatus.processLogin;
+		xmlHttp.send(postVars);
 
 		} catch(e) {dump('logsab:'+e);}
 	},
 
 	processLogin: function()
 	{
-		var output = SABnzbdStatus.xmlHttp.responseText;
+		var output = SABnzbdStatus.queueHttp.responseText;
 		var tryingToLogin = (output.search(/<title>Login<\/title>/i) > -1);
 		if (tryingToLogin)
 		{
@@ -233,6 +243,9 @@ SABnzbdStatusObject.prototype = {
 				break;
 			case 'sametab':
 				loadURI(SABurl);
+				break;
+			case 'newwindow':
+				window.open(SABurl);
 				break;
 		}
 
@@ -333,7 +346,7 @@ SABnzbdStatusObject.prototype = {
 	{
 		try {
 
-		var output = SABnzbdStatus.xmlHttp.responseText;
+		var output = SABnzbdStatus.queueHttp.responseText;
 		if (output == '')
 		{
 			SABnzbdStatus.goIdle();
@@ -347,9 +360,28 @@ SABnzbdStatusObject.prototype = {
 			return;
 		}
 
-		var status, speed, totalTimeRemain, totalMb, totalMbRemain, totalPer, curDL, curTime, curMbRemain, finSpace, queue;
+		var status, speed, totalTimeRemain, totalMb, totalMbRemain, totalPer, curDL, curTime, curMbRemain;
+		var finSpace, queue;
 		switch (SABnzbdStatus.getPreference('template'))
 		{
+			case 'None':
+				try {
+				queue = eval('('+output+')');
+				} catch(e) { return; }
+				speed = queue.kbpersec;
+				totalMbRemain = queue.mbleft;
+				totalMb = queue.mb;
+				if (queue.noofslots > 0)
+				{
+					curDL = queue.jobs[0].filename.replace(/\.nzb/ig, '');
+					curMbRemain = queue.jobs[0].mbleft;
+				}
+				finSpace = queue.diskspace1;
+				if (queue.paused == 'True')
+				{
+					status = 'pause';
+				}
+				break;
 			case 'Plush':
 				try {
 				queue = eval('('+output.match(/nzbdStatus\s+((?:.|\s)*)\s+-->/)[1]+')');
@@ -425,9 +457,9 @@ SABnzbdStatusObject.prototype = {
 		curTime = SABnzbdStatus.convertSecondsToTime(curTime);
 
 		SABnzbdStatus.statuslabel.value = totalTimeRemain;
-		document.getElementById('sabstatus-kbpersec').value = speed + ' kb/s';
+		document.getElementById('sabstatus-kbpersec').value = Math.floor(speed) + ' kb/s';
 		document.getElementById('sabstatus-mbleft').setAttribute('value', totalPer);
-		document.getElementById('sabstatus-diskspace1').value = finSpace + ' GB';
+		document.getElementById('sabstatus-diskspace1').value = (Math.floor(finSpace * 100) / 100) + ' GB';
 		document.getElementById('sabstatus-jobs0').value = curDL;
 		document.getElementById('sabstatus-jobs0-time').value = curTime;
 
@@ -441,9 +473,9 @@ SABnzbdStatusObject.prototype = {
 		try {
 
 		var queueUrl = SABnzbdStatus.getPreference('sabUrl') + SABnzbdStatus.getPreference('queueUrl');
-		SABnzbdStatus.xmlHttp.open('GET', queueUrl, true);
-		SABnzbdStatus.xmlHttp.onload = SABnzbdStatus.queueReceived;
-		SABnzbdStatus.xmlHttp.send(null);
+		SABnzbdStatus.queueHttp.open('GET', queueUrl, true);
+		SABnzbdStatus.queueHttp.onload = SABnzbdStatus.queueReceived;
+		SABnzbdStatus.queueHttp.send(null);
 
 		} catch(e) { dump('refresh error:' + e); }
 	},
@@ -621,10 +653,19 @@ SABnzbdStatusObject.prototype = {
 		try {
 
 		var postid = this.alt;
-		var fullUrl = SABnzbdStatus.getPreference('sabUrl') + SABnzbdStatus.getPreference('addID') +
-		 '?id=' + postid + '&pp=' + SABnzbdStatus.getPreference('newzbinToSAB');
-		SABnzbdStatus.xmlHttp.open('GET', fullUrl, true);
-		SABnzbdStatus.xmlHttp.send(null);
+		var fullUrl = SABnzbdStatus.getPreference('sabUrl') + SABnzbdStatus.getPreference('addID');
+		if (SABnzbdStatus.getPreference('legacyMode'))
+		{
+			fullUrl += '?id=';
+		}
+		else
+		{
+			fullUrl += '?mode=addid&name=';
+		}
+		fullUrl += postid + '&pp=' + SABnzbdStatus.getPreference('newzbinToSAB');
+		var xmlHttp = SABnzbdStatus.xmlHttp;
+		xmlHttp.open('GET', fullUrl, true);
+		xmlHttp.send(null);
 		this.style.opacity = '.25';
 
 		} catch(e) { dump('sendtosab error: '+e+'\n'); }
@@ -646,10 +687,19 @@ SABnzbdStatusObject.prototype = {
 		{
 			return false;
 		}
-		var fullUrl = SABnzbdStatus.getPreference('sabUrl') + SABnzbdStatus.getPreference('addUrl') +
-		 '?url=' + encodeURIComponent(href) + '&pp=' + SABnzbdStatus.getPreference('newzbinToSAB');
-		SABnzbdStatus.xmlHttp.open('GET', fullUrl, true);
-		SABnzbdStatus.xmlHttp.send(null);
+		var fullUrl = SABnzbdStatus.getPreference('sabUrl') + SABnzbdStatus.getPreference('addUrl');
+		if (SABnzbdStatus.getPreference('legacyMode'))
+		{
+			fullUrl += '?url=';
+		}
+		else
+		{
+			fullUrl += '?mode=addurl&name=';
+		}
+		fullUrl += encodeURIComponent(href) + '&pp=' + SABnzbdStatus.getPreference('newzbinToSAB');
+		var xmlHttp = SABnzbdStatus.xmlHttp;
+		xmlHttp.open('GET', fullUrl, true);
+		xmlHttp.send(null);
 		gContextMenu.target.style.opacity = '.25';
 
 		} catch(e) { dump('sendurl error: '+e+'\n'); }
@@ -661,17 +711,24 @@ SABnzbdStatusObject.prototype = {
 
 		var justname = filename.split(/(\/|\\)/)[filename.split(/(\/|\\)/).length-1];
 		var fullUrl = this.getPreference('sabUrl') + this.getPreference('addFile');
-
+		if (!this.getPreference('legacyMode'))
+		{
+			fullUrl += '?mode=addfile';
+			var namename = 'name';
+		}
+		else
+		{
+			var namename = 'nzbfile';
+		}
 		var d = new Date();
 		var boundary = '--------' + d.getTime();
-		var requestbody = '--' + boundary + '\nContent-Disposition: form-data; name="nzbfile"; filename="' + justname + '"\n' +
+		var requestbody = '--' + boundary + '\nContent-Disposition: form-data; name="'+namename+'"; filename="' + justname + '"\n' +
 		 'Content-Type: application/octet-stream\n\n' + content + '\n' +
 		 '--' + boundary +'\nContent-Disposition: form-data; name="pp"\n\n' +
 		 this.getPreference('filesToSAB') + '\n' + '--' + boundary + '--\n';
 
 		// We don't use the object's one so that we can have multiple going
-		var xmlHttp = new XMLHttpRequest();
-		xmlHttp.onreadystatechange = function() { dump('\nresponse:'+xmlHttp.responseText); };
+		var xmlHttp = SABnzbdStatus.xmlHttp;
 		xmlHttp.open('POST', fullUrl, true);
 		xmlHttp.setRequestHeader('Referer', this.getPreference('sabUrl'));
 		xmlHttp.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
@@ -687,8 +744,11 @@ SABnzbdStatusObject.prototype = {
 	{
 		try {
 
-		// Put an observer on all downloads
-		this.observerService.addObserver(this, 'dl-done', false);
+		if (this.getPreference('enableFilesToSAB'))
+		{
+			// Put an observer on all downloads
+			this.observerService.addObserver(this, 'dl-done', false);
+		}
 
 		var menu = document.getElementById('contentAreaContextMenu');
 		menu.addEventListener('popupshowing', this.contextPopupShowing, false);
@@ -740,7 +800,7 @@ SABnzbdStatusObject.prototype = {
 	observeFileDownload: function(subject, topic, data)
 	{
 		try {
-dump('in ofd\n');
+
 		var dlCom = subject.QueryInterface(Components.interfaces.nsIDownload);
 		var fileDetails = null;
 		fileDetails = dlCom.targetFile;
@@ -761,7 +821,6 @@ dump('in ofd\n');
 		data += siStream.read(-1);
 		siStream.close();
 		fiStream.close();
-		dump(fileDetails.path+'\n');
 		this.uploadFile(fileDetails.path, data);
 
 		} catch(e) { dump('observeFileDownload:'+e+'\n'); }
@@ -801,6 +860,36 @@ dump('in ofd\n');
 					this.statuslabel.style.visibility = 'visible';
 				}
 				break;
+			case 'enableFilesToSAB':
+				if (this.getPreference('enableFilesToSAB'))
+				{
+					this.observerService.addObserver(this, 'dl-done', false);
+				}
+				else
+				{
+					this.observerService.removeObserver(this, 'dl-done');
+				}
+				break;
+			case 'legacyMode':
+				if (this.getPreference('legacyMode'))
+				{
+					this.setPreference('queueUrl', 'queue/');
+					this.setPreference('pauseUrl', 'queue/resume');
+					this.setPreference('unpauseUrl', 'queue/resume');
+					this.setPreference('addUrl', 'addURL');
+					this.setPreference('addID', 'addID');
+					this.setPreference('addFile', 'addFile');
+				}
+				else
+				{
+					this.setPreference('template', 'None');
+					this.setPreference('queueUrl', 'api?mode=qstatus&output=json');
+					this.setPreference('pauseUrl', 'api?mode=pause');
+					this.setPreference('unpauseUrl', 'api?mode=resume');
+					this.setPreference('addUrl', 'api');
+					this.setPreference('addID', 'api');
+					this.setPreference('addFile', 'api');
+				}
 		}
 	}
 
