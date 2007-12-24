@@ -17,6 +17,8 @@
 <!ENTITY sabstatus.pref_sabuser.value "Username:">
 <!ENTITY sabstatus.pref_sabpass.value "Password:">
 
+<!ENTITY sabstatus.pref_sendfiles.label "Send NZB files to this daemon">
+<!ENTITY sabstatus.pref_legacy.label "Enable Legacy Mode">
 <!ENTITY sabstatus.nzbd_caption.label "Settings">
 <!ENTITY sabstatus.pref_sabtheme.value "Theme:">
 <!ENTITY sabstatus.pref_saburl.value "URL:">
@@ -24,10 +26,10 @@
 <!ENTITY sabstatus.newzbin_caption.label "General Settings">
 <!ENTITY sabstatus.pref_enableinnewzbin.value "Enable Send To SABnzbd Icon">
 <!ENTITY sabstatus.pref_newzbintosab.label "After Download:">
-<!ENTITY sabstatus.pref_newzbintosab.value6 "Verify, Extract, Delete, Script">
-<!ENTITY sabstatus.pref_newzbintosab.value5 "Verify, Extract, Script">
-<!ENTITY sabstatus.pref_newzbintosab.value4 "Verify, Script">
-<!ENTITY sabstatus.pref_newzbintosab.value3 "Verify, Extract, Delete">
-<!ENTITY sabstatus.pref_newzbintosab.value2 "Verify, Extract">
-<!ENTITY sabstatus.pref_newzbintosab.value1 "Verify">
-<!ENTITY sabstatus.pref_newzbintosab.value0 "Do Nothing">
+<!ENTITY sabstatus.pref_sabproclevel.value6 "Verify, Extract, Delete, Script">
+<!ENTITY sabstatus.pref_sabproclevel.value5 "Verify, Extract, Script">
+<!ENTITY sabstatus.pref_sabproclevel.value4 "Verify, Script">
+<!ENTITY sabstatus.pref_sabproclevel.value3 "Verify, Extract, Delete">
+<!ENTITY sabstatus.pref_sabproclevel.value2 "Verify, Extract">
+<!ENTITY sabstatus.pref_sabproclevel.value1 "Verify">
+<!ENTITY sabstatus.pref_sabproclevel.value0 "Do Nothing">
