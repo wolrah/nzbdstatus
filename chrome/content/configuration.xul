@@ -37,6 +37,7 @@
 				<menuitem label='&sabstatus.pref_sbarclick_refresh.value;' value='refresh' />
 				<menuitem label='&sabstatus.pref_sbarclick_newtab.value;' value='newtab' />
 				<menuitem label='&sabstatus.pref_sbarclick_sametab.value;' value='sametab' />
+				<menuitem label='&sabstatus.pref_sbarclick_newwindow.value;' value='newwindow' />
 			</menupopup>
 		</menulist>
 	</hbox>
@@ -47,6 +48,7 @@
 				<menuitem label='&sabstatus.pref_sbarclick_refresh.value;' value='refresh' />
 				<menuitem label='&sabstatus.pref_sbarclick_newtab.value;' value='newtab' />
 				<menuitem label='&sabstatus.pref_sbarclick_sametab.value;' value='sametab' />
+				<menuitem label='&sabstatus.pref_sbarclick_newwindow.value;' value='newwindow' />
 			</menupopup>
 		</menulist>
 	</hbox>

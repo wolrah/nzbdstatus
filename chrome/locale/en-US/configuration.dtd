@@ -12,6 +12,7 @@
 <!ENTITY sabstatus.pref_sbarclick_refresh.value "Refresh Information">
 <!ENTITY sabstatus.pref_sbarclick_newtab.value "Open SABnzbd In New Tab">
 <!ENTITY sabstatus.pref_sbarclick_sametab.value "Open SABnzbd In Same Tab">
+<!ENTITY sabstatus.pref_sbarclick_newwindow.value "Open SABnzbd In New Window">
 
 <!ENTITY sabstatus.login_caption.label "Login Infomation">
 <!ENTITY sabstatus.pref_sabuser.value "Username:">
