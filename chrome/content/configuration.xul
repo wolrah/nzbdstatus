@@ -3,7 +3,7 @@
 <?xml-stylesheet href="chrome://sabnzbdstatus/content/configuration.css" type="text/css"?>
 <!DOCTYPE overlay SYSTEM "chrome://sabnzbdstatus/locale/configuration.dtd">
 <prefwindow id='sabnzb-prefs' title='&sabstatus.window_config.title;' buttons='accept,cancel' type='prefwindow'
- xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" onload='prefonload'>
+ xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" onload='prefonload()'>
 
 <prefpane id='sabnzb-gen' label='&sabstatus.gen_prefpane.label;' image='chrome://sabnzbdstatus/skin/config.png'>
 	<preferences>
@@ -59,6 +59,8 @@
 		<preference id='sabpass' name='extensions.sabnzbdstatus.sabpassword' type='string' />
 		<preference id='saburl' name='extensions.sabnzbdstatus.sabUrl' type='string' />
 		<preference id='sabtheme' name='extensions.sabnzbdstatus.template' type='string' />
+		<preference id='legacymode' name='extensions.sabnzbdstatus.legacyMode' type='bool' />
+		<preference id='sendfiles' name='extensions.sabnzbdstatus.enableFilesToSAB' type='bool' />
 	</preferences>
 
 <groupbox>
@@ -75,18 +77,25 @@
 <groupbox>
 	<caption label='&sabstatus.nzbd_caption.label;' />
 	<hbox align='center'>
+		<label control='saburl' value='&sabstatus.pref_saburl.value;' />
+		<textbox preference='saburl' id='saburl' flex='1' />
+	</hbox>
+	<hbox align='center'>
+		<checkbox label='&sabstatus.pref_sendfiles.label;' preference='sendfiles' id='sabsendfiles' />
+	</hbox>
+	<hbox align='center'>
+		<checkbox label='&sabstatus.pref_legacy.label;' preference='legacymode' id='sablegacy' onclick='legacyClicked();' />
+	</hbox>
+	<hbox align='center'>
 		<label control='sabtheme' value='&sabstatus.pref_sabtheme.value;' />
-		<menulist preference='sabtheme' id='sabtheme' flex='1'>
+		<menulist disabled='true' preference='sabtheme' id='sabtheme' flex='1'>
 			<menupopup>
 				<menuitem label='Nova 0.3.2' value='Nova 0.3' />
 				<menuitem label='Nova 0.4.*' value='Nova 0.4' />
-				<menuitem label='Plush' value='Plush' />
+				<menuitem label='Plush, SMPL' value='Plush' />
+				<menuitem label='None' value='None' />
 			</menupopup>
 		</menulist>
-	</hbox>
-	<hbox align='center'>
-		<label control='saburl' value='&sabstatus.pref_saburl.value;' />
-		<textbox preference='saburl' id='saburl' flex='1' />
 	</hbox>
 </groupbox>
 
@@ -108,13 +117,13 @@
 		<label control='newzbintosab' value='&sabstatus.pref_newzbintosab.label;' />
 		<menulist preference='newzbintosab' id='newzbintosab' flex='1'>
 			<menupopup>
-				<menuitem label='&sabstatus.pref_newzbintosab.value6;' value='6' />
-				<menuitem label='&sabstatus.pref_newzbintosab.value5;' value='5' />
-				<menuitem label='&sabstatus.pref_newzbintosab.value4;' value='4' />
-				<menuitem label='&sabstatus.pref_newzbintosab.value3;' value='3' />
-				<menuitem label='&sabstatus.pref_newzbintosab.value2;' value='2' />
-				<menuitem label='&sabstatus.pref_newzbintosab.value1;' value='1' />
-				<menuitem label='&sabstatus.pref_newzbintosab.value0;' value='0' />
+				<menuitem label='&sabstatus.pref_sabproclevel.value6;' value='6' />
+				<menuitem label='&sabstatus.pref_sabproclevel.value5;' value='5' />
+				<menuitem label='&sabstatus.pref_sabproclevel.value4;' value='4' />
+				<menuitem label='&sabstatus.pref_sabproclevel.value3;' value='3' />
+				<menuitem label='&sabstatus.pref_sabproclevel.value2;' value='2' />
+				<menuitem label='&sabstatus.pref_sabproclevel.value1;' value='1' />
+				<menuitem label='&sabstatus.pref_sabproclevel.value0;' value='0' />
 			</menupopup>
 		</menulist>
 	</hbox>
