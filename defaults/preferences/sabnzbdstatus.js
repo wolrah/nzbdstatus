@@ -1,5 +1,4 @@
 pref('extensions.sabnzbdstatus.disable', false);
-pref('extensions.sabnzbdstatus.version', '1.0.0');
 pref('extensions.sabnzbdstatus.refreshRate', 5);
 pref('extensions.sabnzbdstatus.alwaysShowIcon', true);
 pref('extensions.sabnzbdstatus.onlyShowIcon', false);
@@ -16,10 +15,16 @@ pref('extensions.sabnzbdstatus.pauseUrl', 'queue/pause');
 pref('extensions.sabnzbdstatus.unpauseUrl', 'queue/resume');
 pref('extensions.sabnzbdstatus.addUrl', 'addURL');
 pref('extensions.sabnzbdstatus.addID', 'addID');
+pref('extensions.sabnzbdstatus.addFile', 'addFile');
 
-pref('extensions.sabnzbdstatus.template', 'Nova 0.4');
+pref('extensions.sabnzbdstatus.legacyMode', false);
+
+pref('extensions.sabnzbdstatus.template', 'None');
 pref('extensions.sabnzbdstatus.sabusername', '');
 pref('extensions.sabnzbdstatus.sabpassword', '');
 
 pref('extensions.sabnzbdstatus.enableInNewzbin', true);
 pref('extensions.sabnzbdstatus.newzbinToSAB', 3);
+
+pref('extensions.sabnzbdstatus.enableFilesToSAB', true);
+pref('extensions.sabnzbdstatus.filesToSAB', 3);
