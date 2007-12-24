@@ -10,12 +10,12 @@ pref('extensions.sabnzbdstatus.iconDownload', 'chrome://sabnzbdstatus/skin/downl
 pref('extensions.sabnzbdstatus.iconPaused', 'chrome://sabnzbdstatus/skin/pause.png');
 
 pref('extensions.sabnzbdstatus.sabUrl', 'http://localhost:8080/sabnzbd/');
-pref('extensions.sabnzbdstatus.queueUrl', 'queue/');
-pref('extensions.sabnzbdstatus.pauseUrl', 'queue/pause');
-pref('extensions.sabnzbdstatus.unpauseUrl', 'queue/resume');
-pref('extensions.sabnzbdstatus.addUrl', 'addURL');
-pref('extensions.sabnzbdstatus.addID', 'addID');
-pref('extensions.sabnzbdstatus.addFile', 'addFile');
+pref('extensions.sabnzbdstatus.queueUrl', 'api?mode=qstatus&output=json');
+pref('extensions.sabnzbdstatus.pauseUrl', 'api?mode=pause');
+pref('extensions.sabnzbdstatus.unpauseUrl', 'api?mode=resume');
+pref('extensions.sabnzbdstatus.addUrl', 'api');
+pref('extensions.sabnzbdstatus.addID', 'api');
+pref('extensions.sabnzbdstatus.addFile', 'api');
 
 pref('extensions.sabnzbdstatus.legacyMode', false);
 
