@@ -377,7 +377,7 @@ SABnzbdStatusObject.prototype = {
 					curMbRemain = queue.jobs[0].mbleft;
 				}
 				finSpace = queue.diskspace1;
-				if (queue.paused == 'True')
+				if (queue.paused)
 				{
 					status = 'pause';
 				}
