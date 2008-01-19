@@ -497,47 +497,47 @@ SABnzbdStatusObject.prototype = {
 		}
 		if (!SABnzbdStatus.getPreference('enableInNewzbin'))
 		{
+			// They'ved turned off the NewzBin features
 			return;
 		}
-		var engine = doc.location.hostname.split('.')[0];
-		if (engine == 'www')
+		var engine = doc.getElementsByTagName('body')[0].id;
+		if (engine != 'newzbin')
 		{
-			if (doc.location.href.search('newzxxx') == -1)
-			{
-				engine = 'v2';
-			}
-			else
-			{
-				engine = 'v3';
-			}
+			// They're not in v3 so drop out until they learn better
+			return;
 		}
 		var loggedIn = SABnzbdStatus.selectNodes(doc, doc, '//input[@name="username"]');
 		loggedIn = (loggedIn.length == 0);
 		if (!loggedIn)
 		{
+			// Not logged in so drop out because they probably don't have a NewzBin account
 			return;
 		}
+		// Report detail move
 		if (doc.getElementById('ReportInfoPH'))
 		{
-			SABnzbdStatus.reportSummaryPage(doc, engine);
+			SABnzbdStatus.reportSummaryPage(doc);
+			return;
 		}
+		// Report browser mode
 		var results = SABnzbdStatus.selectNodes(doc, doc, '//table[@summary="Post query results"]/tbody/tr');
 		if (results != null && results.length > 0)
 		{
-			SABnzbdStatus.listingsPage(doc, engine);
+			SABnzbdStatus.listingsPage(doc);
 			return;
 		}
+		// File browser mode
 		results = SABnzbdStatus.selectNodes(doc, doc, '//table[@summary="File query results"]/tbody/tr');
 		if (results != null && results.length > 0)
 		{
-			SABnzbdStatus.filesPage(doc, engine);
+			SABnzbdStatus.filesPage(doc);
 			return;
 		}
 
 		} catch(e) { dump('onPageLoad error: '+e+'\n'); }
 	},
 
-	reportSummaryPage: function(doc, engine)
+	reportSummaryPage: function(doc)
 	{
 		var isFinished = SABnzbdStatus.selectSingleNode(doc, doc, '//span[text()="Finished"]');
 		if (isFinished == null)
@@ -556,55 +556,72 @@ SABnzbdStatusObject.prototype = {
 		isFinished.appendChild(sendTo);
 	},
 
-	listingsPage: function(doc, engine)
+	listingsPage: function(doc)
 	{
-		var results = SABnzbdStatus.selectNodes(doc, doc, '//table[@summary="Post query results"]/tbody/tr');
+		var results = SABnzbdStatus.selectNodes(doc, doc, '//table[@summary="Post query results"]/tbody[not(@class="dateLine")]');
 		if (results.length == 1 && (results[0].textContent.search('No results') > -1))
 		{
 			return;
 		}
-		var row, postId, pattern, sendTo, oldTo, rowcount = results.length;
+		var row, postId, sendTo, oldTo, rowcount = results.length;
 		for (i = 0; i < rowcount; i++)
 		{
 			row = results[i];
 			// Cheap way to get the post id
-			pattern = new RegExp('\/browse\/post\/(\\d+)\/' + (engine == 'v3'?'nzb':''));
-			postId = row.innerHTML.match(pattern);
+			postId = row.getElementsByTagName('a')[1].href.match(/post\/(\d+)\//);
 			if (postId == null)
 			{
 				continue;
 			}
+			row.addEventListener('click', SABnzbdStatus.newzbinRowClick, false);
 			postId = postId[1];
-			sendTo = doc.createElement('img');
-			sendTo.src = SABnzbdStatus.getPreference('iconDownload');
-			sendTo.alt = postId;
-			sendTo.className = 'sabsend';
-			sendTo.title = 'Send to SABnzbd';
-			sendTo.style.cursor = 'pointer';
-			sendTo.addEventListener('click', SABnzbdStatus.sendToSAB, false);
-			switch (engine)
-			{
-				case 'v3':
-					oldTo = SABnzbdStatus.selectSingleNode(doc, row, 'td/a[@title="Download report NZB"]');
-					oldTo.parentNode.replaceChild(sendTo, oldTo);
-					break;
-				case 'v2':
-					sendTo.style.marginRight = '1em';
-					oldTo = row.getElementsByTagName('td')[1];
-					oldTo.insertBefore(sendTo, oldTo.getElementsByTagName('img')[0]);
-					break;
-			}
+			sendTo = SABnzbdStatus.makeSendIcon(doc, postId);
+			oldTo = SABnzbdStatus.selectSingleNode(doc, row, 'tr/td/a[@title="Download report NZB"]');
+			oldTo.parentNode.replaceChild(sendTo, oldTo);
 		}
 	},
 
-	filesPage: function(doc, engine)
+	filesPage: function(doc)
 	{
-		var results = SABnzbdStatus.selectNodes(doc, doc, '//table[@summary="File query results"]/tbody/tr');
+		var results = SABnzbdStatus.selectNodes(doc, doc, '//table[@summary="File query results"]/tbody[not(@class="dateLine")]');
 		if (results.length == 1 && (results[0].textContent.search('No results') > -1))
 		{
 			return;
 		}
+		var row, postId, sendTo, oldTo, rowcount = results.length;
+		for (i = 0; i < rowcount; i++)
+		{
+			row = results[i];
+			row.addEventListener('click', SABnzbdStatus.newzbinRowClick, false);
+			if (row.getElementsByTagName('img')[0].alt == 'Assigned')
+			{
+				postId = row.getElementsByTagName('img')[0].parentNode.href.match(/post\/(\d+)\//)[1];
+				sendTo = SABnzbdStatus.makeSendIcon(doc, postId);
+				oldTo = SABnzbdStatus.selectSingleNode(doc, row, 'tr/td/a[@title="Assigned; click to view Report"]');
+				oldTo.parentNode.replaceChild(sendTo, oldTo);
+			}
+		}
+	},
 
+	newzbinRowClick: function(e)
+	{
+		if ((e.target.nodeName.toLowerCase() == 'input') || (e.target.nodeName.toLowerCase() == 'img'))
+		{
+			return;
+		}
+		e.currentTarget.getElementsByTagName('input')[0].click();
+	},
+
+	makeSendIcon: function(doc, postId)
+	{
+		var sendTo = doc.createElement('img');
+		sendTo.src = SABnzbdStatus.getPreference('iconDownload');
+		sendTo.alt = postId;
+		sendTo.className = 'sabsend';
+		sendTo.title = 'Send to SABnzbd';
+		sendTo.style.cursor = 'pointer';
+		sendTo.addEventListener('click', SABnzbdStatus.sendToSAB, false);
+		return sendTo;
 	},
 
 	checkForNZB: function()
@@ -666,7 +683,8 @@ SABnzbdStatusObject.prototype = {
 		var xmlHttp = SABnzbdStatus.xmlHttp;
 		xmlHttp.open('GET', fullUrl, true);
 		xmlHttp.send(null);
-		this.style.opacity = '.25';
+
+		this.parentNode.parentNode.parentNode.style.opacity = '.25';
 
 		} catch(e) { dump('sendtosab error: '+e+'\n'); }
 	},
