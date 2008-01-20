@@ -192,10 +192,44 @@ SABnzbdStatusObject.prototype = {
 		var tryingToLogin = (output.search(/<title>Login<\/title>/i) > -1);
 		if (tryingToLogin)
 		{
-			// Didn't find it so we'll ask them
-			window.openDialog('chrome://sabnzbdstatus/content/configuration.xul','sabnzb-prefs','chrome,dependent,titlebar,toolbar,centerscreen,resizable','sabnzb-sab');
-
-
+			// We didn't login so we'll try to read the username/password from Firefox
+			var rootUrl = 'http://' + SABnzbdStatus.getPreference('sabUrl').split('/')[2];
+			var notFound = true;
+			if ("@mozilla.org/passwordmanager;1" in Components.classes)
+			{
+				// Password Manager exists so this is not Firefox 3
+				var passwordManager = Components.classes["@mozilla.org/passwordmanager;1"]
+				 .getService(Components.interfaces.nsIPasswordManager);
+				var enm = passwordManager.enumerator;
+				while (enm.hasMoreElements())
+				{
+					try
+					{
+						var pass = enm.getNext().QueryInterface(Components.interfaces.nsIPassword);
+						if (pass.host == rootUrl)
+						{
+							SABnzbdStatus.setPreference('sabusername', pass.user);
+							SABnzbdStatus.setPreference('sabpassword', pass.password);
+							notFound = false;
+							break;
+						}
+					}
+					catch (ex)
+					{
+						// Will we ever reach here?
+					}
+				}
+			}
+			else if ("@mozilla.org/login-manager;1" in Components.classes)
+			{
+				 // Login Manager exists so this is Firefox 3
+				 // Login Manager code
+			}
+			if (notFound)
+			{
+				// Didn't find it so we'll ask them
+				window.openDialog('chrome://sabnzbdstatus/content/configuration.xul','sabnzb-prefs','chrome,dependent,titlebar,toolbar,centerscreen,resizable','sabnzb-sab');
+			}
 		}
 		SABnzbdStatus.refreshStatus();
 	},
