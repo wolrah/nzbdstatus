@@ -192,7 +192,10 @@ SABnzbdStatusObject.prototype = {
 		var tryingToLogin = (output.search(/<title>Login<\/title>/i) > -1);
 		if (tryingToLogin)
 		{
+			// Didn't find it so we'll ask them
 			window.openDialog('chrome://sabnzbdstatus/content/configuration.xul','sabnzb-prefs','chrome,dependent,titlebar,toolbar,centerscreen,resizable','sabnzb-sab');
+
+
 		}
 		SABnzbdStatus.refreshStatus();
 	},
@@ -457,7 +460,7 @@ SABnzbdStatusObject.prototype = {
 		curTime = SABnzbdStatus.convertSecondsToTime(curTime);
 
 		SABnzbdStatus.statuslabel.value = totalTimeRemain;
-		document.getElementById('sabstatus-kbpersec').value = Math.floor(speed) + ' kb/s';
+		document.getElementById('sabstatus-kbpersec').value = Math.floor(speed) + ' KB/s';
 		document.getElementById('sabstatus-mbleft').setAttribute('value', totalPer);
 		document.getElementById('sabstatus-diskspace1').value = (Math.floor(finSpace * 100) / 100) + ' GB';
 		document.getElementById('sabstatus-jobs0').value = curDL;
@@ -752,6 +755,7 @@ SABnzbdStatusObject.prototype = {
 		xmlHttp.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
 		xmlHttp.setRequestHeader('Connection', 'close');
 		xmlHttp.setRequestHeader('Content-Length', requestbody.length);
+		xmlHttp.onload = SABnzbdStatus.goActive;
 		xmlHttp.send(requestbody);
 
 		} catch(e) { dump('uploadFile:'+e+'\n'); }
