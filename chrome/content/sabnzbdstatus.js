@@ -567,12 +567,12 @@ SABnzbdStatusObject.prototype = {
 		for (i = 0; i < rowcount; i++)
 		{
 			row = results[i];
-			// Cheap way to get the post id
-			postId = row.getElementsByTagName('a')[1].href.match(/post\/(\d+)\//);
-			if (postId == null)
+			oldTo = SABnzbdStatus.selectSingleNode(doc, row, 'tr/td/a[@title="Download report NZB"]');
+			if (oldTo == null)
 			{
 				continue;
 			}
+			postId = oldTo.href.match(/post\/(\d+)\//);
 			row.addEventListener('click', SABnzbdStatus.newzbinRowClick, false);
 			postId = postId[1];
 			sendTo = SABnzbdStatus.makeSendIcon(doc, postId);
@@ -595,9 +595,9 @@ SABnzbdStatusObject.prototype = {
 			row.addEventListener('click', SABnzbdStatus.newzbinRowClick, false);
 			if (row.getElementsByTagName('img')[0].alt == 'Assigned')
 			{
-				postId = row.getElementsByTagName('img')[0].parentNode.href.match(/post\/(\d+)\//)[1];
-				sendTo = SABnzbdStatus.makeSendIcon(doc, postId);
 				oldTo = SABnzbdStatus.selectSingleNode(doc, row, 'tr/td/a[@title="Assigned; click to view Report"]');
+				postId = oldTo.href.match(/post\/(\d+)\//)[1];
+				sendTo = SABnzbdStatus.makeSendIcon(doc, postId);
 				oldTo.parentNode.replaceChild(sendTo, oldTo);
 			}
 		}
