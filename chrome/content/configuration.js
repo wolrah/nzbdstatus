@@ -16,3 +16,15 @@ function legacyClicked()
 {
 	document.getElementById('sabtheme').disabled = document.getElementById('sablegacy').checked;
 }
+
+function ensureEndSlash()
+{
+	var _preferences = Components.classes['@mozilla.org/preferences;1']
+	 .getService(Components.interfaces.nsIPrefService)
+	 .getBranch('extensions.sabnzbdstatus.');
+	var sabUrl = _preferences.getCharPref('sabUrl');
+	if (sabUrl[sabUrl.length-1] != '/')
+	{
+		_preferences.setCharPref('sabUrl', sabUrl + '/');
+	}
+}

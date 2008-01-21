@@ -80,7 +80,7 @@
 	<caption label='&sabstatus.nzbd_caption.label;' />
 	<hbox align='center'>
 		<label control='saburl' value='&sabstatus.pref_saburl.value;' />
-		<textbox preference='saburl' id='saburl' flex='1' />
+		<textbox preference='saburl' id='saburl' flex='1' onblur='ensureEndSlash();' />
 	</hbox>
 	<hbox align='center'>
 		<checkbox label='&sabstatus.pref_sendfiles.label;' preference='sendfiles' id='sabsendfiles' />
