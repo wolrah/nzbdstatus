@@ -222,8 +222,16 @@ SABnzbdStatusObject.prototype = {
 			}
 			else if ("@mozilla.org/login-manager;1" in Components.classes)
 			{
-				 // Login Manager exists so this is Firefox 3
-				 // Login Manager code
+				// Login Manager exists so this is Firefox 3
+				var passwordManager = Components.classes["@mozilla.org/login-manager;1"]
+				 .getService(Components.interfaces.nsILoginManager);
+				var logins = myLoginManager.findLogins({}, rootUrl, rootUrl, null);
+				if (logins.length > 0)
+				{
+					SABnzbdStatus.setPreference('sabusername', logins[0].username);
+					SABnzbdStatus.setPreference('sabpassword', logins[0].password);
+					notFound = false;
+				}
 			}
 			if (notFound)
 			{
@@ -946,6 +954,10 @@ SABnzbdStatusObject.prototype = {
 					this.setPreference('addID', 'api');
 					this.setPreference('addFile', 'api');
 				}
+			case 'sabusername':
+			case 'sabpassword':
+				this._askForPass = false;
+				break;
 		}
 	}
 
