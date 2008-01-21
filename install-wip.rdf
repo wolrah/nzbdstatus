@@ -3,7 +3,7 @@
 	<Description about="urn:mozilla:install-manifest">
 		<!-- Extension Settings -->
 		<em:id>sabnzbdstatus@dq5studios.com</em:id>
-		<em:version>1.0.0b7</em:version>
+		<em:version>1.0.0rc1</em:version>
 		<em:type>2</em:type>
 		<em:homepageURL>http://shsc.info/newsgroups</em:homepageURL>
 		<em:iconURL>chrome://sabnzbdstatus/skin/icon.png</em:iconURL>
