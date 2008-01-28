@@ -533,43 +533,43 @@ SABnzbdStatusObject.prototype = {
 		var doc = e.originalTarget;
 		if (!doc.location)
 		{
-			throw('536');//return;
+			return;
 		}
 		// Make sure we are on the right site or close to it
 		if ((doc.location.href.search('v3.newzbin') == -1) && (doc.location.href.search('newzxxx') == -1))
 		{
-			throw('541');//return;
+			return;
 		}
 		if (!SABnzbdStatus.getPreference('enableInNewzbin'))
 		{
 			// They'ved turned off the NewzBin features
-			throw('546');//return;
+			return;
 		}
 		var loggedIn = SABnzbdStatus.selectSingleNode(doc, doc, '//a[contains(@href,"/account/logout/")]');
 		if (!loggedIn)
 		{
 			// Not logged in so drop out because they probably don't have a NewzBin account
-			throw('557');//return;
+			return;
 		}
 		// Report detail move
 		if (doc.getElementById('ReportInfoPH'))
 		{
 			SABnzbdStatus.reportSummaryPage(doc);
-			throw('563');//return;
+			return;
 		}
 		// Report browser mode
 		var results = SABnzbdStatus.selectNodes(doc, doc, '//table[@summary="Post query results"]/tbody/tr');
 		if (results != null && results.length > 0)
 		{
 			SABnzbdStatus.listingsPage(doc);
-			throw('570');//return;
+			return;
 		}
 		// File browser mode
 		results = SABnzbdStatus.selectNodes(doc, doc, '//table[@summary="File query results"]/tbody/tr');
 		if (results != null && results.length > 0)
 		{
 			SABnzbdStatus.filesPage(doc);
-			throw('577');//return;
+			return;
 		}
 
 		} catch(e) { dump('onPageLoad error: '+e+'\n'); }
@@ -601,7 +601,7 @@ SABnzbdStatusObject.prototype = {
 		var results = SABnzbdStatus.selectNodes(doc, doc, '//table[@summary="Post query results"]/tbody[not(@class="dateLine")]');
 		if (results.length == 1 && (results[0].textContent.search('No results') > -1))
 		{
-			throw('609');//return;
+			return;
 		}
 		var row, postId, sendTo, oldTo, rowcount = results.length;
 		for (i = 0; i < rowcount; i++)
@@ -610,7 +610,6 @@ SABnzbdStatusObject.prototype = {
 			oldTo = SABnzbdStatus.selectSingleNode(doc, row, 'tr/td/a[@title="Download report NZB"]');
 			if (oldTo == null)
 			{
-				throw('618');//
 				continue;
 			}
 			postId = oldTo.href.match(/post\/(\d+)\//);
