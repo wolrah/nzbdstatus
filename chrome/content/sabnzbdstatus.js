@@ -533,48 +533,43 @@ SABnzbdStatusObject.prototype = {
 		var doc = e.originalTarget;
 		if (!doc.location)
 		{
-			return;
+			throw('536');//return;
 		}
 		// Make sure we are on the right site or close to it
-		if ((doc.location.href.search('newzbin') == -1) && (doc.location.href.search('newzxxx') == -1))
+		if ((doc.location.href.search('v3.newzbin') == -1) && (doc.location.href.search('newzxxx') == -1))
 		{
-			return;
+			throw('541');//return;
 		}
 		if (!SABnzbdStatus.getPreference('enableInNewzbin'))
 		{
 			// They'ved turned off the NewzBin features
-			return;
-		}
-		if (doc.getElementsByTagName('body')[0].id != 'newzbin')
-		{
-			// They're not in v3 so drop out until they learn better
-			return;
+			throw('546');//return;
 		}
 		var loggedIn = SABnzbdStatus.selectSingleNode(doc, doc, '//a[contains(@href,"/account/logout/")]');
 		if (!loggedIn)
 		{
 			// Not logged in so drop out because they probably don't have a NewzBin account
-			return;
+			throw('557');//return;
 		}
 		// Report detail move
 		if (doc.getElementById('ReportInfoPH'))
 		{
 			SABnzbdStatus.reportSummaryPage(doc);
-			return;
+			throw('563');//return;
 		}
 		// Report browser mode
 		var results = SABnzbdStatus.selectNodes(doc, doc, '//table[@summary="Post query results"]/tbody/tr');
 		if (results != null && results.length > 0)
 		{
 			SABnzbdStatus.listingsPage(doc);
-			return;
+			throw('570');//return;
 		}
 		// File browser mode
 		results = SABnzbdStatus.selectNodes(doc, doc, '//table[@summary="File query results"]/tbody/tr');
 		if (results != null && results.length > 0)
 		{
 			SABnzbdStatus.filesPage(doc);
-			return;
+			throw('577');//return;
 		}
 
 		} catch(e) { dump('onPageLoad error: '+e+'\n'); }
@@ -601,10 +596,12 @@ SABnzbdStatusObject.prototype = {
 
 	listingsPage: function(doc)
 	{
+		try {
+
 		var results = SABnzbdStatus.selectNodes(doc, doc, '//table[@summary="Post query results"]/tbody[not(@class="dateLine")]');
 		if (results.length == 1 && (results[0].textContent.search('No results') > -1))
 		{
-			return;
+			throw('609');//return;
 		}
 		var row, postId, sendTo, oldTo, rowcount = results.length;
 		for (i = 0; i < rowcount; i++)
@@ -613,15 +610,19 @@ SABnzbdStatusObject.prototype = {
 			oldTo = SABnzbdStatus.selectSingleNode(doc, row, 'tr/td/a[@title="Download report NZB"]');
 			if (oldTo == null)
 			{
+				throw('618');//
 				continue;
 			}
 			postId = oldTo.href.match(/post\/(\d+)\//);
+			dump(postId);
 			row.addEventListener('click', SABnzbdStatus.newzbinRowClick, false);
 			postId = postId[1];
 			sendTo = SABnzbdStatus.makeSendIcon(doc, postId);
 			oldTo = SABnzbdStatus.selectSingleNode(doc, row, 'tr/td/a[@title="Download report NZB"]');
 			oldTo.parentNode.replaceChild(sendTo, oldTo);
 		}
+
+		} catch(e) { dump('listingsPage error: '+e+'\n'); }
 	},
 
 	filesPage: function(doc)
