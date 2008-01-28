@@ -545,14 +545,12 @@ SABnzbdStatusObject.prototype = {
 			// They'ved turned off the NewzBin features
 			return;
 		}
-		var engine = doc.getElementsByTagName('body')[0].id;
-		if (engine != 'newzbin')
+		if (doc.getElementsByTagName('body')[0].id != 'newzbin')
 		{
 			// They're not in v3 so drop out until they learn better
 			return;
 		}
-		var loggedIn = SABnzbdStatus.selectNodes(doc, doc, '//input[@name="username"]');
-		loggedIn = (loggedIn.length == 0);
+		var loggedIn = SABnzbdStatus.selectSingleNode(doc, doc, '//a[contains(@href,"/account/logout/")]');
 		if (!loggedIn)
 		{
 			// Not logged in so drop out because they probably don't have a NewzBin account
