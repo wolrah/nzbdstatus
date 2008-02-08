@@ -613,7 +613,6 @@ SABnzbdStatusObject.prototype = {
 				continue;
 			}
 			postId = oldTo.href.match(/post\/(\d+)\//);
-			dump(postId);
 			row.addEventListener('click', SABnzbdStatus.newzbinRowClick, false);
 			postId = postId[1];
 			sendTo = SABnzbdStatus.makeSendIcon(doc, postId);
@@ -641,7 +640,10 @@ SABnzbdStatusObject.prototype = {
 				oldTo = SABnzbdStatus.selectSingleNode(doc, row, 'tr/td/a[@title="Assigned; click to view Report"]');
 				postId = oldTo.href.match(/post\/(\d+)\//)[1];
 				sendTo = SABnzbdStatus.makeSendIcon(doc, postId);
-				oldTo.parentNode.replaceChild(sendTo, oldTo);
+				oldTo.parentNode.insertBefore(sendTo, oldTo);
+				oldTo.parentNode.insertBefore(doc.createTextNode('\t'), oldTo);
+				oldTo.parentNode.insertBefore(doc.createTextNode('\t'), oldTo);
+				oldTo.parentNode.style.whiteSpace = 'nowrap';
 			}
 		}
 	},
@@ -660,11 +662,12 @@ SABnzbdStatusObject.prototype = {
 		var sendTo = doc.createElement('img');
 		sendTo.src = SABnzbdStatus.getPreference('iconDownload');
 		sendTo.alt = postId;
-		sendTo.className = 'sabsend';
-		sendTo.title = 'Send to SABnzbd';
-		sendTo.style.cursor = 'pointer';
-		sendTo.addEventListener('click', SABnzbdStatus.sendToSAB, false);
-		return sendTo;
+		var sendToA = doc.createElement('a');
+		sendToA.className = 'sabsend';
+		sendToA.title = 'Send to SABnzbd';
+		sendToA.addEventListener('click', SABnzbdStatus.sendToSAB, false);
+		sendToA.appendChild(sendTo);
+		return sendToA;
 	},
 
 	checkForNZB: function()
