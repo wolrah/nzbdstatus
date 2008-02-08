@@ -358,6 +358,12 @@ SABnzbdStatusObject.prototype = {
 		}
 	},
 
+	goActiveSoon: function()
+	{
+		// Have a one second delay between sending data to the daemon and asking for a refresh
+		window.setTimeout(this.goActive, 1000);
+	},
+
 	convertSecondsToTime: function(seconds)
 	{
 		var d = new Date();
@@ -731,6 +737,7 @@ SABnzbdStatusObject.prototype = {
 		fullUrl += postid + '&pp=' + SABnzbdStatus.getPreference('newzbinToSAB');
 		var xmlHttp = SABnzbdStatus.xmlHttp;
 		xmlHttp.open('GET', fullUrl, true);
+		xmlHttp.onload = SABnzbdStatus.goActiveSoon;
 		xmlHttp.send(null);
 
 		this.parentNode.parentNode.parentNode.style.opacity = '.25';
@@ -766,6 +773,7 @@ SABnzbdStatusObject.prototype = {
 		fullUrl += encodeURIComponent(href) + '&pp=' + SABnzbdStatus.getPreference('newzbinToSAB');
 		var xmlHttp = SABnzbdStatus.xmlHttp;
 		xmlHttp.open('GET', fullUrl, true);
+		xmlHttp.onload = SABnzbdStatus.goActiveSoon;
 		xmlHttp.send(null);
 		gContextMenu.target.style.opacity = '.25';
 
@@ -801,7 +809,7 @@ SABnzbdStatusObject.prototype = {
 		xmlHttp.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
 		xmlHttp.setRequestHeader('Connection', 'close');
 		xmlHttp.setRequestHeader('Content-Length', requestbody.length);
-		xmlHttp.onload = SABnzbdStatus.goActive;
+		xmlHttp.onload = SABnzbdStatus.goActiveSoon;
 		xmlHttp.send(requestbody);
 
 		} catch(e) { dump('uploadFile:'+e+'\n'); }
