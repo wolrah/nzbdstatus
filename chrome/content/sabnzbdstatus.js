@@ -666,12 +666,11 @@ SABnzbdStatusObject.prototype = {
 		var sendTo = doc.createElement('img');
 		sendTo.src = SABnzbdStatus.getPreference('iconDownload');
 		sendTo.alt = postId;
-		var sendToA = doc.createElement('a');
-		sendToA.className = 'sabsend';
-		sendToA.title = 'Send to SABnzbd';
-		sendToA.addEventListener('click', SABnzbdStatus.sendToSAB, false);
-		sendToA.appendChild(sendTo);
-		return sendToA;
+		sendTo.className = 'sabsend';
+		sendTo.title = 'Send to SABnzbd';
+		sendTo.style.cursor = 'pointer';
+		sendTo.addEventListener('click', SABnzbdStatus.sendToSAB, false);
+		return sendTo;
 	},
 
 	checkForNZB: function()
