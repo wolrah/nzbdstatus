@@ -740,7 +740,7 @@ SABnzbdStatusObject.prototype = {
 		xmlHttp.onload = SABnzbdStatus.goActiveSoon;
 		xmlHttp.send(null);
 
-		this.parentNode.parentNode.parentNode.style.opacity = '.25';
+		this.style.opacity = '.25';
 
 		} catch(e) { dump('sendtosab error: '+e+'\n'); }
 	},
