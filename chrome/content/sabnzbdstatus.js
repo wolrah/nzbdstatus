@@ -407,81 +407,85 @@ SABnzbdStatusObject.prototype = {
 
 		var status, speed, totalTimeRemain, totalMb, totalMbRemain, totalPer, curDL, curTime, curMbRemain;
 		var finSpace, queue;
-		switch (SABnzbdStatus.getPreference('template'))
+		if (!SABnzbdStatus.getPreference('legacyMode'))
 		{
-			case 'None':
-				try {
-				queue = eval('('+output+')');
-				} catch(e) { return; }
-				speed = queue.kbpersec;
-				totalMbRemain = queue.mbleft;
-				totalMb = queue.mb;
-				if (queue.noofslots > 0)
-				{
-					curDL = queue.jobs[0].filename.replace(/\.nzb/ig, '');
-					curMbRemain = queue.jobs[0].mbleft;
-				}
-				finSpace = queue.diskspace1;
-				if (queue.paused)
-				{
-					status = 'pause';
-				}
-				break;
-			case 'Plush':
-				try {
-				queue = eval('('+output.match(/nzbdStatus\s+((?:.|\s)*)\s+-->/)[1]+')');
-				} catch(e) { return; }
-				speed = queue.kbpersec;
-				totalMbRemain = queue.mbleft;
-				totalMb = queue.mb;
-				if (queue.noofslots > 0)
-				{
-					curDL = queue.jobs[0].filename.replace(/\.nzb/ig, '');
-					curMbRemain = queue.jobs[0].mbleft;
-				}
-				finSpace = queue.diskspace1;
-				if (queue.paused == 'True')
-				{
-					status = 'pause';
-				}
-				break;
-			case 'Nova 0.4':
-				try {
-				queue = eval('('+output+')');
-				} catch(e) { return; }
-				speed = queue.kbpersec;
-				totalMbRemain = queue.mbleft;
-				totalMb = queue.mb;
-				if (queue.noofslots > 0)
-				{
-					curDL = queue.jobs[0].filename.replace(/\.nzb/ig, '');
-					curMbRemain = queue.jobs[0].mbleft;
-				}
-				finSpace = queue.diskspace1;
-				if (queue.paused == 'True')
-				{
-					status = 'pause';
-				}
-				break;
-			case 'Nova 0.3':
-				try {
-				queue = eval('('+output.match(/SABNZBDJSON\s+((?:.|\s)*)\s+-->/)[1]+')');
-				} catch(e) { return; }
-				speed = queue.speed;
-				totalMbRemain = queue.left;
-				totalMb = queue.total;
-				if (queue.jobs.length > 0)
-				{
-					curDL = queue.jobs[0].name.replace(/\.nzb/ig, '');
-					curMbRemain = queue.jobs[0].left;
-				}
-				finSpace = queue.freecomp;
-				if (queue.paused == 'True')
-				{
-					status = 'pause';
-				}
-				break;
-			default:
+			try {
+			queue = eval('('+output+')');
+			} catch(e) { return; }
+			speed = queue.kbpersec;
+			totalMbRemain = queue.mbleft;
+			totalMb = queue.mb;
+			if (queue.noofslots > 0)
+			{
+				curDL = queue.jobs[0].filename.replace(/\.nzb/ig, '');
+				curMbRemain = queue.jobs[0].mbleft;
+			}
+			finSpace = queue.diskspace1;
+			if (queue.paused)
+			{
+				status = 'pause';
+			}
+		}
+		else
+		{
+			switch (SABnzbdStatus.getPreference('template'))
+			{
+				case 'Plush':
+					try {
+					queue = eval('('+output.match(/nzbdStatus\s+((?:.|\s)*)\s+-->/)[1]+')');
+					} catch(e) { return; }
+					speed = queue.kbpersec;
+					totalMbRemain = queue.mbleft;
+					totalMb = queue.mb;
+					if (queue.noofslots > 0)
+					{
+						curDL = queue.jobs[0].filename.replace(/\.nzb/ig, '');
+						curMbRemain = queue.jobs[0].mbleft;
+					}
+					finSpace = queue.diskspace1;
+					if (queue.paused == 'True')
+					{
+						status = 'pause';
+					}
+					break;
+				case 'Nova 0.4':
+					try {
+					queue = eval('('+output+')');
+					} catch(e) { return; }
+					speed = queue.kbpersec;
+					totalMbRemain = queue.mbleft;
+					totalMb = queue.mb;
+					if (queue.noofslots > 0)
+					{
+						curDL = queue.jobs[0].filename.replace(/\.nzb/ig, '');
+						curMbRemain = queue.jobs[0].mbleft;
+					}
+					finSpace = queue.diskspace1;
+					if (queue.paused == 'True')
+					{
+						status = 'pause';
+					}
+					break;
+				case 'Nova 0.3':
+					try {
+					queue = eval('('+output.match(/SABNZBDJSON\s+((?:.|\s)*)\s+-->/)[1]+')');
+					} catch(e) { return; }
+					speed = queue.speed;
+					totalMbRemain = queue.left;
+					totalMb = queue.total;
+					if (queue.jobs.length > 0)
+					{
+						curDL = queue.jobs[0].name.replace(/\.nzb/ig, '');
+						curMbRemain = queue.jobs[0].left;
+					}
+					finSpace = queue.freecomp;
+					if (queue.paused == 'True')
+					{
+						status = 'pause';
+					}
+					break;
+				default:
+			}
 		}
 
 		if (status == 'pause')
