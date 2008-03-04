@@ -351,7 +351,14 @@ SABnzbdStatusObject.prototype = {
 		this.statusicon.src = this.getPreference('iconDownload');
 		this.statusbar.setAttribute('tooltip', 'sabstatus-info');
 		this.statusbar.style.visibility = 'visible';
-		this.statuslabel.style.visibility = 'visible';
+		if (this.getPreference('onlyShowIcon'))
+		{
+			this.statuslabel.style.visibility = 'collapse';
+		}
+		else
+		{
+			this.statuslabel.style.visibility = 'visible';
+		}
 		if (this.countdownId == null)
 		{
 			this.countdownId = window.setInterval(this.countdown, 1000);
