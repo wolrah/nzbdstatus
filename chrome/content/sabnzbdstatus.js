@@ -13,8 +13,8 @@
 //      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 //      MA 02110-1301, USA.
 
-// Based off inpheaux's SABnzbd/Newzbin Greasemonkey script
-// (c) 2007 Ben Dusinberre
+// Originally based off inpheaux's SABnzbd/Newzbin Greasemonkey script, has deviated a bit since then
+// (c) 2008 Ben Dusinberre
 
 // The SABnzbdStatusObject definition itself
 function SABnzbdStatusObject()
@@ -367,8 +367,8 @@ SABnzbdStatusObject.prototype = {
 
 	goActiveSoon: function()
 	{
-		// Have a one second delay between sending data to the daemon and asking for a refresh
-		window.setTimeout(this.goActive, 1000);
+		// Have a five second delay between sending data to the daemon and asking for a refresh
+		window.setTimeout(this.goActive, 5000);
 	},
 
 	convertSecondsToTime: function(seconds)
@@ -905,6 +905,8 @@ SABnzbdStatusObject.prototype = {
 		siStream.close();
 		fiStream.close();
 		this.uploadFile(fileDetails.path, data);
+		// Delete file file now that we're done with it
+		file.remove(false);
 
 		} catch(e) { dump('observeFileDownload:'+e+'\n'); }
 	},
