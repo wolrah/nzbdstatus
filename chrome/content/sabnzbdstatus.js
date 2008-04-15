@@ -568,21 +568,22 @@ SABnzbdStatusObject.prototype = {
 			// Not logged in so drop out because they probably don't have a NewzBin account
 			return;
 		}
-		// Report detail move
-		if (doc.getElementById('ReportInfoPH'))
+		// Report detail mode
+		var results = SABnzbdStatus.selectNodes(doc, doc, '//form[@id="PostEdit"][contains(@action,"/browse/post/")]');
+		if (results != null && results.length > 0)
 		{
 			SABnzbdStatus.reportSummaryPage(doc);
 			return;
 		}
 		// Report browser mode
-		var results = SABnzbdStatus.selectNodes(doc, doc, '//table[@summary="Post query results"]/tbody/tr');
+		results = SABnzbdStatus.selectNodes(doc, doc, '//a[contains(@href, "/nzb")][@title="Download report NZB"]');
 		if (results != null && results.length > 0)
 		{
 			SABnzbdStatus.listingsPage(doc);
 			return;
 		}
 		// File browser mode
-		results = SABnzbdStatus.selectNodes(doc, doc, '//table[@summary="File query results"]/tbody/tr');
+		results = SABnzbdStatus.selectNodes(doc, doc, '//form[contains(@action,"/database/fileactions/")]');
 		if (results != null && results.length > 0)
 		{
 			SABnzbdStatus.filesPage(doc);
@@ -594,7 +595,7 @@ SABnzbdStatusObject.prototype = {
 
 	reportSummaryPage: function(doc)
 	{
-		var isFinished = SABnzbdStatus.selectSingleNode(doc, doc, '//span[text()="Finished"]');
+		var isFinished = SABnzbdStatus.selectSingleNode(doc, doc, '//img[@title="Report is complete"]');
 		if (isFinished == null)
 		{
 			return;
@@ -606,16 +607,16 @@ SABnzbdStatusObject.prototype = {
 		sendTo.className = 'sabsend';
 		sendTo.title = 'Send to SABnzbd';
 		sendTo.style.cursor = 'pointer';
-		sendTo.style.paddingLeft = '1em';
+		sendTo.style.marginRight = '1em';
 		sendTo.addEventListener('click', SABnzbdStatus.sendToSAB, false);
-		isFinished.appendChild(sendTo);
+		isFinished.parentNode.insertBefore(sendTo, isFinished);
 	},
 
 	listingsPage: function(doc)
 	{
 		try {
 
-		var results = SABnzbdStatus.selectNodes(doc, doc, '//table[@summary="Post query results"]/tbody[not(@class="dateLine")]');
+		var results = SABnzbdStatus.selectNodes(doc, doc, '//form/table/tbody[not(@class="dateLine")]');  // Can't really make it any more specific and have it work in lite and regular still
 		if (results.length == 1 && (results[0].textContent.search('No results') > -1))
 		{
 			return;
@@ -642,7 +643,7 @@ SABnzbdStatusObject.prototype = {
 
 	filesPage: function(doc)
 	{
-		var results = SABnzbdStatus.selectNodes(doc, doc, '//table[@summary="File query results"]/tbody[not(@class="dateLine")]');
+		var results = SABnzbdStatus.selectNodes(doc, doc, '//form[contains(@action,"/database/fileactions/")]/table/tbody[not(@class="dateLine")]');
 		if (results.length == 1 && (results[0].textContent.search('No results') > -1))
 		{
 			return;
@@ -668,6 +669,10 @@ SABnzbdStatusObject.prototype = {
 	newzbinRowClick: function(e)
 	{
 		if ((e.target.nodeName.toLowerCase() == 'input') || (e.target.nodeName.toLowerCase() == 'img'))
+		{
+			return;
+		}
+		if (SABnzbdStatus.getPreference('editorMode'))
 		{
 			return;
 		}
