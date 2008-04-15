@@ -28,3 +28,5 @@ pref('extensions.sabnzbdstatus.newzbinToSAB', 3);
 
 pref('extensions.sabnzbdstatus.enableFilesToSAB', true);
 pref('extensions.sabnzbdstatus.filesToSAB', 3);
+
+pref('extensions.sabnzbdstatus.editorMode', false);
