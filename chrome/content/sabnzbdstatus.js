@@ -39,6 +39,7 @@ SABnzbdStatusObject.prototype = {
 	 .getService(Components.interfaces.nsIObserverService),
 	_askForPass: false,
 	_queueHttp: new XMLHttpRequest(), // One httpRequest object for the queue tracking
+	_historyHttp: new XMLHttpRequest(), // One httpRequest object for the history monitoring
 
 
 	// Getters
@@ -65,6 +66,12 @@ SABnzbdStatusObject.prototype = {
 	get queueHttp()
 	{
 		return this._queueHttp;
+	},
+
+	// Ajax for the history only to prevent conflicts
+	get historyHttp()
+	{
+		return this._historyHttp;
 	},
 
 
@@ -135,6 +142,17 @@ SABnzbdStatusObject.prototype = {
 			result[i] = nodes.snapshotItem(i);
 		}
 		return result;
+	},
+
+	sendAlert: function(icon, title, message)
+	{
+		try {
+
+		var alertsService = Components.classes["@mozilla.org/alerts-service;1"]
+		 .getService(Components.interfaces.nsIAlertsService);
+		alertsService.showAlertNotification(icon, title, message, false, "", null, "nzbdStatus");
+
+		} catch(e) {}
 	},
 
 	sendPause: function()
@@ -236,7 +254,8 @@ SABnzbdStatusObject.prototype = {
 			if (notFound)
 			{
 				// Didn't find it so we'll ask them
-				window.openDialog('chrome://sabnzbdstatus/content/configuration.xul','sabnzb-prefs','chrome,dependent,titlebar,toolbar,centerscreen,resizable','sabnzb-sab');
+				window.openDialog('chrome://sabnzbdstatus/content/configuration.xul','sabnzb-prefs',
+				 'chrome,dependent,titlebar,toolbar,centerscreen,resizable','sabnzb-sab');
 			}
 		}
 		SABnzbdStatus.refreshStatus();
@@ -293,7 +312,6 @@ SABnzbdStatusObject.prototype = {
 				window.open(SABurl);
 				break;
 		}
-
 
 		} catch(e) { dump('clickedOn error:'+e); }
 	},
@@ -363,6 +381,7 @@ SABnzbdStatusObject.prototype = {
 		{
 			this.countdownId = window.setInterval(this.countdown, 1000);
 		}
+		//this.refreshStatus();
 	},
 
 	goActiveSoon: function()
@@ -398,6 +417,57 @@ SABnzbdStatusObject.prototype = {
 		d.setUTCMinutes(timeArray[1]);
 		d.setUTCSeconds(timeArray[2]);
 		return Math.floor(d.getTime() / 1000);
+	},
+
+	historyReceived: function()
+	{
+		try {
+
+		var nzbHistory = SABnzbdStatus.historyHttp.responseText;
+		if (nzbHistory == '')
+		{
+			return;
+		}
+
+		if (nzbHistory.search(/<title>Login<\/title>/i) > -1)
+		{
+			SABnzbdStatus.loginToSAB();
+			return;
+		}
+
+		nzbHistory = SABnzbdStatus.historyHttp.responseXML;
+
+		var lastBuildDate = Date.parse(nzbHistory.getElementsByTagName('lastBuildDate').item(0).firstChild.data);
+		var timeNow = Date.parse(Date());
+		var refreshRate = SABnzbdStatus.getPreference('refreshRate');
+		// It hasn't updated since the last check
+		if (((timeNow - lastBuildDate) / 60000) > refreshRate)
+		{
+			return;
+		}
+
+		var fileList = nzbHistory.getElementsByTagName('item');
+		var fileCount = fileList.length;
+		var pubDate, nzbDescription;
+		for (i = 0; i < fileCount; i++)
+		{
+			pubDate = Date.parse(fileList[i].getElementsByTagName('pubDate').item(0).firstChild.data);
+			// We've already checked it
+			if (((timeNow - pubDate) / 60000) > refreshRate)
+			{
+				break;
+			}
+			nzbDescription = fileList[i].getElementsByTagName('description').item(0).firstChild.data;
+			if (nzbDescription.search(/processing/i) > -1)
+			{
+				// It's finished, send an alert
+				alertMessage = 'Post processing on ' + fileList[i].getElementsByTagName('title').item(i).firstChild.data + ' has finished';
+				SABnzbdStatus.sendAlert('chrome://sabnzbdstatus/skin/sabnzbd.png', 'Download Completed', alertMessage);
+			}
+		}
+
+		} catch(e) { dump('historyReceived error:' + e); }
+
 	},
 
 	queueReceived: function()
@@ -539,6 +609,12 @@ SABnzbdStatusObject.prototype = {
 		SABnzbdStatus.queueHttp.onload = SABnzbdStatus.queueReceived;
 		SABnzbdStatus.queueHttp.send(null);
 
+		var historyUrl = SABnzbdStatus.getPreference('sabUrl') + SABnzbdStatus.getPreference('historyUrl');
+		SABnzbdStatus.historyHttp.open('GET', historyUrl, true);
+		SABnzbdStatus.historyHttp.overrideMimeType('text/xml');
+		SABnzbdStatus.historyHttp.onload = SABnzbdStatus.historyReceived;
+		SABnzbdStatus.historyHttp.send(null);
+
 		} catch(e) { dump('refresh error:' + e); }
 	},
 
@@ -552,7 +628,7 @@ SABnzbdStatusObject.prototype = {
 		{
 			return;
 		}
-		// Make sure we are on the right site or close to it
+		// Make sure we are on a supported version of Newzbin
 		if ((doc.location.href.search('v3.newzbin') == -1) && (doc.location.href.search('newzxxx') == -1))
 		{
 			return;
@@ -568,6 +644,23 @@ SABnzbdStatusObject.prototype = {
 			// Not logged in so drop out because they probably don't have a NewzBin account
 			return;
 		}
+		var newzbinJS = doc.createElement('script');
+		newzbinJS.type = 'text/javascript';
+		newzbinJS.src = 'chrome://sabnzbdstatus/content/newzbin.js';
+		doc.getElementsByTagName('head')[0].appendChild(newzbinJS);
+		var newzbinCSS = doc.createElement('link');
+		newzbinCSS.rel = 'stylesheet';
+		newzbinCSS.type = 'text/css';
+		newzbinCSS.href = 'chrome://sabnzbdstatus/content/newzbin.css';
+		doc.getElementsByTagName('head')[0].appendChild(newzbinCSS);
+		var serverList = doc.createElement('ul');
+		serverList.id = 'serverList';
+		serverList.className ='nzbdservers';
+		serverList.innerHTML = '<li><img src="chrome://sabnzbdstatus/skin/download.png" alt="">Server 1</li><li><img src="chrome://sabnzbdstatus/skin/download.png" alt="">Server 2</li><li><img src="chrome://sabnzbdstatus/skin/download.png" alt="">Server 3</li><li><img src="chrome://sabnzbdstatus/skin/download.png" alt="">Server 4</li><li><img src="chrome://sabnzbdstatus/skin/download.png" alt="">Server 5</li>';
+		serverList.addEventListener('mouseover', function(e){var doc = e.target.ownerDocument;doc.getElementById('serverList').style.display='block';}, false);
+		serverList.addEventListener('mouseout', function(e){var doc = e.target.ownerDocument;doc.getElementById('serverList').style.display='none';}, false);
+		doc.getElementsByTagName('body')[0].appendChild(serverList);
+
 		// Report detail mode
 		var results = SABnzbdStatus.selectNodes(doc, doc, '//form[@id="PostEdit"][contains(@action,"/browse/post/")]');
 		if (results != null && results.length > 0)
@@ -601,15 +694,7 @@ SABnzbdStatusObject.prototype = {
 			return;
 		}
 		var postId = doc.location.pathname.match(/(\d+)/)[1];
-		sendTo = doc.createElement('img');
-		sendTo.src = SABnzbdStatus.getPreference('iconDownload');
-		sendTo.alt = postId;
-		sendTo.className = 'sabsend';
-		sendTo.title = 'Send to SABnzbd';
-		sendTo.style.cursor = 'pointer';
-		sendTo.style.marginRight = '1em';
-		sendTo.addEventListener('click', SABnzbdStatus.sendToSAB, false);
-		isFinished.parentNode.insertBefore(sendTo, isFinished);
+		isFinished.parentNode.insertBefore(makeSendIcon(doc, postId), isFinished);
 	},
 
 	listingsPage: function(doc)
@@ -686,9 +771,28 @@ SABnzbdStatusObject.prototype = {
 		sendTo.alt = postId;
 		sendTo.className = 'sabsend';
 		sendTo.title = 'Send to SABnzbd';
-		sendTo.style.cursor = 'pointer';
 		sendTo.addEventListener('click', SABnzbdStatus.sendToSAB, false);
+		sendTo.addEventListener('mouseover', SABnzbdStatus.showServerList, false);
+		sendTo.addEventListener('mouseout', SABnzbdStatus.hideServerList, false);
 		return sendTo;
+	},
+
+	showServerList: function(e)
+	{
+		var doc = e.target.ownerDocument, targ = e.target;
+		var sList = doc.getElementById('serverList');
+		sList.style.display = 'block';
+		sList.style.left = (e.originalTarget.x + targ.offsetWidth) + 'px';
+		sList.style.top = (e.originalTarget.y - Math.floor((sList.offsetHeight - targ.offsetHeight) / 2)) + 'px';
+		return;
+	},
+
+	hideServerList: function(e)
+	{
+		var doc = e.target.ownerDocument;
+		var sList = doc.getElementById('serverList');
+		sList.style.display = 'none';
+		return;
 	},
 
 	checkForNZB: function()
