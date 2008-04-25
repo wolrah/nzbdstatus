@@ -55,7 +55,7 @@
 </groupbox>
 </prefpane>
 
-<prefpane id='sabnzb-sab' label='SABnzbd' image='chrome://sabnzbdstatus/skin/sabnzbd.png'>
+<prefpane id='sabnzb-sab' label='Servers' image='chrome://sabnzbdstatus/skin/server.png'>
 	<preferences>
 		<preference id='sabuser' name='extensions.sabnzbdstatus.sabusername' type='string' />
 		<preference id='sabpass' name='extensions.sabnzbdstatus.sabpassword' type='string' />
@@ -65,40 +65,71 @@
 		<preference id='sendfiles' name='extensions.sabnzbdstatus.enableFilesToSAB' type='bool' />
 	</preferences>
 
+<hbox>
+	<button label='Add Server' icon='add' />
+	<button label='Test All Servers' icon='network' />
+</hbox>
 <groupbox>
-	<caption label='&sabstatus.login_caption.label;' />
-	<hbox align='center'>
-		<label control='sabuser' value='&sabstatus.pref_sabuser.value;' />
-		<textbox preference='sabuser' id='sabuser' flex='1' />
-	</hbox>
-	<hbox align='center'>
-		<label control='sabpass' value='&sabstatus.pref_sabpass.value;' />
-		<textbox preference='sabpass' id='sabpass' type='password' flex='1' />
-	</hbox>
-</groupbox>
-<groupbox>
-	<caption label='&sabstatus.nzbd_caption.label;' />
-	<hbox align='center'>
-		<label control='saburl' value='&sabstatus.pref_saburl.value;' />
-		<textbox preference='saburl' id='saburl' flex='1' onblur='ensureEndSlash();' />
-	</hbox>
-	<hbox align='center'>
-		<checkbox label='&sabstatus.pref_sendfiles.label;' preference='sendfiles' id='sabsendfiles' />
-	</hbox>
-	<hbox align='center'>
-		<checkbox label='&sabstatus.pref_legacy.label;' preference='legacymode' id='sablegacy' onclick='legacyClicked();' />
-	</hbox>
-	<hbox align='center'>
-		<label control='sabtheme' value='&sabstatus.pref_sabtheme.value;' />
-		<menulist disabled='true' preference='sabtheme' id='sabtheme' flex='1'>
-			<menupopup>
-				<menuitem label='Nova 0.3.2' value='Nova 0.3' />
-				<menuitem label='Nova 0.4.*' value='Nova 0.4' />
-				<menuitem label='Plush, SMPL' value='Plush' />
-				<menuitem label='None' value='None' />
-			</menupopup>
-		</menulist>
-	</hbox>
+	<caption label='Server 1' />
+	<grid>
+		<columns>
+			<column flex='1' />
+			<column />
+		</columns>
+		<rows>
+			<row>
+				<grid>
+					<columns>
+						<column />
+						<column flex='1' />
+					</columns>
+					<rows>
+						<row>
+							<hbox align='center'>
+								<label value='URL' />
+							</hbox>
+							<textbox flex='1' />
+						</row>
+						<row>
+							<hbox align='center'>
+								<label value='Name' />
+							</hbox>
+							<textbox flex='1' />
+						</row>
+					</rows>
+				</grid>
+				<vbox>
+					<button disabled='true' label='Move Up' />
+					<button label='Move Down' />
+				</vbox>
+			</row>
+			<row>
+				<hbox align='center'>
+					<label value='Server' />
+					<menulist>
+						<menupopup>
+							<menuitem label='SABnzbd+' value='SABnzbd+' />
+							<menuitem label='HellaNZB' value='HellaNZB' />
+						</menupopup>
+					</menulist>
+					<label value='Color' />
+					<menulist>
+						<menupopup>
+							<menuitem label='Yellow' value='yellow' image='chrome://sabnzbdstatus/skin/download.png'>
+								<image src='chrome://sabnzbdstatus/skin/download.png' />
+								<label value='Yellow' />
+							</menuitem>
+							<menuitem label='Red' value='red' image='chrome://sabnzbdstatus/skin/download.png'>
+								<image src='chrome://sabnzbdstatus/skin/download.png' />
+								<label value='Red' />
+							</menuitem>
+						</menupopup>
+					</menulist>
+				</hbox>
+				<button label='Delete' icon='remove' />
+			</row>
+		</rows>
+	</grid>
 </groupbox>
 
 </prefpane>
