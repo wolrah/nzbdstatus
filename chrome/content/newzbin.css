@@ -1,0 +1,33 @@
+img.sabsend {
+cursor:pointer;
+}
+
+ul.nzbdservers {
+list-style-type:none;
+font-size:12px;
+line-height:16px;
+padding:.5em 0;
+margin:0;
+border:1px solid black;
+background:#fff;
+position:absolute;
+display:none;
+top:0;
+left:0;
+}
+ul.nzbdservers li {
+padding:0 1em;
+cursor:pointer;
+}
+ul.nzbdservers li:hover {
+background:#bbb;
+}
+ul.nzbdservers li img {
+margin-right:.5em;
+}
+.hideme {
+display:none;
+}
+.showme {
+display:block;
+}
