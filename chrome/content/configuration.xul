@@ -55,21 +55,19 @@
 </groupbox>
 </prefpane>
 
-<prefpane id='sabnzb-sab' label='Servers' image='chrome://sabnzbdstatus/skin/server.png'>
+<prefpane id='nzbd-servers' label='Servers' image='chrome://sabnzbdstatus/skin/server.png'>
 	<preferences>
-		<preference id='sabuser' name='extensions.sabnzbdstatus.sabusername' type='string' />
-		<preference id='sabpass' name='extensions.sabnzbdstatus.sabpassword' type='string' />
-		<preference id='saburl' name='extensions.sabnzbdstatus.sabUrl' type='string' />
-		<preference id='sabtheme' name='extensions.sabnzbdstatus.template' type='string' />
-		<preference id='legacymode' name='extensions.sabnzbdstatus.legacyMode' type='bool' />
-		<preference id='sendfiles' name='extensions.sabnzbdstatus.enableFilesToSAB' type='bool' />
+		<preference id='nzburl1' name='extensions.nzbdstatus.servers.1.url' type='string' />
+		<preference id='nzblabel1' name='extensions.nzbdstatus.servers.1.label' type='string' />
+		<preference id='nzbtype1' name='extensions.nzbdstatus.servers.1.type' type='string' />
+		<preference id='nzbcolor1' name='extensions.nzbdstatus.servers.1.color' type='string' />
 	</preferences>
 
 <hbox>
-	<button label='Add Server' icon='add' />
+	<button label='Add Server' icon='add' oncommand='addServer();' />
 	<button label='Test All Servers' icon='network' />
 </hbox>
-<groupbox>
+<groupbox id='server1'>
 	<caption label='Server 1' />
 	<grid>
 		<columns>
@@ -88,13 +86,13 @@
 							<hbox align='center'>
 								<label value='URL' />
 							</hbox>
-							<textbox flex='1' />
+							<textbox flex='1' preference='nzburl1' />
 						</row>
 						<row>
 							<hbox align='center'>
 								<label value='Name' />
 							</hbox>
-							<textbox flex='1' />
+							<textbox flex='1' preference='nzblabel1' />
 						</row>
 					</rows>
 				</grid>
@@ -106,14 +104,14 @@
 			<row>
 				<hbox align='center'>
 					<label value='Server' />
-					<menulist>
+					<menulist preference='nzbtype1'>
 						<menupopup>
-							<menuitem label='SABnzbd+' value='SABnzbd+' />
-							<menuitem label='HellaNZB' value='HellaNZB' />
+							<menuitem label='SABnzbd+' value='sabnzbd+' />
+							<menuitem label='HellaNZB' value='hellanzb' />
 						</menupopup>
 					</menulist>
 					<label value='Color' />
-					<menulist>
+					<menulist preference='nzbcolor1'>
 						<menupopup>
 							<menuitem label='Yellow' value='yellow' image='chrome://sabnzbdstatus/skin/download.png'>
 								<image src='chrome://sabnzbdstatus/skin/download.png' />
