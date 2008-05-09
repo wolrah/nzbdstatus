@@ -46,3 +46,26 @@ function ensureEndSlash()
 		_preferences.setCharPref('sabUrl', sabUrl + '/');
 	}
 }
+
+function preferences()
+{
+	return Components.classes['@mozilla.org/preferences;1']
+	 .getService(Components.interfaces.nsIPrefService)
+	 .getBranch('extensions.nzbdstatus.');
+}
+
+function addServer()
+{
+	var serverCount = preferences().getIntPref('servers.count');
+	var newServer = document.getElementById('server'+serverCount).cloneNode(true);
+	serverCount++;
+	newServer.id = 'server' + serverCount;
+	var elems = newServer.getElementsByTagName('textbox');
+	elems[0].setAttribute('preference', elems[0].getAttribute('preference').replace(serverCount-1, serverCount));
+	elems[1].setAttribute('preference', elems[1].getAttribute('preference').replace(serverCount-1, serverCount));
+	var elems = newServer.getElementsByTagName('menulist');
+	elems[0].setAttribute('preference', elems[0].getAttribute('preference').replace(serverCount-1, serverCount));
+	elems[1].setAttribute('preference', elems[1].getAttribute('preference').replace(serverCount-1, serverCount));
+	document.getElementById('nzbd-servers').appendChild(newServer);
+	window.sizeToContent();
+}
