@@ -34,7 +34,7 @@ SABnzbdStatusObject.prototype = {
 	// Private variables
 	_preferences: Components.classes['@mozilla.org/preferences;1']
 	 .getService(Components.interfaces.nsIPrefService)
-	 .getBranch('extensions.sabnzbdstatus.'),
+	 .getBranch('extensions.nzbdstatus.'),
 	_observerService: Components.classes['@mozilla.org/observer-service;1']
 	 .getService(Components.interfaces.nsIObserverService),
 	_askForPass: false,
@@ -458,7 +458,7 @@ SABnzbdStatusObject.prototype = {
 				break;
 			}
 			nzbDescription = fileList[i].getElementsByTagName('description').item(0).firstChild.data;
-			if (nzbDescription.search(/processing/i) > -1)
+			if (nzbDescription.search(/Post-processing active/i) > -1)
 			{
 				// It's finished, send an alert
 				alertMessage = 'Post processing on ' + fileList[i].getElementsByTagName('title').item(i).firstChild.data + ' has finished';
@@ -618,6 +618,31 @@ SABnzbdStatusObject.prototype = {
 		} catch(e) { dump('refresh error:' + e); }
 	},
 
+	getServerUL: function(doc)
+	{
+		var serverList = doc.createElement('ul');
+		serverList.id = 'nzbdserverList';
+		serverList.className ='nzbdservers';
+		serverList.addEventListener('mouseover', function(e){var doc = e.target.ownerDocument;doc.getElementById('nzbdserverList').style.display='block';}, false);
+		serverList.addEventListener('mouseout', function(e){var doc = e.target.ownerDocument;doc.getElementById('nzbdserverList').style.display='none';}, false);
+
+		var serverCount = this.getPreference('servers.count');
+		var serverItem, serverName, serverColor, serverIcon;
+		for (var i = 1; i <= serverCount; i++)
+		{
+			serverItem = doc.createElement('li');
+			serverName = this.getPreference('servers.'+i+'.label');
+			serverColor = this.getPreference('servers.'+i+'.color');
+			serverIcon = doc.createElement('img');
+			serverIcon.setAttribute('src', 'chrome://sabnzbdstatus/skin/'+serverColor+'.png');
+			serverIcon.setAttribute('alt', serverName);
+			serverItem.appendChild(serverIcon);
+			serverItem.appendChild(doc.createTextNode(serverName));
+			serverList.appendChild(serverItem);
+		}
+		return serverList;
+	},
+
 	// This happens every page load
 	onPageLoad: function(e)
 	{
@@ -653,13 +678,7 @@ SABnzbdStatusObject.prototype = {
 		newzbinCSS.type = 'text/css';
 		newzbinCSS.href = 'chrome://sabnzbdstatus/content/newzbin.css';
 		doc.getElementsByTagName('head')[0].appendChild(newzbinCSS);
-		var serverList = doc.createElement('ul');
-		serverList.id = 'serverList';
-		serverList.className ='nzbdservers';
-		serverList.innerHTML = '<li><img src="chrome://sabnzbdstatus/skin/download.png" alt="">Server 1</li><li><img src="chrome://sabnzbdstatus/skin/download.png" alt="">Server 2</li><li><img src="chrome://sabnzbdstatus/skin/download.png" alt="">Server 3</li><li><img src="chrome://sabnzbdstatus/skin/download.png" alt="">Server 4</li><li><img src="chrome://sabnzbdstatus/skin/download.png" alt="">Server 5</li>';
-		serverList.addEventListener('mouseover', function(e){var doc = e.target.ownerDocument;doc.getElementById('serverList').style.display='block';}, false);
-		serverList.addEventListener('mouseout', function(e){var doc = e.target.ownerDocument;doc.getElementById('serverList').style.display='none';}, false);
-		doc.getElementsByTagName('body')[0].appendChild(serverList);
+		doc.getElementsByTagName('body')[0].appendChild(SABnzbdStatus.getServerUL(doc));
 
 		// Report detail mode
 		var results = SABnzbdStatus.selectNodes(doc, doc, '//form[@id="PostEdit"][contains(@action,"/browse/post/")]');
@@ -769,7 +788,7 @@ SABnzbdStatusObject.prototype = {
 		var sendTo = doc.createElement('img');
 		sendTo.src = SABnzbdStatus.getPreference('iconDownload');
 		sendTo.alt = postId;
-		sendTo.className = 'sabsend';
+		sendTo.className = 'nzbsend';
 		sendTo.title = 'Send to SABnzbd';
 		sendTo.addEventListener('click', SABnzbdStatus.sendToSAB, false);
 		sendTo.addEventListener('mouseover', SABnzbdStatus.showServerList, false);
@@ -780,7 +799,7 @@ SABnzbdStatusObject.prototype = {
 	showServerList: function(e)
 	{
 		var doc = e.target.ownerDocument, targ = e.target;
-		var sList = doc.getElementById('serverList');
+		var sList = doc.getElementById('nzbdserverList');
 		sList.style.display = 'block';
 		sList.style.left = (e.originalTarget.x + targ.offsetWidth) + 'px';
 		sList.style.top = (e.originalTarget.y - Math.floor((sList.offsetHeight - targ.offsetHeight) / 2)) + 'px';
@@ -790,7 +809,7 @@ SABnzbdStatusObject.prototype = {
 	hideServerList: function(e)
 	{
 		var doc = e.target.ownerDocument;
-		var sList = doc.getElementById('serverList');
+		var sList = doc.getElementById('nzbdserverList');
 		sList.style.display = 'none';
 		return;
 	},
