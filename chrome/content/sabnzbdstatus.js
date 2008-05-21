@@ -1115,7 +1115,7 @@ SABnzbdStatusObject.prototype = {
 
 SABnzbdStatus = new SABnzbdStatusObject();
 
-if (SABnzbdStatus)
+if (SABnzbdStatus && !SABnzbdStatus.getPreference('disabled'))
 {
 	dump('SABnzbdStatus Loaded\n');
 	window.addEventListener('load', function(e) { SABnzbdStatus.startup(); }, false);
