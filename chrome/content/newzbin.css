@@ -4,26 +4,25 @@ cursor:pointer;
 
 ul.nzbdservers {
 list-style-type:none;
-font-size:12px;
 line-height:16px;
 padding:.5em 0;
 margin:0;
 border:1px solid black;
-background:#fff;
 position:absolute;
 display:none;
 top:0;
 left:0;
+width:auto;
+visibility:visible;
 }
 ul.nzbdservers li {
-padding:0 1em;
-cursor:pointer;
-}
-ul.nzbdservers li:hover {
-background:#bbb;
+display:block;
 }
 ul.nzbdservers li img {
 margin-right:.5em;
+}
+ul.nzbdservers li a {
+padding:0 1em;
 }
 .hideme {
 display:none;

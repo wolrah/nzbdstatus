@@ -254,7 +254,7 @@ SABnzbdStatusObject.prototype = {
 			if (notFound)
 			{
 				// Didn't find it so we'll ask them
-				window.openDialog('chrome://sabnzbdstatus/content/configuration.xul','sabnzb-prefs',
+				window.openDialog('chrome://nzbdstatus/content/configuration.xul','sabnzb-prefs',
 				 'chrome,dependent,titlebar,toolbar,centerscreen,resizable','sabnzb-sab');
 			}
 		}
@@ -462,7 +462,7 @@ SABnzbdStatusObject.prototype = {
 			{
 				// It's finished, send an alert
 				alertMessage = 'Post processing on ' + fileList[i].getElementsByTagName('title').item(i).firstChild.data + ' has finished';
-				SABnzbdStatus.sendAlert('chrome://sabnzbdstatus/skin/sabnzbd.png', 'Download Completed', alertMessage);
+				SABnzbdStatus.sendAlert('chrome://nzbdstatus/skin/sabnzbd.png', 'Download Completed', alertMessage);
 			}
 		}
 
@@ -622,22 +622,25 @@ SABnzbdStatusObject.prototype = {
 	{
 		var serverList = doc.createElement('ul');
 		serverList.id = 'nzbdserverList';
-		serverList.className ='nzbdservers';
+		serverList.className ='nzbdservers tabMenu';
 		serverList.addEventListener('mouseover', function(e){var doc = e.target.ownerDocument;doc.getElementById('nzbdserverList').style.display='block';}, false);
 		serverList.addEventListener('mouseout', function(e){var doc = e.target.ownerDocument;doc.getElementById('nzbdserverList').style.display='none';}, false);
 
 		var serverCount = this.getPreference('servers.count');
-		var serverItem, serverName, serverColor, serverIcon;
+		var serverItem, serverName, serverColor, serverIcon, serverLink;
 		for (var i = 1; i <= serverCount; i++)
 		{
 			serverItem = doc.createElement('li');
+			serverLink = doc.createElement('a');
+			serverLink.setAttribute('href', '#');
 			serverName = this.getPreference('servers.'+i+'.label');
 			serverColor = this.getPreference('servers.'+i+'.color');
 			serverIcon = doc.createElement('img');
-			serverIcon.setAttribute('src', 'chrome://sabnzbdstatus/skin/'+serverColor+'.png');
+			serverIcon.setAttribute('src', 'chrome://nzbdstatus/skin/'+serverColor+'.png');
 			serverIcon.setAttribute('alt', serverName);
-			serverItem.appendChild(serverIcon);
-			serverItem.appendChild(doc.createTextNode(serverName));
+			serverLink.appendChild(serverIcon);
+			serverLink.appendChild(doc.createTextNode(serverName));
+			serverItem.appendChild(serverLink);
 			serverList.appendChild(serverItem);
 		}
 		return serverList;
@@ -671,12 +674,12 @@ SABnzbdStatusObject.prototype = {
 		}
 		var newzbinJS = doc.createElement('script');
 		newzbinJS.type = 'text/javascript';
-		newzbinJS.src = 'chrome://sabnzbdstatus/content/newzbin.js';
+		newzbinJS.src = 'chrome://nzbdstatus/content/newzbin.js';
 		doc.getElementsByTagName('head')[0].appendChild(newzbinJS);
 		var newzbinCSS = doc.createElement('link');
 		newzbinCSS.rel = 'stylesheet';
 		newzbinCSS.type = 'text/css';
-		newzbinCSS.href = 'chrome://sabnzbdstatus/content/newzbin.css';
+		newzbinCSS.href = 'chrome://nzbdstatus/content/newzbin.css';
 		doc.getElementsByTagName('head')[0].appendChild(newzbinCSS);
 		doc.getElementsByTagName('body')[0].appendChild(SABnzbdStatus.getServerUL(doc));
 
