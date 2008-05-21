@@ -5,10 +5,10 @@
 		<em:id>sabnzbdstatus@dq5studios.com</em:id>
 		<em:version>1.0.0b5</em:version>
 		<em:type>2</em:type>
-		<em:homepageURL>http://shsc.info/newsgroups</em:homepageURL>
-		<em:iconURL>chrome://sabnzbdstatus/skin/icon.png</em:iconURL>
-		<em:optionsURL>chrome://sabnzbdstatus/content/configuration.xul</em:optionsURL>
-		<!-- WIP/Beta Update URL -->
+		<em:homepageURL>https://nzbdstatus.bountysource.com/</em:homepageURL>
+		<em:iconURL>chrome://nzbdstatus/skin/icon.png</em:iconURL>
+		<em:optionsURL>chrome://nzbdstatus/content/configuration.xul</em:optionsURL>
+		<!-- Stable Update URL -->
 		<em:updateURL>https://svn.bountysource.com/nzbdstatus/trunk/nzbdstatus-stable.rdf</em:updateURL>
 
 		<!-- Supported Applications -->
@@ -21,8 +21,8 @@
 		</em:targetApplication>
 
 		<!-- Front End MetaData -->
-		<em:name>SABnzbd Status</em:name>
-		<em:description>Adds SABnzbd controls and information to the status bar</em:description>
+		<em:name>nzbdStatus</em:name>
+		<em:description>Adds controls and a monitor for SABnzbd to the status bar, adds SABnzbd features to webpages</em:description>
 		<em:creator>Ben Dusinberre</em:creator>
 
 	</Description>
