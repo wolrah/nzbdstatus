@@ -1,4 +1,4 @@
-<!ENTITY sabstatus.window_config.title "SABnzbdStatus Configuration">
+<!ENTITY sabstatus.window_config.title "nzbdStatus Configuration">
 <!ENTITY sabstatus.gen_prefpane.label "Config">
 <!ENTITY sabstatus.gen_caption.label "General Settings">
 <!ENTITY sabstatus.pref_refreshrate.value "Refresh Rate:">
