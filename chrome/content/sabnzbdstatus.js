@@ -157,7 +157,8 @@ SABnzbdStatusObject.prototype = {
 
 	sendPause: function()
 	{
-		var sabUrl = this.getPreference('sabUrl') + this.getPreference('pauseUrl');
+		var favServer = SABnzbdStatus.getPreference('servers.favorite');
+		var sabUrl = SABnzbdStatus.getPreference('servers.'+favServer+'.url') + SABnzbdStatus.getPreference('pauseUrl');
 		var xmlHttp = this.xmlHttp;
 		xmlHttp.open('GET', sabUrl, true);
 		xmlHttp.send(null);
@@ -167,7 +168,8 @@ SABnzbdStatusObject.prototype = {
 	{
 		try {
 
-		var sabUrl = this.getPreference('sabUrl') + this.getPreference('unpauseUrl');
+		var favServer = SABnzbdStatus.getPreference('servers.favorite');
+		var sabUrl = SABnzbdStatus.getPreference('servers.'+favServer+'.url') + SABnzbdStatus.getPreference('unpauseUrl');
 		var xmlHttp = this.xmlHttp;
 		xmlHttp.open('GET', sabUrl, true);
 		xmlHttp.send(null);
@@ -193,7 +195,8 @@ SABnzbdStatusObject.prototype = {
 		var username = this.getPreference('sabusername');
 		var password = this.getPreference('sabpassword');
 		var postVars = 'ma_username='+username+'&ma_password='+password;
-		var sabUrl = this.getPreference('sabUrl');
+		var favServer = SABnzbdStatus.getPreference('servers.favorite');
+		var sabUrl = this.getPreference('servers.'+favServer+'.url');
 		var xmlHttp = this.queueHttp;
 		xmlHttp.open('POST', sabUrl, true);
 		xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -211,7 +214,9 @@ SABnzbdStatusObject.prototype = {
 		if (tryingToLogin)
 		{
 			// We didn't login so we'll try to read the username/password from Firefox
-			var rootUrl = 'http://' + SABnzbdStatus.getPreference('sabUrl').split('/')[2];
+			var favServer = SABnzbdStatus.getPreference('servers.favorite');
+			var fullUrl = SABnzbdStatus.getPreference('servers.'+favServer+'.url');
+			var rootUrl = 'http://' + fullUrl.split('/')[2];
 			var notFound = true;
 			if ("@mozilla.org/passwordmanager;1" in Components.classes)
 			{
@@ -288,7 +293,8 @@ SABnzbdStatusObject.prototype = {
 	{
 		try {
 
-		var SABurl = this.getPreference('sabUrl');
+		var favServer = this.getPreference('servers.favorite');
+		var SABurl = this.getPreference('servers.'+favServer+'.url');
 		if (e.button == 0)
 		{
 			var action = this.getPreference('leftClick');
@@ -604,12 +610,13 @@ SABnzbdStatusObject.prototype = {
 	{
 		try {
 
-		var queueUrl = SABnzbdStatus.getPreference('sabUrl') + SABnzbdStatus.getPreference('queueUrl');
+		var favServer = SABnzbdStatus.getPreference('servers.favorite');
+		var queueUrl = SABnzbdStatus.getPreference('servers.'+favServer+'.url') + SABnzbdStatus.getPreference('queueUrl');
 		SABnzbdStatus.queueHttp.open('GET', queueUrl, true);
 		SABnzbdStatus.queueHttp.onload = SABnzbdStatus.queueReceived;
 		SABnzbdStatus.queueHttp.send(null);
 
-		var historyUrl = SABnzbdStatus.getPreference('sabUrl') + SABnzbdStatus.getPreference('historyUrl');
+		var historyUrl = SABnzbdStatus.getPreference('servers.'+favServer+'.url') + SABnzbdStatus.getPreference('historyUrl');
 		SABnzbdStatus.historyHttp.open('GET', historyUrl, true);
 		SABnzbdStatus.historyHttp.overrideMimeType('text/xml');
 		SABnzbdStatus.historyHttp.onload = SABnzbdStatus.historyReceived;
@@ -871,7 +878,8 @@ SABnzbdStatusObject.prototype = {
 		try {
 
 		var postid = this.alt;
-		var fullUrl = SABnzbdStatus.getPreference('sabUrl') + SABnzbdStatus.getPreference('addID');
+		var favServer = SABnzbdStatus.getPreference('servers.favorite');
+		var fullUrl = SABnzbdStatus.getPreference('servers.'+favServer+'.url') + SABnzbdStatus.getPreference('addID');
 		if (SABnzbdStatus.getPreference('legacyMode'))
 		{
 			fullUrl += '?id=';
@@ -907,7 +915,8 @@ SABnzbdStatusObject.prototype = {
 		{
 			return false;
 		}
-		var fullUrl = SABnzbdStatus.getPreference('sabUrl') + SABnzbdStatus.getPreference('addUrl');
+		var favServer = SABnzbdStatus.getPreference('servers.favorite');
+		var fullUrl = SABnzbdStatus.getPreference('servers.'+favServer+'.url') + SABnzbdStatus.getPreference('addUrl');
 		if (SABnzbdStatus.getPreference('legacyMode'))
 		{
 			fullUrl += '?url=';
@@ -931,7 +940,8 @@ SABnzbdStatusObject.prototype = {
 		try {
 
 		var justname = filename.split(/(\/|\\)/)[filename.split(/(\/|\\)/).length-1];
-		var fullUrl = this.getPreference('sabUrl') + this.getPreference('addFile');
+		var favServer = this.getPreference('servers.favorite');
+		var fullUrl =  + this.getPreference('addFile');
 		if (!this.getPreference('legacyMode'))
 		{
 			fullUrl += '?mode=addfile';
@@ -951,7 +961,7 @@ SABnzbdStatusObject.prototype = {
 		// We don't use the object's one so that we can have multiple going
 		var xmlHttp = SABnzbdStatus.xmlHttp;
 		xmlHttp.open('POST', fullUrl, true);
-		xmlHttp.setRequestHeader('Referer', this.getPreference('sabUrl'));
+		xmlHttp.setRequestHeader('Referer', this.getPreference('servers.'+favServer+'.url'));
 		xmlHttp.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
 		xmlHttp.setRequestHeader('Connection', 'close');
 		xmlHttp.setRequestHeader('Content-Length', requestbody.length);
