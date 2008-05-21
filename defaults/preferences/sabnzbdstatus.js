@@ -33,6 +33,8 @@ pref('extensions.nzbdstatus.filesToSAB', 3);
 pref('extensions.nzbdstatus.editorMode', false);
 
 pref('extensions.nzbdstatus.servers.count', 6);
+pref('extensions.nzbdstatus.servers.favorite', 1);
+
 pref('extensions.nzbdstatus.servers.1.url', 'http://192.168.1.100:8080/sabnzbd/');
 pref('extensions.nzbdstatus.servers.1.label', 'Home');
 pref('extensions.nzbdstatus.servers.1.type', 'sabnzbd+');
