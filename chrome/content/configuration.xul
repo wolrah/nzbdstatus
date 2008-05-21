@@ -55,7 +55,7 @@
 </groupbox>
 </prefpane>
 
-<prefpane id='nzbd-servers' label='Servers' image='chrome://sabnzbdstatus/skin/server.png'>
+<prefpane id='nzbd-servers' label='Servers' image='chrome://nzbdstatus/skin/server.png'>
 	<preferences>
 		<preference id='nzburl1' name='extensions.nzbdstatus.servers.1.url' type='string' />
 		<preference id='nzblabel1' name='extensions.nzbdstatus.servers.1.label' type='string' />
@@ -113,12 +113,12 @@
 					<label value='Color' />
 					<menulist preference='nzbcolor1'>
 						<menupopup>
-							<menuitem label='Yellow' value='yellow' image='chrome://sabnzbdstatus/skin/download.png'>
-								<image src='chrome://sabnzbdstatus/skin/download.png' />
+							<menuitem label='Yellow' value='yellow' image='chrome://nzbdstatus/skin/download.png'>
+								<image src='chrome://nzbdstatus/skin/download.png' />
 								<label value='Yellow' />
 							</menuitem>
-							<menuitem label='Red' value='red' image='chrome://sabnzbdstatus/skin/download.png'>
-								<image src='chrome://sabnzbdstatus/skin/download.png' />
+							<menuitem label='Red' value='red' image='chrome://nzbdstatus/skin/download.png'>
+								<image src='chrome://nzbdstatus/skin/download.png' />
 								<label value='Red' />
 							</menuitem>
 			</menupopup>
@@ -133,7 +133,7 @@
 </prefpane>
 
 
-<prefpane id='sabnzb-newzbin' label='Newzbin' image='chrome://sabnzbdstatus/skin/newzbin.png'>
+<prefpane id='sabnzb-newzbin' label='Newzbin' image='chrome://nzbdstatus/skin/newzbin.png'>
 	<preferences>
 		<preference id='enableinnewzbin' name='extensions.nzbdstatus.enableInNewzbin' type='bool' />
 		<preference id='newzbintosab' name='extensions.nzbdstatus.newzbinToSAB' type='int' />
@@ -162,6 +162,6 @@
 
 </prefpane>
 
-<script type="application/x-javascript" src="chrome://sabnzbdstatus/content/configuration.js" />
+<script type="application/x-javascript" src="chrome://nzbdstatus/content/configuration.js" />
 
 </prefwindow>
