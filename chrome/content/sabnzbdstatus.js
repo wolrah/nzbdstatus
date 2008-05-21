@@ -458,7 +458,7 @@ SABnzbdStatusObject.prototype = {
 				break;
 			}
 			nzbDescription = fileList[i].getElementsByTagName('description').item(0).firstChild.data;
-			if (nzbDescription.search(/Post-processing active/i) > -1)
+			if (nzbDescription.search(/Post-processing active/i) == -1)
 			{
 				// It's finished, send an alert
 				alertMessage = 'Post processing on ' + fileList[i].getElementsByTagName('title').item(i).firstChild.data + ' has finished';
@@ -627,10 +627,15 @@ SABnzbdStatusObject.prototype = {
 		serverList.addEventListener('mouseout', function(e){var doc = e.target.ownerDocument;doc.getElementById('nzbdserverList').style.display='none';}, false);
 
 		var serverCount = this.getPreference('servers.count');
+		var favServer = this.getPreference('servers.favorite');
 		var serverItem, serverName, serverColor, serverIcon, serverLink;
 		for (var i = 1; i <= serverCount; i++)
 		{
 			serverItem = doc.createElement('li');
+			if (i == favServer)
+			{
+				serverItem.className = 'selected'
+			}
 			serverLink = doc.createElement('a');
 			serverLink.setAttribute('href', '#');
 			serverName = this.getPreference('servers.'+i+'.label');
@@ -794,8 +799,11 @@ SABnzbdStatusObject.prototype = {
 		sendTo.className = 'nzbsend';
 		sendTo.title = 'Send to SABnzbd';
 		sendTo.addEventListener('click', SABnzbdStatus.sendToSAB, false);
-		sendTo.addEventListener('mouseover', SABnzbdStatus.showServerList, false);
-		sendTo.addEventListener('mouseout', SABnzbdStatus.hideServerList, false);
+		if (SABnzbdStatus.getPreference('servers.count') > 1)
+		{
+			sendTo.addEventListener('mouseover', SABnzbdStatus.showServerList, false);
+			sendTo.addEventListener('mouseout', SABnzbdStatus.hideServerList, false);
+		}
 		return sendTo;
 	},
 
