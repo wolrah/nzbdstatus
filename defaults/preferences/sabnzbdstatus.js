@@ -5,9 +5,9 @@ pref('extensions.nzbdstatus.onlyShowIcon', false);
 pref('extensions.nzbdstatus.leftClick', 'refresh');
 pref('extensions.nzbdstatus.middleClick', 'newtab');
 
-pref('extensions.nzbdstatus.iconIdle', 'chrome://sabnzbdstatus/skin/sab.png');
-pref('extensions.nzbdstatus.iconDownload', 'chrome://sabnzbdstatus/skin/download.png');
-pref('extensions.nzbdstatus.iconPaused', 'chrome://sabnzbdstatus/skin/pause.png');
+pref('extensions.nzbdstatus.iconIdle', 'chrome://nzbdstatus/skin/sab.png');
+pref('extensions.nzbdstatus.iconDownload', 'chrome://nzbdstatus/skin/download.png');
+pref('extensions.nzbdstatus.iconPaused', 'chrome://nzbdstatus/skin/pause.png');
 
 pref('extensions.nzbdstatus.sabUrl', 'http://localhost:8080/sabnzbd/');
 pref('extensions.nzbdstatus.queueUrl', 'api?mode=qstatus&output=json');

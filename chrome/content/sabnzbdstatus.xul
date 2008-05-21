@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
-<!DOCTYPE overlay SYSTEM "chrome://sabnzbdstatus/locale/sabnzbdstatus.dtd">
-<?xml-stylesheet href="chrome://sabnzbdstatus/content/sabnzbdstatus.css" type="text/css"?>
+<!DOCTYPE overlay SYSTEM "chrome://nzbdstatus/locale/sabnzbdstatus.dtd">
+<?xml-stylesheet href="chrome://nzbdstatus/content/sabnzbdstatus.css" type="text/css"?>
 <overlay id='sabnzbdstatus-overlay' xmlns='http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul'>
-	<script type='application/x-javascript' src='chrome://sabnzbdstatus/content/sabnzbdstatus.js' />
+	<script type='application/x-javascript' src='chrome://nzbdstatus/content/sabnzbdstatus.js' />
 	<statusbar id='status-bar'>
 		<statusbarpanel id='sabstatus' context='sabstatus-context' tooltip='sabstatus-idle' onclick='SABnzbdStatus.clickedOn(event)'
 		 insertafter='adblock-status,statusbar-updates,statusbarpanel-progress,security-button,privacy-button,offline-status,popupIcon,statusbar-display,component-bar'>
@@ -46,7 +46,7 @@
 			</tooltip>
 		</statusbarpanel>
 		<menupopup id='sabstatus-context'>
-			<menuitem label='&sabstatus.menu_config;' oncommand='window.openDialog("chrome://sabnzbdstatus/content/configuration.xul", "sabnzb-prefs", "chrome,dependent,titlebar,toolbar,centerscreen,resizable", "sabnzb-gen")' />
+			<menuitem label='&sabstatus.menu_config;' oncommand='window.openDialog("chrome://nzbdstatus/content/configuration.xul", "sabnzb-prefs", "chrome,dependent,titlebar,toolbar,centerscreen,resizable", "sabnzb-gen")' />
 			<menuitem label='&sabstatus.menu_pause;' oncommand='SABnzbdStatus.togglePause()' type='checkbox' id='sabstatus-context-pause' />
 		</menupopup>
 	</statusbar>
