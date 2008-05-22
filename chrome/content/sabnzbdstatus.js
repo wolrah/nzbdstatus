@@ -464,7 +464,7 @@ SABnzbdStatusObject.prototype = {
 				break;
 			}
 			nzbDescription = fileList[i].getElementsByTagName('description').item(0).firstChild.data;
-			if (nzbDescription.search(/Post-processing active/i) == -1)
+			if ((nzbDescription.search(/Post-processing active/i) == -1) && (nzbDescription.search(/Finished at/i) > -1))
 			{
 				// It's finished, send an alert
 				alertMessage = 'Post processing on ' + fileList[i].getElementsByTagName('title').item(i).firstChild.data + ' has finished';
