@@ -669,7 +669,12 @@ SABnzbdStatusObject.prototype = {
 			return;
 		}
 		// Make sure we are on a supported version of Newzbin
-		if ((doc.location.href.search('v3.newzbin') == -1) && (doc.location.href.search('newzxxx') == -1))
+		if ((doc.location.href.search('newzbin') == -1) && (doc.location.href.search('newzxxx') == -1))
+		{
+			return;
+		}
+		// v2 of newsbin isn't supported
+		if ((doc.location.href.search('v2.newzbin') != -1))
 		{
 			return;
 		}
@@ -762,7 +767,7 @@ SABnzbdStatusObject.prototype = {
 
 	filesPage: function(doc)
 	{
-		var results = SABnzbdStatus.selectNodes(doc, doc, '//form[contains(@action,"/database/fileactions/")]/table/tbody[not(@class="dateLine")]');
+		var results = SABnzbdStatus.selectNodes(doc, doc, '//form[contains(@action,"/database/fileactions/")]//table/tbody[not(@class="dateLine")]');
 		if (results.length == 1 && (results[0].textContent.search('No results') > -1))
 		{
 			return;
