@@ -893,7 +893,12 @@ SABnzbdStatusObject.prototype = {
 		{
 			fullUrl += '?mode=addid&name=';
 		}
-		fullUrl += postid + '&pp=' + SABnzbdStatus.getPreference('newzbinToSAB');
+		fullUrl += postid;
+		var postproc = SABnzbdStatus.getPreference('newzbinToSAB');
+		if (postproc != -1)
+		{
+			fullUrl += '&pp=' + postproc;
+		}
 		var xmlHttp = SABnzbdStatus.xmlHttp;
 		xmlHttp.open('GET', fullUrl, true);
 		xmlHttp.onload = SABnzbdStatus.goActiveSoon;
@@ -930,7 +935,12 @@ SABnzbdStatusObject.prototype = {
 		{
 			fullUrl += '?mode=addurl&name=';
 		}
-		fullUrl += encodeURIComponent(href) + '&pp=' + SABnzbdStatus.getPreference('newzbinToSAB');
+		fullUrl += encodeURIComponent(href);
+		var postproc = SABnzbdStatus.getPreference('newzbinToSAB');
+		if (postproc != -1)
+		{
+			fullUrl += '&pp=' + postproc;
+		}
 		var xmlHttp = SABnzbdStatus.xmlHttp;
 		xmlHttp.open('GET', fullUrl, true);
 		xmlHttp.onload = SABnzbdStatus.goActiveSoon;
@@ -960,8 +970,13 @@ SABnzbdStatusObject.prototype = {
 		var boundary = '--------' + d.getTime();
 		var requestbody = '--' + boundary + '\nContent-Disposition: form-data; name="'+namename+'"; filename="' + justname + '"\n' +
 		 'Content-Type: application/octet-stream\n\n' + content + '\n' +
-		 '--' + boundary +'\nContent-Disposition: form-data; name="pp"\n\n' +
-		 this.getPreference('filesToSAB') + '\n' + '--' + boundary + '--\n';
+		 '--' + boundary;
+		if (this.getPreference('filesToSAB') != -1)
+		{
+			requestbody += '\nContent-Disposition: form-data; name="pp"\n\n' +
+			 this.getPreference('filesToSAB') + '\n' + '--' + boundary;
+		}
+		requestbody += '--\n';
 
 		// We don't use the object's one so that we can have multiple going
 		var xmlHttp = SABnzbdStatus.xmlHttp;

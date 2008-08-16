@@ -19,6 +19,7 @@
 <!ENTITY sabstatus.pref_sabpass.value "Password:">
 
 <!ENTITY sabstatus.pref_sendfiles.label "Send NZB files to this daemon">
+<!ENTITY sabstatus.pref_filesintosab.label "After Download:">
 <!ENTITY sabstatus.pref_legacy.label "Enable Legacy Mode">
 <!ENTITY sabstatus.nzbd_caption.label "Settings">
 <!ENTITY sabstatus.pref_sabtheme.value "Theme:">
@@ -34,3 +35,4 @@
 <!ENTITY sabstatus.pref_sabproclevel.value2 "Verify, Extract">
 <!ENTITY sabstatus.pref_sabproclevel.value1 "Verify">
 <!ENTITY sabstatus.pref_sabproclevel.value0 "Do Nothing">
+<!ENTITY sabstatus.pref_sabproclevel.valued "Default">

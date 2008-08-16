@@ -108,11 +108,11 @@
 			<menupopup>
 							<menuitem label='SABnzbd+' value='sabnzbd+' />
 							<menuitem label='HellaNZB' value='hellanzb' />
-						</menupopup>
-					</menulist>
+			</menupopup>
+		</menulist>
 					<label value='Color' />
 					<menulist preference='nzbcolor1'>
-						<menupopup>
+			<menupopup>
 							<menuitem label='Yellow' value='yellow' image='chrome://nzbdstatus/skin/download.png'>
 								<image src='chrome://nzbdstatus/skin/download.png' />
 								<label value='Yellow' />
@@ -155,6 +155,7 @@
 				<menuitem label='&sabstatus.pref_sabproclevel.value2;' value='2' />
 				<menuitem label='&sabstatus.pref_sabproclevel.value1;' value='1' />
 				<menuitem label='&sabstatus.pref_sabproclevel.value0;' value='0' />
+				<menuitem label='&sabstatus.pref_sabproclevel.valued;' value='-1' />
 			</menupopup>
 		</menulist>
 	</hbox>
