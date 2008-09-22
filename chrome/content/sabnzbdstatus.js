@@ -16,12 +16,12 @@
 // Originally based off inpheaux's SABnzbd/Newzbin Greasemonkey script, has deviated a bit since then
 // (c) 2008 Ben Dusinberre
 
-// The SABnzbdStatusObject definition itself
-function SABnzbdStatusObject()
+// The nzbdStatusObject definition itself
+function nzbdStatusObject()
 {
 }
 // Now extend it
-SABnzbdStatusObject.prototype = {
+nzbdStatusObject.prototype = {
 
 	// Public variables
 	refreshId: null, // setInterval container
@@ -30,6 +30,10 @@ SABnzbdStatusObject.prototype = {
 	statusbar: null, // Shortcut
 	statusicon: null, // Shortcut
 	statuslabel: null, // Shortcut
+
+	processingQueue: Array(), // Where what needs to be done is put
+	processingQueueActive: false,  // So we don't try to do things twice
+
 
 	// Private variables
 	_preferences: Components.classes['@mozilla.org/preferences;1']
@@ -40,7 +44,6 @@ SABnzbdStatusObject.prototype = {
 	_askForPass: false,
 	_queueHttp: new XMLHttpRequest(), // One httpRequest object for the queue tracking
 	_historyHttp: new XMLHttpRequest(), // One httpRequest object for the history monitoring
-
 
 	// Getters
 
@@ -1088,6 +1091,10 @@ SABnzbdStatusObject.prototype = {
 			case 'refreshRate':
 				this.refreshId = clearInterval(this.refreshId);
 				this.refreshRate = this.getPreference('refreshRate');
+				if (this.refreshRate < 1)
+				{
+					this.refreshRate = 1;
+				}
 				this.refreshStatus();
 				this.refreshId = window.setInterval(this.refreshStatus, this.refreshRate*60*1000);
 				break;
@@ -1149,16 +1156,60 @@ SABnzbdStatusObject.prototype = {
 				this._askForPass = false;
 				break;
 		}
+	},
+
+	// Go through the event queue, doing what needs to be done
+	processQueue: function()
+	{
+		var currentEvent;
+		while (this.processingQueue.length > 0)
+		{
+			currentEvent = this.processingQueue.shift();
+			switch (currentEvent.action)
+			{
+				case 'sendUrl':
+					this.sendUrl(currentEvent);
+					break;
+				case 'sendFile':
+					this.sendFile(currentEvent);
+					break;
+				case 'sendNewzbinId':
+					this.sendNewzbinId(currentEvent);
+					break;
+				case 'sendPause':
+					this.sendPause(currentEvent);
+					break;
+				case 'sendResume':
+					this.sendResume(currentEvent);
+					break;
+				default:
+					// Something that's not been implemented yet
+					dump('Unknown action `'+currentEvent.action+'` requested\n');
+					break;
+			}
+		}
+		this.processingQueueActive = false;
+	},
+
+	// Add an event to the processing queue
+	queueEvent: function(newEvent)
+	{
+		this.processingQueue.push(newEvent);
+		if (!this.processingQueueActive)
+		{
+			this.processingQueueActive = true;
+			setTimeout(this.processQueue, 1); // Fork this off so things don't get delayed
+		}
 	}
 
 	// Don't forget to add a comma
 }
 
-SABnzbdStatus = new SABnzbdStatusObject();
+SABnzbdStatus = new nzbdStatusObject();
 
 if (SABnzbdStatus && !SABnzbdStatus.getPreference('disabled'))
 {
-	dump('SABnzbdStatus Loaded\n');
+	dump('nzbdStatus Loaded\n');
 	window.addEventListener('load', function(e) { SABnzbdStatus.startup(); }, false);
 	window.addEventListener('unload', function(e) { SABnzbdStatus.shutdown(); }, false);
 }
