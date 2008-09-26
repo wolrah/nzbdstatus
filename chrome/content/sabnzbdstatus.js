@@ -42,8 +42,10 @@ nzbdStatusObject.prototype = {
 	_observerService: Components.classes['@mozilla.org/observer-service;1']
 	 .getService(Components.interfaces.nsIObserverService),
 	_askForPass: false,
+	_processingHttp: new XMLHttpRequest(), // One httpRequest object for the processing queue
 	_queueHttp: new XMLHttpRequest(), // One httpRequest object for the queue tracking
 	_historyHttp: new XMLHttpRequest(), // One httpRequest object for the history monitoring
+	_serverDetails: Array(), // Cache for server details
 
 	// Getters
 
@@ -75,6 +77,12 @@ nzbdStatusObject.prototype = {
 	get historyHttp()
 	{
 		return this._historyHttp;
+	},
+
+	// Ajax for the processing queue
+	get processingHttp()
+	{
+		return this._processingHttp;
 	},
 
 
@@ -150,15 +158,13 @@ nzbdStatusObject.prototype = {
 	// Return the cached details of the indicated server
 	getServerDetails: function(serverId)
 	{
-		var serverDetails = {
-			url : '',
-			type: '',
-			label: '',
-			color: '',
-			username: '',
-			password: ''
-		};
-		return serverDetails;
+		return this._serverDetails[serverId];
+	},
+
+	// Populates the cache with the indicated server's details
+	setServerDetails: function(serverId, serverDetails)
+	{
+		this._serverDetails[serverId] = serverDetails;
 	},
 
 	sendAlert: function(icon, title, message)
@@ -1013,6 +1019,20 @@ nzbdStatusObject.prototype = {
 	{
 		try {
 
+		// Load up the server details into the cache
+		var serverCount = this.getPreference('servers.count');
+		for (i = 0; i < serverCount; i++)
+		{
+			this.setServerDetails[i] =  {
+			 url : this.getPreference('servers.'+i+'.url'),
+			 type: this.getPreference('servers.'+i+'.type'),
+			 label: this.getPreference('servers.'+i+'.label'),
+			 color: this.getPreference('servers.'+i+'.color'),
+			 username: '',
+			 password: ''
+			};
+		}
+
 		if (this.getPreference('enableFilesToSAB'))
 		{
 			// Put an observer on all downloads
@@ -1215,7 +1235,7 @@ nzbdStatusObject.prototype = {
 		if (!this.processingQueueActive)
 		{
 			this.processingQueueActive = true;
-			setTimeout(this.processQueue, 1); // Fork this off so we can go about our day
+			setTimeout(this.processQueue, 1); // Send this off so we can go about our day
 		}
 	},
 
@@ -1236,7 +1256,7 @@ nzbdStatusObject.prototype = {
 				{
 					fullUrl += '&ma_username='+serverDetails.username+'&ma_password='+serverDetails.password;
 				}
-				// &cat=<category>&pp=<job-option>&script=<script>
+				// Optional: &cat=<category>&pp=<job-option>&script=<script>
 				break;
 			case 'hellanzb':
 			case 'nzbget':
@@ -1246,28 +1266,26 @@ nzbdStatusObject.prototype = {
 				break;
 		}
 
-		var queueHttp = nzbdStatus.queueHttp;
-		queueHttp.open('GET', fullUrl, true);
-		queueHttp.onload = function() { nzbdStatus.processQueueResponse(eventDetails, serverDetails) };
-		queueHttp.send(null);
-
-		this.style.opacity = '.25';
+		var processingHttp = nzbdStatus.processingHttp;
+		processingHttp.open('GET', fullUrl, true);
+		processingHttp.onload = function() { nzbdStatus.processingResponse(eventDetails, serverDetails) };
+		processingHttp.send(null);
 
 		} catch(e) { dump(arguments.callee.toString().match(/function\s([^\s]*)[\s|(]/)[1]+' has thrown an error: '+e+'\n'); }
 
 	},
 
-	processQueueResponse: function(eventDetails, serverDetails)
+	processingResponse: function(eventDetails, serverDetails)
 	{
 
 		try {
 
-		var queueResponse = queueHttp.responseText;
+		var processingResponse = processingHttp.responseText;
 
 		switch (serverDetails.type)
 		{
 			case 'sabnzbd+':
-				if (fileResponse.search(/ok\n/) > -1)
+				if (processingResponse.search(/ok\n/) > -1)
 				{
 					// Success
 					if (eventDetails.action == 'sendNewzbinId')
@@ -1295,7 +1313,11 @@ nzbdStatusObject.prototype = {
 				break;
 		}
 
+		// Go do the next thing in the queue
+		setTimeout(nzbdStatus.processQueue, 1);
+
 		} catch(e) { dump(arguments.callee.toString().match(/function\s([^\s]*)[\s|(]/)[1]+' has thrown an error: '+e+'\n'); }
+
 	}
 
 	// Don't forget to add a comma
