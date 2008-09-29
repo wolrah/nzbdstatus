@@ -1020,18 +1020,7 @@ nzbdStatusObject.prototype = {
 		try {
 
 		// Load up the server details into the cache
-		var serverCount = this.getPreference('servers.count');
-		for (i = 0; i < serverCount; i++)
-		{
-			this.setServerDetails[i] =  {
-			 url : this.getPreference('servers.'+i+'.url'),
-			 type: this.getPreference('servers.'+i+'.type'),
-			 label: this.getPreference('servers.'+i+'.label'),
-			 color: this.getPreference('servers.'+i+'.color'),
-			 username: '',
-			 password: ''
-			};
-		}
+		this.fillServerCache();
 
 		if (this.getPreference('enableFilesToSAB'))
 		{
@@ -1190,6 +1179,42 @@ nzbdStatusObject.prototype = {
 				this._askForPass = false;
 				break;
 		}
+	},
+
+
+	// Read the server details into the cache
+	fillServerCache: function()
+	{
+
+		try {
+
+		var fullUrl, rootUrl, notFound, serverType, logins, username = null, password = null;
+		var passwordManager = Components.classes["@mozilla.org/login-manager;1"]
+		 .getService(Components.interfaces.nsILoginManager);
+		var serverCount = this.getPreference('servers.count');
+		for (i = 0; i < serverCount; i++)
+		{
+			serverType = this.getPreference('servers.'+i+'.type');
+			fullUrl = this.getPreference('servers.'+i+'.url');
+			rootUrl = 'http://' + fullUrl.match(/\/\/([^\/]+)/)[1];
+			var logins = passwordManager.findLogins({}, rootUrl, rootUrl, null);
+			if (logins.length > 0)
+			{
+				username = logins[0].username;
+				password = logins[0].password;
+			}
+			this.setServerDetails[i] =  {
+			 url : fullUrl,
+			 type: serverType,
+			 label: this.getPreference('servers.'+i+'.label'),
+			 color: this.getPreference('servers.'+i+'.color'),
+			 username: username,
+			 password: password
+			};
+		}
+
+		} catch(e) { dump(arguments.callee.toString().match(/function\s([^\s]*)[\s|(]/)[1]+' has thrown an error: '+e+'\n'); }
+
 	},
 
 	// Do the oldest thing in the event queue
