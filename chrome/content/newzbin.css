@@ -17,6 +17,7 @@ visibility:visible;
 }
 ul.nzbdservers li {
 display:block;
+cursor:pointer;
 }
 ul.nzbdservers li img {
 margin-right:.5em;
