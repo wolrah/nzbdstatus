@@ -650,35 +650,42 @@ nzbdStatusObject.prototype = {
 
 	getServerUL: function(doc)
 	{
+
+		try {
+
 		var serverList = doc.createElement('ul');
 		serverList.id = 'nzbdserverList';
-		serverList.className ='nzbdservers tabMenu';
+		serverList.className ='nzbdservers tabMenu nzbsend';
 		serverList.addEventListener('mouseover', function(e){var doc = e.target.ownerDocument;doc.getElementById('nzbdserverList').style.display='block';}, false);
 		serverList.addEventListener('mouseout', function(e){var doc = e.target.ownerDocument;doc.getElementById('nzbdserverList').style.display='none';}, false);
 
 		var serverCount = this.getPreference('servers.count');
 		var favServer = this.getPreference('servers.favorite');
-		var serverItem, serverName, serverColor, serverIcon, serverLink;
-		for (var i = 1; i <= serverCount; i++)
+		var serverItem, serverIcon, serverLink, serverDetails;
+		for (var i = 0; i < serverCount; i++)
 		{
 			serverItem = doc.createElement('li');
+			serverDetails = this.getServerDetails(i);
 			if (i == favServer)
 			{
 				serverItem.className = 'selected'
 			}
 			serverLink = doc.createElement('a');
-			serverLink.setAttribute('href', '#');
-			serverName = this.getPreference('servers.'+i+'.label');
-			serverColor = this.getPreference('servers.'+i+'.color');
+			serverName = serverDetails.label;
 			serverIcon = doc.createElement('img');
-			serverIcon.setAttribute('src', 'chrome://nzbdstatus/skin/'+serverColor+'.png');
-			serverIcon.setAttribute('alt', serverName);
+			serverIcon.setAttribute('src', 'chrome://nzbdstatus/skin/'+serverDetails.icon+'.png');
+			serverIcon.setAttribute('alt', serverDetails.label);
 			serverLink.appendChild(serverIcon);
-			serverLink.appendChild(doc.createTextNode(serverName));
+			serverLink.appendChild(doc.createTextNode(serverDetails.label));
 			serverItem.appendChild(serverLink);
+			serverItem.className += ' nzbServer'+i;
+			serverItem.addEventListener('click', nzbdStatus.queueNewzbinId, false);
 			serverList.appendChild(serverItem);
 		}
 		return serverList;
+
+		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+
 	},
 
 	// This happens every page load
@@ -745,7 +752,8 @@ nzbdStatusObject.prototype = {
 			return;
 		}
 
-		} catch(e) { dump('onPageLoad error: '+e+'\n'); }
+		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+
 	},
 
 	reportSummaryPage: function(doc)
@@ -785,7 +793,8 @@ nzbdStatusObject.prototype = {
 			oldTo.parentNode.replaceChild(sendTo, oldTo);
 		}
 
-		} catch(e) { dump('listingsPage error: '+e+'\n'); }
+		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+
 	},
 
 	filesPage: function(doc)
@@ -828,36 +837,58 @@ nzbdStatusObject.prototype = {
 
 	makeSendIcon: function(doc, postId)
 	{
-		var sendTo = doc.createElement('img');
-		sendTo.src = nzbdStatus.getPreference('iconDownload');
-		sendTo.alt = postId;
-		sendTo.className = 'nzbsend';
-		sendTo.title = 'Send to SABnzbd';
-		sendTo.addEventListener('click', nzbdStatus.sendToSAB, false);
+
+		try {
+
+		var sendIcon = doc.createElement('img');
+		var favServer = this.getPreference('servers.favorite');
+		var serverDetails = this.getServerDetails(favServer);
+		sendIcon.setAttribute('src', 'chrome://nzbdstatus/skin/'+serverDetails.icon+'.png');
+		sendIcon.setAttribute('alt', 'nzbId'+postId);
+		sendIcon.className = 'nzbsend nzbServer'+favServer;
+		sendIcon.title = 'Send to SABnzbd';
+		sendIcon.addEventListener('click', nzbdStatus.queueNewzbinId, false);
 		if (nzbdStatus.getPreference('servers.count') > 1)
 		{
-			sendTo.addEventListener('mouseover', nzbdStatus.showServerList, false);
-			sendTo.addEventListener('mouseout', nzbdStatus.hideServerList, false);
+			sendIcon.addEventListener('mouseover', nzbdStatus.showServerList, false);
+			sendIcon.addEventListener('mouseout', nzbdStatus.hideServerList, false);
 		}
-		return sendTo;
+		return sendIcon;
+
+		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+
 	},
 
 	showServerList: function(e)
 	{
+
+		try {
+
 		var doc = e.target.ownerDocument, targ = e.target;
 		var sList = doc.getElementById('nzbdserverList');
+		sList.className = sList.className.replace(/nzbId[0-9]+/g, '');
+		sList.className += ' ' + targ.alt;
 		sList.style.display = 'block';
 		sList.style.left = (e.originalTarget.x + targ.offsetWidth) + 'px';
 		sList.style.top = (e.originalTarget.y - Math.floor((sList.offsetHeight - targ.offsetHeight) / 2)) + 'px';
 		return;
+
+		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+
 	},
 
 	hideServerList: function(e)
 	{
+
+		try {
+
 		var doc = e.target.ownerDocument;
 		var sList = doc.getElementById('nzbdserverList');
 		sList.style.display = 'none';
 		return;
+
+		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+
 	},
 
 	checkForNZB: function()
@@ -1203,43 +1234,45 @@ nzbdStatusObject.prototype = {
 				username = logins[0].username;
 				password = logins[0].password;
 			}
-			this.setServerDetails[i] =  {
+			this.setServerDetails(i, {
 			 url : fullUrl,
 			 type: serverType,
 			 label: this.getPreference('servers.'+i+'.label'),
-			 color: this.getPreference('servers.'+i+'.color'),
+			 icon: this.getPreference('servers.'+i+'.icon'),
 			 username: username,
 			 password: password
-			};
+			});
 		}
 
-		} catch(e) { dump(arguments.callee.toString().match(/function\s([^\s]*)[\s|(]/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
 
 	},
 
 	// Do the oldest thing in the event queue
 	processQueue: function()
 	{
-		var currentEvent;
-		if (this.processingQueue.length > 0)
+
+		try {
+dump('in pq\n');
+		if (nzbdStatus.processingQueue.length > 0)
 		{
-			currentEvent = this.processingQueue.shift();
+			var currentEvent = nzbdStatus.processingQueue.shift();
 			switch (currentEvent.action)
 			{
 				case 'sendUrl':
-					this.sendUrl(currentEvent);
+					nzbdStatus.sendUrl(currentEvent);
 					break;
 				case 'sendFile':
-					this.sendFile(currentEvent);
+					nzbdStatus.sendFile(currentEvent);
 					break;
 				case 'sendNewzbinId':
-					this.sendNewzbinId(currentEvent);
+					nzbdStatus.sendNewzbinId(currentEvent);
 					break;
 				case 'sendPause':
-					this.sendPause(currentEvent);
+					nzbdStatus.sendPause(currentEvent);
 					break;
 				case 'sendResume':
-					this.sendResume(currentEvent);
+					nzbdStatus.sendResume(currentEvent);
 					break;
 				default:
 					// Something that's not been implemented yet
@@ -1249,19 +1282,68 @@ nzbdStatusObject.prototype = {
 		}
 		else
 		{
-			this.processingQueueActive = false;
+			nzbdStatus.processingQueueActive = false;
 		}
+
+		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+
 	},
 
 	// Add an event to the end of the event queue
 	queueEvent: function(newEvent)
 	{
+
+		try {
+dump('in qe\n')
 		this.processingQueue.push(newEvent);
 		if (!this.processingQueueActive)
 		{
 			this.processingQueueActive = true;
 			setTimeout(this.processQueue, 1); // Send this off so we can go about our day
 		}
+
+		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+
+	},
+
+	queueNewzbinId: function(e)
+	{
+
+		try {
+dump('in qni\n');
+		var doc = e.target.ownerDocument, targ = e.target;
+		var nzbId, serverId;
+		if (targ.className.match(/nzbServer([0-9]+)/) && targ.alt.match(/nzbId[0-9]+/))
+		{
+			nzbId = targ.alt.match(/nzbId([0-9]+)/)[1];
+			serverId = targ.className.match(/nzbServer([0-9]+)/)[1];
+		}
+		else if (doc.getElementById('nzbdserverList').className.match('nzbsend') && doc.getElementById('nzbdserverList').className.match(/nzbId[0-9]+/))
+		{
+			nzbId = doc.getElementById('nzbdserverList').className.match(/nzbId([0-9]+)/)[1];
+			if (targ.parentNode.className.match(/nzbServer([0-9]+)/))
+			{
+				serverId = targ.parentNode.className.match(/nzbServer([0-9]+)/)[1];
+			}
+			else if (targ.parentNode.parentNode.className.match(/nzbServer([0-9]+)/))
+			{
+				serverId = targ.parentNode.parentNode.className.match(/nzbServer([0-9]+)/)[1];
+			}
+			else
+			{
+				serverId = nzbdStatus.getPreference('servers.favorite');
+			}
+		}
+		var newEvent = {
+		 action: 'sendNewzbinId',
+		 serverId: serverId,
+		 newzbinId: nzbId,
+		 icon: nzbdStatus.selectSingleNode(doc, doc, '//img[@alt="nzbId'+nzbId+'"]')
+		 };
+		nzbdStatus.queueEvent(newEvent);
+
+		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+
 	},
 
 	// Process a Send Newzbin ID event
@@ -1276,8 +1358,8 @@ nzbdStatusObject.prototype = {
 		switch (serverDetails.type)
 		{
 			case 'sabnzbd+':
-				fullUrl += '?mode=addid&name='+eventDetails.newzbinId;
-				if (serverDetails.username != '' || serverDetails.password != '')
+				fullUrl += 'api?mode=addid&name='+eventDetails.newzbinId;
+				if (serverDetails.username != null || serverDetails.password != null)
 				{
 					fullUrl += '&ma_username='+serverDetails.username+'&ma_password='+serverDetails.password;
 				}
@@ -1296,7 +1378,7 @@ nzbdStatusObject.prototype = {
 		processingHttp.onload = function() { nzbdStatus.processingResponse(eventDetails, serverDetails) };
 		processingHttp.send(null);
 
-		} catch(e) { dump(arguments.callee.toString().match(/function\s([^\s]*)[\s|(]/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -1304,7 +1386,7 @@ nzbdStatusObject.prototype = {
 	{
 
 		try {
-
+dump('in pr\n');
 		var processingResponse = processingHttp.responseText;
 
 		switch (serverDetails.type)
@@ -1341,7 +1423,7 @@ nzbdStatusObject.prototype = {
 		// Go do the next thing in the queue
 		setTimeout(nzbdStatus.processQueue, 1);
 
-		} catch(e) { dump(arguments.callee.toString().match(/function\s([^\s]*)[\s|(]/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
 
 	}
 
