@@ -178,6 +178,16 @@ nzbdStatusObject.prototype = {
 		} catch(e) {}
 	},
 
+	sendDownloadAlert: function(title, message)
+	{
+		this.sendAlert('chrome://mozapps/skin/downloads/downloadIcon.png', title, message);
+	},
+
+	sendErrorAlert: function(title, message)
+	{
+		this.sendAlert('chrome://global/skin/icons/Error.png', title, message);
+	},
+
 	sendPause: function()
 	{
 		var favServer = nzbdStatus.getPreference('servers.favorite');
@@ -491,7 +501,7 @@ nzbdStatusObject.prototype = {
 			{
 				// It's finished, send an alert
 				alertMessage = 'Post processing on ' + fileList[i].getElementsByTagName('title').item(i).firstChild.data + ' has finished';
-				nzbdStatus.sendAlert('chrome://nzbdstatus/skin/sabnzbd.png', 'Download Completed', alertMessage);
+				//nzbdStatus.sendAlert('chrome://nzbdstatus/skin/sabnzbd.png', 'Download Completed', alertMessage);
 			}
 		}
 
@@ -932,37 +942,6 @@ nzbdStatusObject.prototype = {
 		}
 	},
 
-	sendToSAB: function(e)
-	{
-		try {
-
-		var postid = this.alt;
-		var favServer = nzbdStatus.getPreference('servers.favorite');
-		var fullUrl = nzbdStatus.getPreference('servers.'+favServer+'.url') + nzbdStatus.getPreference('addID');
-		if (nzbdStatus.getPreference('legacyMode'))
-		{
-			fullUrl += '?id=';
-		}
-		else
-		{
-			fullUrl += '?mode=addid&name=';
-		}
-		fullUrl += postid;
-		var postproc = nzbdStatus.getPreference('newzbinToSAB');
-		if (postproc != -1)
-		{
-			fullUrl += '&pp=' + postproc;
-		}
-		var xmlHttp = nzbdStatus.xmlHttp;
-		xmlHttp.open('GET', fullUrl, true);
-		xmlHttp.onload = nzbdStatus.goActiveSoon;
-		xmlHttp.send(null);
-
-		this.style.opacity = '.25';
-
-		} catch(e) { dump('sendtosab error: '+e+'\n'); }
-	},
-
 	sendUrl: function(e)
 	{
 		try {
@@ -1310,9 +1289,9 @@ dump('in qe\n')
 	{
 
 		try {
-dump('in qni\n');
+
 		var doc = e.target.ownerDocument, targ = e.target;
-		var nzbId, serverId;
+		var nzbId, serverId, icon;
 		if (targ.className.match(/nzbServer([0-9]+)/) && targ.alt.match(/nzbId[0-9]+/))
 		{
 			nzbId = targ.alt.match(/nzbId([0-9]+)/)[1];
@@ -1338,7 +1317,8 @@ dump('in qni\n');
 		 action: 'sendNewzbinId',
 		 serverId: serverId,
 		 newzbinId: nzbId,
-		 icon: nzbdStatus.selectSingleNode(doc, doc, '//img[@alt="nzbId'+nzbId+'"]')
+		 icon: nzbdStatus.selectSingleNode(doc, doc, '//img[@alt="nzbId'+nzbId+'"]'),
+		 tries: 0
 		 };
 		nzbdStatus.queueEvent(newEvent);
 
@@ -1353,7 +1333,7 @@ dump('in qni\n');
 		try {
 
 		var serverDetails = this.getServerDetails(eventDetails.serverId);
-		var fullUrl = serverDetails.url;
+		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
 
 		switch (serverDetails.type)
 		{
@@ -1375,41 +1355,50 @@ dump('in qni\n');
 
 		var processingHttp = nzbdStatus.processingHttp;
 		processingHttp.open('GET', fullUrl, true);
-		processingHttp.onload = function() { nzbdStatus.processingResponse(eventDetails, serverDetails) };
+		processingHttp.onload = function() { nzbdStatus.processingResponse(this.responseText, eventDetails, serverDetails) };
+		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(eventDetails, serverDetails) }, requestTimeout);
 		processingHttp.send(null);
 
 		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
 
 	},
 
-	processingResponse: function(eventDetails, serverDetails)
+	processingResponse: function(responseText, eventDetails, serverDetails)
 	{
 
 		try {
 dump('in pr\n');
-		var processingResponse = processingHttp.responseText;
 
+		var alertMessage, retryLimit = nzbdStatus.getPreference('servers.retryLimit');
+		clearTimeout(serverDetails.timeout);
 		switch (serverDetails.type)
 		{
 			case 'sabnzbd+':
-				if (processingResponse.search(/ok\n/) > -1)
+				if (responseText.search(/ok\n/) > -1)
 				{
 					// Success
 					if (eventDetails.action == 'sendNewzbinId')
 					{
-						eventDetails.icon.style.opacity = '.25';
-						eventDetails.icon.style.background = 'none';
+						alertMessage = serverDetails.label+' has received Newzbin Report Id '+eventDetails.newzbinId;
 					}
+					nzbdStatus.sendDownloadAlert('Newzbin Report Id Received', alertMessage);
 				}
 				else
 				{
 					// Failure
-					if (eventDetails.action == 'sendNewzbinId')
+					eventDetails.tries++;
+					if (eventDetails.tries < retryLimit)
 					{
-						eventDetails.icon.style.opacity = '1';
-						eventDetails.icon.style.background = '#f00';
+						nzbdStatus.queueEvent(eventDetails);
 					}
-					nzbdStatus.queueEvent(eventDetails);
+					else
+					{
+						if (eventDetails.action == 'sendNewzbinId')
+						{
+							alertMessage = serverDetails.label+' failed to receive Newzbin Report Id '+eventDetails.newzbinId;
+						}
+						nzbdStatus.sendErrorAlert('Failure Detected', alertMessage);
+					}
 				}
 				break;
 			case 'hellanzb':
@@ -1422,6 +1411,18 @@ dump('in pr\n');
 
 		// Go do the next thing in the queue
 		setTimeout(nzbdStatus.processQueue, 1);
+
+		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+
+	},
+
+	abortRequestProcessing: function(eventDetails, serverDetails)
+	{
+
+		try {
+dump('in er\n');
+
+		nzbdStatus.processingResponse('', eventDetails, serverDetails)
 
 		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
 
