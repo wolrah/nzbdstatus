@@ -33,34 +33,37 @@ pref('extensions.nzbdstatus.filesToSAB', 3);
 pref('extensions.nzbdstatus.editorMode', false);
 
 pref('extensions.nzbdstatus.servers.count', 6);
-pref('extensions.nzbdstatus.servers.favorite', 1);
+pref('extensions.nzbdstatus.servers.favorite', 0);
 
-pref('extensions.nzbdstatus.servers.1.url', 'http://192.168.1.100:8080/sabnzbd/');
+pref('extensions.nzbdstatus.servers.retryLimit', 3);
+pref('extensions.nzbdstatus.servers.timeoutSecs', 15000);
+
+pref('extensions.nzbdstatus.servers.0.url', 'http://localhost:8080/sabnzbd/');
+pref('extensions.nzbdstatus.servers.0.label', 'Home');
+pref('extensions.nzbdstatus.servers.0.type', 'sabnzbd+');
+pref('extensions.nzbdstatus.servers.0.icon', 'yellow');
+
+pref('extensions.nzbdstatus.servers.1.url', 'http://localhost:8080/sabnzbd/');
 pref('extensions.nzbdstatus.servers.1.label', 'Home');
 pref('extensions.nzbdstatus.servers.1.type', 'sabnzbd+');
-pref('extensions.nzbdstatus.servers.1.color', 'yellow');
+pref('extensions.nzbdstatus.servers.1.icon', 'yellow');
 
 pref('extensions.nzbdstatus.servers.2.url', 'http://dq5.no-ip.info:8080/sabnzbd/');
 pref('extensions.nzbdstatus.servers.2.label', 'Work');
 pref('extensions.nzbdstatus.servers.2.type', 'sabnzbd+');
-pref('extensions.nzbdstatus.servers.2.color', 'yellow');
+pref('extensions.nzbdstatus.servers.2.icon', 'yellow');
 
 pref('extensions.nzbdstatus.servers.3.url', 'http://192.168.1.100:8080/sabnzbd/');
 pref('extensions.nzbdstatus.servers.3.label', 'NAS');
 pref('extensions.nzbdstatus.servers.3.type', 'sabnzbd+');
-pref('extensions.nzbdstatus.servers.3.color', 'yellow');
+pref('extensions.nzbdstatus.servers.3.icon', 'yellow');
 
 pref('extensions.nzbdstatus.servers.4.url', 'http://dq5.no-ip.info:8080/sabnzbd/');
 pref('extensions.nzbdstatus.servers.4.label', 'Test');
 pref('extensions.nzbdstatus.servers.4.type', 'sabnzbd+');
-pref('extensions.nzbdstatus.servers.4.color', 'yellow');
+pref('extensions.nzbdstatus.servers.4.icon', 'yellow');
 
 pref('extensions.nzbdstatus.servers.5.url', 'http://192.168.1.100:8080/sabnzbd/');
 pref('extensions.nzbdstatus.servers.5.label', 'Server 1');
 pref('extensions.nzbdstatus.servers.5.type', 'sabnzbd+');
-pref('extensions.nzbdstatus.servers.5.color', 'yellow');
-
-pref('extensions.nzbdstatus.servers.6.url', 'http://dq5.no-ip.info:8080/sabnzbd/');
-pref('extensions.nzbdstatus.servers.6.label', 'Server 2');
-pref('extensions.nzbdstatus.servers.6.type', 'sabnzbd+');
-pref('extensions.nzbdstatus.servers.6.color', 'yellow');
+pref('extensions.nzbdstatus.servers.5.icon', 'yellow');
