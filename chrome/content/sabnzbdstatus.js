@@ -942,47 +942,6 @@ nzbdStatusObject.prototype = {
 		}
 	},
 
-	sendUrl: function(e)
-	{
-		try {
-
-		if (gContextMenu && gContextMenu.getLinkURL)
-		{
-			var href = gContextMenu.getLinkURL();
-		}
-		else if (gContextMenu && gContextMenu.linkURL)
-		{
-			var href = gContextMenu.linkURL();
-		}
-		if (!href)
-		{
-			return false;
-		}
-		var favServer = nzbdStatus.getPreference('servers.favorite');
-		var fullUrl = nzbdStatus.getPreference('servers.'+favServer+'.url') + nzbdStatus.getPreference('addUrl');
-		if (nzbdStatus.getPreference('legacyMode'))
-		{
-			fullUrl += '?url=';
-		}
-		else
-		{
-			fullUrl += '?mode=addurl&name=';
-		}
-		fullUrl += encodeURIComponent(href);
-		var postproc = nzbdStatus.getPreference('newzbinToSAB');
-		if (postproc != -1)
-		{
-			fullUrl += '&pp=' + postproc;
-		}
-		var xmlHttp = nzbdStatus.xmlHttp;
-		xmlHttp.open('GET', fullUrl, true);
-		xmlHttp.onload = nzbdStatus.goActiveSoon;
-		xmlHttp.send(null);
-		gContextMenu.target.style.opacity = '.25';
-
-		} catch(e) { dump('sendurl error: '+e+'\n'); }
-	},
-
 	uploadFile: function(filename, content)
 	{
 		try {
@@ -1313,15 +1272,93 @@ dump('in qe\n')
 				serverId = nzbdStatus.getPreference('servers.favorite');
 			}
 		}
+		var newzbinIdName = nzbdStatus.selectSingleNode(doc, doc, '//A[@href="/browse/post/'+nzbId+'/"]');
+		if (newzbinIdName)
+		{
+			newzbinIdName = newzbinIdName.textContent;
+		}
+		else
+		{
+			newzbinIdName = '';
+		}
+
 		var newEvent = {
 		 action: 'sendNewzbinId',
 		 serverId: serverId,
 		 newzbinId: nzbId,
+		 newzbinIdName: newzbinIdName,
 		 icon: nzbdStatus.selectSingleNode(doc, doc, '//img[@alt="nzbId'+nzbId+'"]'),
 		 tries: 0
 		 };
 		nzbdStatus.queueEvent(newEvent);
 
+		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+
+	},
+
+	// Process a Send URL event
+	sendUrl: function(eventDetails)
+	{
+
+		try {
+
+/*
+		var serverDetails = this.getServerDetails(eventDetails.serverId);
+		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
+
+		switch (serverDetails.type)
+		{
+			case 'sabnzbd+':
+				fullUrl += 'api?mode=addurl&name='+encodeURIComponent(eventDetails.url);
+				if (serverDetails.username != null || serverDetails.password != null)
+				{
+					fullUrl += '&ma_username='+serverDetails.username+'&ma_password='+serverDetails.password;
+				}
+				// Optional: &cat=<category>&pp=<job-option>&script=<script>
+				break;
+			case 'hellanzb':
+			case 'nzbget':
+			default:
+				// Something that's not been implemented yet
+				dump('Unsupported server type `'+serverDetails.type+'` requested\n');
+				break;
+		}
+
+		var processingHttp = nzbdStatus.processingHttp;
+		processingHttp.open('GET', fullUrl, true);
+		processingHttp.onload = function() { nzbdStatus.processingResponse(this.responseText, eventDetails, serverDetails) };
+		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout);
+		processingHttp.send(null);
+
+		if (gContextMenu && gContextMenu.getLinkURL)
+		{
+			var href = gContextMenu.getLinkURL();
+		}
+		else if (gContextMenu && gContextMenu.linkURL)
+		{
+			var href = gContextMenu.linkURL();
+		}
+		if (!href)
+		{
+			return false;
+		}
+
+		gContextMenu.target.style.opacity = '.25';
+*/
+
+		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+
+	},
+
+	// Process a Send File event
+	sendFile: function(eventDetails)
+	{
+
+		try {
+/*
+		var serverDetails = this.getServerDetails(eventDetails.serverId);
+		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
+*/
 		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
 
 	},
@@ -1356,7 +1393,7 @@ dump('in qe\n')
 		var processingHttp = nzbdStatus.processingHttp;
 		processingHttp.open('GET', fullUrl, true);
 		processingHttp.onload = function() { nzbdStatus.processingResponse(this.responseText, eventDetails, serverDetails) };
-		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(eventDetails, serverDetails) }, requestTimeout);
+		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout);
 		processingHttp.send(null);
 
 		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
@@ -1369,36 +1406,22 @@ dump('in qe\n')
 		try {
 dump('in pr\n');
 
-		var alertMessage, retryLimit = nzbdStatus.getPreference('servers.retryLimit');
+		var alertMessage, alertTitle, responseStatus, retryLimit = nzbdStatus.getPreference('servers.retryLimit');
 		clearTimeout(serverDetails.timeout);
+
+		// Process based on server type
 		switch (serverDetails.type)
 		{
 			case 'sabnzbd+':
 				if (responseText.search(/ok\n/) > -1)
 				{
 					// Success
-					if (eventDetails.action == 'sendNewzbinId')
-					{
-						alertMessage = serverDetails.label+' has received Newzbin Report Id '+eventDetails.newzbinId;
-					}
-					nzbdStatus.sendDownloadAlert('Newzbin Report Id Received', alertMessage);
+					responseStatus = true;
 				}
 				else
 				{
-					// Failure
-					eventDetails.tries++;
-					if (eventDetails.tries < retryLimit)
-					{
-						nzbdStatus.queueEvent(eventDetails);
-					}
-					else
-					{
-						if (eventDetails.action == 'sendNewzbinId')
-						{
-							alertMessage = serverDetails.label+' failed to receive Newzbin Report Id '+eventDetails.newzbinId;
-						}
-						nzbdStatus.sendErrorAlert('Failure Detected', alertMessage);
-					}
+					// Failure or unknown response
+					responseStatus = false;
 				}
 				break;
 			case 'hellanzb':
@@ -1406,7 +1429,71 @@ dump('in pr\n');
 			default:
 				// Something that's not been implemented yet
 				dump('Unsupported server type `'+serverDetails.type+'` requested\n');
+				responseStatus = false;
 				break;
+		}
+
+		eventDetails.tries++;
+		if (!responseStatus && (eventDetails.tries < retryLimit))
+		{
+			// Server failed to receive data and there are still retries left
+			nzbdStatus.queueEvent(eventDetails);
+		}
+		else
+		{
+			// Further processing based on action
+			switch (eventDetails.action)
+			{
+				case 'sendUrl':
+					if (responseStatus)
+					{
+						alertMessage = serverDetails.label+' has received URL '+eventDetails.url;
+						alertTitle = 'URL Received';
+					}
+					else
+					{
+						alertMessage = serverDetails.label+' failed to receive URL '+eventDetails.url;
+						alertTitle = serverDetails.label+' Failure Detected';
+					}
+					break;
+				case 'sendFile':
+					if (responseStatus)
+					{
+						alertMessage = serverDetails.label+' has received file '+eventDetails.filename;
+						alertTitle = 'File Received';
+					}
+					else
+					{
+						alertMessage = serverDetails.label+' failed to receive file '+eventDetails.filename;
+						alertTitle = serverDetails.label+' Failure Detected';
+					}
+					break;
+				case 'sendNewzbinId':
+					if (responseStatus)
+					{
+						alertMessage = serverDetails.label+' has received Newzbin report #'+eventDetails.newzbinId;
+						alertTitle = 'Newzbin Report Received';
+					}
+					else
+					{
+						alertMessage = serverDetails.label+' failed to receive Newzbin report #'+eventDetails.newzbinId;
+						alertTitle = serverDetails.label+' Failure Detected';
+					}
+					if (eventDetails.newzbinIdName != '')
+					{
+						alertMessage += ', '+eventDetails.newzbinIdName;
+					}
+					break;
+				default:
+			}
+			if (responseStatus)
+			{
+				nzbdStatus.sendDownloadAlert(alertTitle, alertMessage);
+			}
+			else
+			{
+				nzbdStatus.sendErrorAlert(alertTitle, alertMessage);
+			}
 		}
 
 		// Go do the next thing in the queue
@@ -1416,12 +1503,13 @@ dump('in pr\n');
 
 	},
 
-	abortRequestProcessing: function(eventDetails, serverDetails)
+	abortRequestProcessing: function(processingHttp, eventDetails, serverDetails)
 	{
 
 		try {
 dump('in er\n');
 
+		processingHttp.abort();
 		nzbdStatus.processingResponse('', eventDetails, serverDetails)
 
 		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
