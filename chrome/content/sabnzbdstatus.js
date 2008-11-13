@@ -461,7 +461,7 @@ nzbdStatusObject.prototype = {
 	historyReceived: function()
 	{
 		try {
-
+return;
 		var nzbHistory = nzbdStatus.historyHttp.responseText;
 		if (nzbHistory == '')
 		{
@@ -694,7 +694,7 @@ nzbdStatusObject.prototype = {
 		}
 		return serverList;
 
-		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -762,7 +762,7 @@ nzbdStatusObject.prototype = {
 			return;
 		}
 
-		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -803,7 +803,7 @@ nzbdStatusObject.prototype = {
 			oldTo.parentNode.replaceChild(sendTo, oldTo);
 		}
 
-		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -865,7 +865,7 @@ nzbdStatusObject.prototype = {
 		}
 		return sendIcon;
 
-		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -883,7 +883,7 @@ nzbdStatusObject.prototype = {
 		sList.style.top = (e.originalTarget.y - Math.floor((sList.offsetHeight - targ.offsetHeight) / 2)) + 'px';
 		return;
 
-		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -897,7 +897,7 @@ nzbdStatusObject.prototype = {
 		sList.style.display = 'none';
 		return;
 
-		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -942,47 +942,6 @@ nzbdStatusObject.prototype = {
 		}
 	},
 
-	uploadFile: function(filename, content)
-	{
-		try {
-
-		var justname = filename.split(/(\/|\\)/)[filename.split(/(\/|\\)/).length-1];
-		var favServer = this.getPreference('servers.favorite');
-		var fullUrl =  + this.getPreference('addFile');
-		if (!this.getPreference('legacyMode'))
-		{
-			fullUrl += '?mode=addfile';
-			var namename = 'name';
-		}
-		else
-		{
-			var namename = 'nzbfile';
-		}
-		var d = new Date();
-		var boundary = '--------' + d.getTime();
-		var requestbody = '--' + boundary + '\nContent-Disposition: form-data; name="'+namename+'"; filename="' + justname + '"\n' +
-		 'Content-Type: application/octet-stream\n\n' + content + '\n' +
-		 '--' + boundary;
-		if (this.getPreference('filesToSAB') != -1)
-		{
-			requestbody += '\nContent-Disposition: form-data; name="pp"\n\n' +
-			 this.getPreference('filesToSAB') + '\n' + '--' + boundary;
-		}
-		requestbody += '--\n';
-
-		// We don't use the object's one so that we can have multiple going
-		var xmlHttp = nzbdStatus.xmlHttp;
-		xmlHttp.open('POST', fullUrl, true);
-		xmlHttp.setRequestHeader('Referer', this.getPreference('servers.'+favServer+'.url'));
-		xmlHttp.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
-		xmlHttp.setRequestHeader('Connection', 'close');
-		xmlHttp.setRequestHeader('Content-Length', requestbody.length);
-		xmlHttp.onload = nzbdStatus.goActiveSoon;
-		xmlHttp.send(requestbody);
-
-		} catch(e) { dump('uploadFile:'+e+'\n'); }
-	},
-
 	// Initialization and starting of timers are done here
 	startup: function()
 	{
@@ -991,9 +950,9 @@ nzbdStatusObject.prototype = {
 		// Load up the server details into the cache
 		this.fillServerCache();
 
-		if (this.getPreference('enableFilesToSAB'))
+		//  Put an observer on all downloads if we'll be sending files
+		if (this.getPreference('enableFilesToServer'))
 		{
-			// Put an observer on all downloads
 			this.observerService.addObserver(this, 'dl-done', false);
 		}
 
@@ -1038,41 +997,9 @@ nzbdStatusObject.prototype = {
 				nzbdStatus.observePreferences(subject, topic, data);
 				break;
 			case 'dl-done':
-				nzbdStatus.observeFileDownload(subject, topic, data);
+				nzbdStatus.queueFile(subject, topic, data);
 				break;
 		}
-	},
-
-	// File download observer
-	observeFileDownload: function(subject, topic, data)
-	{
-		try {
-
-		var dlCom = subject.QueryInterface(Components.interfaces.nsIDownload);
-		var fileDetails = null;
-		fileDetails = dlCom.targetFile;
-		if (fileDetails.path.search(/\.nzb$/) == -1)
-		{
-			return;
-		}
-		var file = Components.classes['@mozilla.org/file/local;1']
-		 .createInstance(Components.interfaces.nsILocalFile);
-		file.initWithPath(fileDetails.path);
-		var fiStream = Components.classes['@mozilla.org/network/file-input-stream;1']
-		 .createInstance(Components.interfaces.nsIFileInputStream);
-		var siStream = Components.classes['@mozilla.org/scriptableinputstream;1']
-		 .createInstance(Components.interfaces.nsIScriptableInputStream);
-		var data = new String();
-		fiStream.init(file, 1, 0, false);
-		siStream.init(fiStream);
-		data += siStream.read(-1);
-		siStream.close();
-		fiStream.close();
-		this.uploadFile(fileDetails.path, data);
-		// Delete file file now that we're done with it
-		file.remove(false);
-
-		} catch(e) { dump('observeFileDownload:'+e+'\n'); }
 	},
 
 	// Preferences observer
@@ -1113,8 +1040,8 @@ nzbdStatusObject.prototype = {
 					this.statuslabel.style.visibility = 'visible';
 				}
 				break;
-			case 'enableFilesToSAB':
-				if (this.getPreference('enableFilesToSAB'))
+			case 'enableFilesToServer':
+				if (this.getPreference('enableFilesToServer'))
 				{
 					this.observerService.addObserver(this, 'dl-done', false);
 				}
@@ -1151,6 +1078,14 @@ nzbdStatusObject.prototype = {
 	},
 
 
+
+
+
+// Below here has been rewritten for v2
+
+
+
+
 	// Read the server details into the cache
 	fillServerCache: function()
 	{
@@ -1182,7 +1117,7 @@ nzbdStatusObject.prototype = {
 			});
 		}
 
-		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -1223,7 +1158,7 @@ dump('in pq\n');
 			nzbdStatus.processingQueueActive = false;
 		}
 
-		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -1240,7 +1175,44 @@ dump('in qe\n')
 			setTimeout(this.processQueue, 1); // Send this off so we can go about our day
 		}
 
-		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
+
+	},
+
+	queueUrl: function(e)
+	{
+
+		try {
+
+
+		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
+
+	},
+
+	queueFile: function(subject, topic, data)
+	{
+
+		try {
+dump('in qf\n');
+		var dlCom = subject.QueryInterface(Components.interfaces.nsIDownload);
+		var filename = null;
+		filename = dlCom.displayName;
+		if (filename.search(/\.nzb$/) == -1)
+		{
+			// Not an NZB file
+			return;
+		}
+
+		var newEvent = {
+		 action: 'sendFile',
+		 serverId: nzbdStatus.getPreference('servers.favorite'),
+		 path: dlCom.targetFile.path,
+		 filename: filename,
+		 deleteAfter: true
+		 };
+		nzbdStatus.queueEvent(newEvent);
+
+		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -1292,7 +1264,7 @@ dump('in qe\n')
 		 };
 		nzbdStatus.queueEvent(newEvent);
 
-		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -1302,7 +1274,7 @@ dump('in qe\n')
 
 		try {
 
-/*
+
 		var serverDetails = this.getServerDetails(eventDetails.serverId);
 		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
 
@@ -1329,7 +1301,7 @@ dump('in qe\n')
 		processingHttp.onload = function() { nzbdStatus.processingResponse(this.responseText, eventDetails, serverDetails) };
 		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout);
 		processingHttp.send(null);
-
+/*
 		if (gContextMenu && gContextMenu.getLinkURL)
 		{
 			var href = gContextMenu.getLinkURL();
@@ -1346,7 +1318,7 @@ dump('in qe\n')
 		gContextMenu.target.style.opacity = '.25';
 */
 
-		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -1355,11 +1327,67 @@ dump('in qe\n')
 	{
 
 		try {
-/*
+dump('in sf\n');
+
+		var file = Components.classes['@mozilla.org/file/local;1']
+		 .createInstance(Components.interfaces.nsILocalFile);
+		file.initWithPath(eventDetails.path);
+		if (!file.exists())
+		{
+			// The file we're supposed to upload has disappeared
+			return;
+		}
+
+		var fiStream = Components.classes['@mozilla.org/network/file-input-stream;1']
+		 .createInstance(Components.interfaces.nsIFileInputStream);
+		var siStream = Components.classes['@mozilla.org/scriptableinputstream;1']
+		 .createInstance(Components.interfaces.nsIScriptableInputStream);
+		var data = new String();
+		fiStream.init(file, 1, 0, false);
+		siStream.init(fiStream);
+		data += siStream.read(-1);
+		siStream.close();
+		fiStream.close();
+
 		var serverDetails = this.getServerDetails(eventDetails.serverId);
 		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
-*/
-		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+
+		switch (serverDetails.type)
+		{
+			case 'sabnzbd+':
+				fullUrl += 'api?mode=addfile';
+				if (serverDetails.username != null || serverDetails.password != null)
+				{
+					fullUrl += '&ma_username='+serverDetails.username+'&ma_password='+serverDetails.password;
+				}
+				// Optional: &cat=<category>&pp=<job-option>&script=<script>
+				var d = new Date();
+				var boundary = '--------' + d.getTime();
+				var requestbody = '--' + boundary + '\nContent-Disposition: form-data; name="name"; filename="' +
+				 eventDetails.filename + '"\n' + 'Content-Type: application/octet-stream\n\n' + data + '\n' +
+				 '--' + boundary + '--\n';
+				break;
+			case 'hellanzb':
+			case 'nzbget':
+			default:
+				// Something that's not been implemented yet
+				dump('Unsupported server type `'+serverDetails.type+'` requested\n');
+				break;
+		}
+
+
+
+		var processingHttp = nzbdStatus.processingHttp;
+		processingHttp.open('POST', fullUrl, true);
+		//processingHttp.setRequestHeader('Referer', serverDetails.url);
+		processingHttp.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
+		processingHttp.setRequestHeader('Connection', 'close');
+		processingHttp.setRequestHeader('Content-Length', requestbody.length);
+		processingHttp.onload = function() { nzbdStatus.processingResponse(this.responseText, eventDetails, serverDetails) };
+		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout);
+		processingHttp.send(requestbody);
+
+		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -1396,7 +1424,7 @@ dump('in qe\n')
 		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout);
 		processingHttp.send(null);
 
-		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -1459,12 +1487,20 @@ dump('in pr\n');
 				case 'sendFile':
 					if (responseStatus)
 					{
-						alertMessage = serverDetails.label+' has received file '+eventDetails.filename;
+						alertMessage = serverDetails.label+' has received the file '+eventDetails.filename;
 						alertTitle = 'File Received';
+						if (eventDetails.deleteAfter)
+						{
+							// Delete file file now that we're done with it
+							var file = Components.classes['@mozilla.org/file/local;1']
+							 .createInstance(Components.interfaces.nsILocalFile);
+							file.initWithPath(eventDetails.path);
+							file.remove(false);
+						}
 					}
 					else
 					{
-						alertMessage = serverDetails.label+' failed to receive file '+eventDetails.filename;
+						alertMessage = serverDetails.label+' failed to receive the file '+eventDetails.filename;
 						alertTitle = serverDetails.label+' Failure Detected';
 					}
 					break;
@@ -1499,7 +1535,7 @@ dump('in pr\n');
 		// Go do the next thing in the queue
 		setTimeout(nzbdStatus.processQueue, 1);
 
-		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -1512,7 +1548,7 @@ dump('in er\n');
 		processingHttp.abort();
 		nzbdStatus.processingResponse('', eventDetails, serverDetails)
 
-		} catch(e) { dump(arguments.callee.toString().match(/([^\s]*):\s*function/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
 
 	}
 
