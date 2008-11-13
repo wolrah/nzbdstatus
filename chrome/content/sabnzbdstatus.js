@@ -42,6 +42,7 @@ nzbdStatusObject.prototype = {
 	_observerService: Components.classes['@mozilla.org/observer-service;1']
 	 .getService(Components.interfaces.nsIObserverService),
 	_askForPass: false,
+	_handleDownloads: true,
 	_processingHttp: new XMLHttpRequest(), // One httpRequest object for the processing queue
 	_queueHttp: new XMLHttpRequest(), // One httpRequest object for the queue tracking
 	_historyHttp: new XMLHttpRequest(), // One httpRequest object for the history monitoring
@@ -75,13 +76,13 @@ nzbdStatusObject.prototype = {
 
 	// Ajax for the history only to prevent conflicts
 	get historyHttp()
-	{
+		{
 		return this._historyHttp;
 	},
 
 	// Ajax for the processing queue
 	get processingHttp()
-	{
+		{
 		return this._processingHttp;
 	},
 
@@ -950,11 +951,20 @@ return;
 		// Load up the server details into the cache
 		this.fillServerCache();
 
-		//  Put an observer on all downloads if we'll be sending files
-		if (this.getPreference('enableFilesToServer'))
+		// Check to see if we need to put an observer on the download manager
+		var dlObs = this.observerService.enumerateObservers('nzbdStatus');
+		if (!dlObs.hasMoreElements())
 		{
-			this.observerService.addObserver(this, 'dl-done', false);
+			if (this.getPreference('enableFilesToServer'))
+			{
+				this.observerService.addObserver(this, 'dl-done', false);
+			}
 		}
+		else
+		{
+			this._handleDownloads = false;
+		}
+		this.observerService.addObserver(this, 'nzbdStatus', false);
 
 		var menu = document.getElementById('contentAreaContextMenu');
 		menu.addEventListener('popupshowing', this.contextPopupShowing, false);
@@ -985,7 +995,20 @@ return;
 	shutdown: function()
 	{
 		this.preferences.removeObserver('', this);
-		this.observerService.removeObserver(this, 'dl-done');
+		this.observerService.removeObserver(this, 'nzbdStatus');
+		if (this._handleDownloads)
+		{
+			var dlObs = observerService.enumerateObservers('nzbdStatus')
+			if (dlObs.hasMoreElements())
+			{
+				var otherWindow = dlObs.getNext().QueryInterface(Components.interfaces.nsIObserver);
+				otherWindow.notify(null, 'nzbdStatus', 'startHandleDownload');
+			}
+			if (this.getPreference('enableFilesToServer'))
+			{
+				this.observerService.removeObserver(this, 'dl-done');
+			}
+		}
 	},
 
 	// This gets fired every time one of our observers gets tripped
@@ -998,6 +1021,17 @@ return;
 				break;
 			case 'dl-done':
 				nzbdStatus.queueFile(subject, topic, data);
+				break;
+			case 'nzbdStatus':
+				if (data == 'startHandleDownload')
+				{
+					// We've been told to handle file downloads now
+					nzbdStatus._handleDownloads = true;
+					if (nzbdStatus.getPreference('enableFilesToServer'))
+					{
+						nzbdStatus.observerService.addObserver(nzbdStatus, 'dl-done', false);
+					}
+				}
 				break;
 		}
 	},
@@ -1041,13 +1075,16 @@ return;
 				}
 				break;
 			case 'enableFilesToServer':
-				if (this.getPreference('enableFilesToServer'))
+				if (this._handleDownloads)
 				{
-					this.observerService.addObserver(this, 'dl-done', false);
-				}
-				else
-				{
-					this.observerService.removeObserver(this, 'dl-done');
+					if (this.getPreference('enableFilesToServer'))
+					{
+						this.observerService.addObserver(this, 'dl-done', false);
+					}
+					else
+					{
+						this.observerService.removeObserver(this, 'dl-done');
+					}
 				}
 				break;
 			case 'legacyMode':
@@ -1106,7 +1143,7 @@ return;
 			{
 				username = logins[0].username;
 				password = logins[0].password;
-			}
+	}
 			this.setServerDetails(i, {
 			 url : fullUrl,
 			 type: serverType,
@@ -1156,7 +1193,7 @@ dump('in pq\n');
 		else
 		{
 			nzbdStatus.processingQueueActive = false;
-		}
+}
 
 		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
 
@@ -1164,7 +1201,7 @@ dump('in pq\n');
 
 	// Add an event to the end of the event queue
 	queueEvent: function(newEvent)
-	{
+{
 
 		try {
 dump('in qe\n')
