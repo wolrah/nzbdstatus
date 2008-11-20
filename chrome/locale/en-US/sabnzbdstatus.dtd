@@ -1,10 +1,10 @@
-<!ENTITY sabstatus.tooltip_idle.value "SABnzbd Is Currently Idle">
-<!ENTITY sabstatus.tooltip_pause.value "SABnzbd Is Currently Paused">
+<!ENTITY sabstatus.tooltip_idle.value "This server is idle">
+<!ENTITY sabstatus.tooltip_pause.value "This server is paused">
 <!ENTITY sabstatus.tooltip_kbpersec.value "Download Speed:">
 <!ENTITY sabstatus.tooltip_jobs0.value "Currently Downloading:">
 <!ENTITY sabstatus.tooltip_jobs0_time.value "Current Time Remaining:">
 <!ENTITY sabstatus.tooltip_mbleft.value "Total Remaining:">
 <!ENTITY sabstatus.tooltip_diskspace1.value "Diskspace Free:">
-<!ENTITY sabstatus.menu_pause "Pause SABnzbd">
+<!ENTITY sabstatus.menu_pause "Pause this server">
 <!ENTITY sabstatus.menu_config "Configure nzbStatus">
-<!ENTITY sabstatus.menu_sendurl.label "Send URL to SABnzbd">
+<!ENTITY sabstatus.menu_sendurl.label "Send URL to server">
