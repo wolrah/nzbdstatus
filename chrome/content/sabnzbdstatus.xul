@@ -1,20 +1,20 @@
 <?xml version="1.0"?>
-<!DOCTYPE overlay SYSTEM "chrome://nzbdstatus/locale/sabnzbdstatus.dtd">
-<?xml-stylesheet href="chrome://nzbdstatus/content/sabnzbdstatus.css" type="text/css"?>
-<overlay id='sabnzbdstatus-overlay' xmlns='http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul'>
-	<script type='application/x-javascript' src='chrome://nzbdstatus/content/sabnzbdstatus.js' />
+<!DOCTYPE overlay SYSTEM "chrome://nzbdstatus/locale/nzbdstatus.dtd">
+<?xml-stylesheet href="chrome://nzbdstatus/content/nzbdstatus.css" type="text/css"?>
+<overlay id='nzbdstatus-overlay' xmlns='http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul'>
+	<script type='application/x-javascript' src='chrome://nzbdstatus/content/nzbdstatus.js' />
 	<statusbar id='status-bar'>
-		<statusbarpanel id='sabstatus' context='sabstatus-context' tooltip='sabstatus-idle' onclick='SABnzbdStatus.clickedOn(event)'
+		<statusbarpanel id='nzbdstatus' context='nzbdstatus-context' tooltip='nzbdstatus-idle' onclick='nzbdStatus.clickedOn(event)'
 		 insertafter='adblock-status,statusbar-updates,statusbarpanel-progress,security-button,privacy-button,offline-status,popupIcon,statusbar-display,component-bar'>
-			<image id='sabstatus-image' />
-			<label id='sabstatus-label' />
-			<tooltip id='sabstatus-idle' noautohide='true'>
-				<description value='&sabstatus.tooltip_idle.value;' />
+			<image id='nzbdstatus-image' />
+			<label id='nzbdstatus-label' />
+			<tooltip id='nzbdstatus-idle' noautohide='true'>
+				<description value='&nzbdstatus.tooltip_idle.value;' />
 			</tooltip>
-			<tooltip id='sabstatus-pause' noautohide='true'>
-				<description value='&sabstatus.tooltip_pause.value;' />
+			<tooltip id='nzbdstatus-pause' noautohide='true'>
+				<description value='&nzbdstatus.tooltip_pause.value;' />
 			</tooltip>
-			<tooltip id='sabstatus-info' noautohide='true'>
+			<tooltip id='nzbdstatus-info' noautohide='true'>
 				<grid>
 					<columns>
 						<column />
@@ -22,36 +22,36 @@
 					</columns>
 					<rows>
 						<row>
-							<description value='&sabstatus.tooltip_kbpersec.value;' />
-							<description id='sabstatus-kbpersec' />
+							<description value='&nzbdstatus.tooltip_kbpersec.value;' />
+							<description id='nzbdstatus-kbpersec' />
 						</row>
 						<row>
-							<description value='&sabstatus.tooltip_jobs0.value;' />
-							<description id='sabstatus-jobs0' />
+							<description value='&nzbdstatus.tooltip_jobs0.value;' />
+							<description id='nzbdstatus-jobs0' />
 						</row>
 						<row>
-							<description value='&sabstatus.tooltip_jobs0_time.value;' />
-							<description id='sabstatus-jobs0-time' />
+							<description value='&nzbdstatus.tooltip_jobs0_time.value;' />
+							<description id='nzbdstatus-jobs0-time' />
 						</row>
 						<row>
-							<description value='&sabstatus.tooltip_mbleft.value;' />
-							<progressmeter id='sabstatus-mbleft' mode='determined' />
+							<description value='&nzbdstatus.tooltip_mbleft.value;' />
+							<progressmeter id='nzbdstatus-mbleft' mode='determined' />
 						</row>
 						<row>
-							<description value='&sabstatus.tooltip_diskspace1.value;' />
-							<description id='sabstatus-diskspace1' />
+							<description value='&nzbdstatus.tooltip_diskspace1.value;' />
+							<description id='nzbdstatus-diskspace1' />
 						</row>
 					</rows>
 				</grid>
 			</tooltip>
 		</statusbarpanel>
-		<menupopup id='sabstatus-context'>
-			<menuitem label='&sabstatus.menu_config;' oncommand='window.openDialog("chrome://nzbdstatus/content/configuration.xul", "sabnzb-prefs", "chrome,dependent,titlebar,toolbar,centerscreen,resizable", "sabnzb-gen")' />
-			<menuitem label='&sabstatus.menu_pause;' oncommand='SABnzbdStatus.togglePause()' type='checkbox' id='sabstatus-context-pause' />
+		<menupopup id='nzbdstatus-context'>
+			<menuitem label='&nzbdstatus.menu_config;' oncommand='window.openDialog("chrome://nzbdstatus/content/configuration.xul", "nzbd-prefs", "chrome,dependent,titlebar,toolbar,centerscreen,resizable", "nzbd-gen")' />
+			<menuitem label='&nzbdstatus.menu_pause;' oncommand='nzbdStatus.togglePause()' type='checkbox' id='nzbdstatus-context-pause' />
 		</menupopup>
 	</statusbar>
 	<!-- Add our submenu to the main Context menu -->
 	<popup id='contentAreaContextMenu'>
-		<menuitem id='sabstatus-context-sendlink' oncommand='SABnzbdStatus.sendUrl()' label='&sabstatus.menu_sendurl.label;' />
+		<menuitem id='nzbdstatus-context-sendlink' oncommand='nzbdStatus.sendUrl()' label='&nzbdstatus.menu_sendurl.label;' />
 	</popup>
 </overlay>

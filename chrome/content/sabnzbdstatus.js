@@ -293,8 +293,8 @@ nzbdStatusObject.prototype = {
 			if (notFound)
 			{
 				// Didn't find it so we'll ask them
-				window.openDialog('chrome://nzbdstatus/content/configuration.xul','sabnzb-prefs',
-				 'chrome,dependent,titlebar,toolbar,centerscreen,resizable','sabnzb-sab');
+				window.openDialog('chrome://nzbdstatus/content/configuration.xul','nzbdnzb-prefs',
+				 'chrome,dependent,titlebar,toolbar,centerscreen,resizable','nzbdnzb-sab');
 			}
 		}
 		nzbdStatus.refreshStatus();
@@ -315,50 +315,17 @@ nzbdStatusObject.prototype = {
 		timeRemain = nzbdStatus.convertSecondsToTime(timeRemain);
 		nzbdStatus.statuslabel.value = timeRemain;
 
-		timeRemain = document.getElementById('sabstatus-jobs0-time').value;
+		timeRemain = document.getElementById('nzbdstatus-jobs0-time').value;
 		timeRemain = nzbdStatus.convertTimeToSeconds(timeRemain) - 1;
 		timeRemain = nzbdStatus.convertSecondsToTime(timeRemain);
-		document.getElementById('sabstatus-jobs0-time').value = timeRemain;
+		document.getElementById('nzbdstatus-jobs0-time').value = timeRemain;
 
 	} catch(e) { dump('countdown error:'+e); }
 	},
 
-	clickedOn: function(e)
-	{
-		try {
-
-		var favServer = this.getPreference('servers.favorite');
-		var SABurl = this.getPreference('servers.'+favServer+'.url');
-		if (e.button == 0)
-		{
-			var action = this.getPreference('leftClick');
-		}
-		else if (e.button == 1)
-		{
-			var action = this.getPreference('middleClick');
-		}
-		switch (action)
-		{
-			case 'refresh':
-				this.refreshStatus();
-				break;
-			case 'newtab':
-				getBrowser().addTab(SABurl);
-				break;
-			case 'sametab':
-				loadURI(SABurl);
-				break;
-			case 'newwindow':
-				window.open(SABurl);
-				break;
-		}
-
-		} catch(e) { dump('clickedOn error:'+e); }
-	},
-
 	togglePause: function()
 	{
-		var toPause = (document.getElementById('sabstatus-context-pause').getAttribute('checked') != '');
+		var toPause = (document.getElementById('nzbdstatus-context-pause').getAttribute('checked') != '');
 		if (toPause)
 		{
 			this.goPaused();
@@ -373,9 +340,9 @@ nzbdStatusObject.prototype = {
 
 	goIdle: function()
 	{
-		document.getElementById('sabstatus-context-pause').removeAttribute('checked');
+		document.getElementById('nzbdstatus-context-pause').removeAttribute('checked');
 		this.statusicon.src = this.getPreference('iconIdle');
-		this.statusbar.setAttribute('tooltip', 'sabstatus-idle');
+		this.statusbar.setAttribute('tooltip', 'nzbdstatus-idle');
 		this.statuslabel.value = '';
 		if (this.getPreference('alwaysShowIcon'))
 		{
@@ -394,9 +361,9 @@ nzbdStatusObject.prototype = {
 
 	goPaused: function()
 	{
-		document.getElementById('sabstatus-context-pause').setAttribute('checked', true);
+		document.getElementById('nzbdstatus-context-pause').setAttribute('checked', true);
 		this.statusicon.src = this.getPreference('iconPaused');
-		this.statusbar.setAttribute('tooltip', 'sabstatus-pause');
+		this.statusbar.setAttribute('tooltip', 'nzbdstatus-pause');
 		if (this.countdownId != null)
 		{
 			this.countdownId = clearInterval(this.countdownId);
@@ -405,9 +372,9 @@ nzbdStatusObject.prototype = {
 
 	goActive: function()
 	{
-		document.getElementById('sabstatus-context-pause').removeAttribute('checked');
+		document.getElementById('nzbdstatus-context-pause').removeAttribute('checked');
 		this.statusicon.src = this.getPreference('iconDownload');
-		this.statusbar.setAttribute('tooltip', 'sabstatus-info');
+		this.statusbar.setAttribute('tooltip', 'nzbdstatus-info');
 		this.statusbar.style.visibility = 'visible';
 		if (this.getPreference('onlyShowIcon'))
 		{
@@ -629,11 +596,11 @@ return;
 		curTime = nzbdStatus.convertSecondsToTime(curTime);
 
 		nzbdStatus.statuslabel.value = totalTimeRemain;
-		document.getElementById('sabstatus-kbpersec').value = Math.floor(speed) + ' KB/s';
-		document.getElementById('sabstatus-mbleft').setAttribute('value', totalPer);
-		document.getElementById('sabstatus-diskspace1').value = (Math.floor(finSpace * 100) / 100) + ' GB';
-		document.getElementById('sabstatus-jobs0').value = curDL;
-		document.getElementById('sabstatus-jobs0-time').value = curTime;
+		document.getElementById('nzbdstatus-kbpersec').value = Math.floor(speed) + ' KB/s';
+		document.getElementById('nzbdstatus-mbleft').setAttribute('value', totalPer);
+		document.getElementById('nzbdstatus-diskspace1').value = (Math.floor(finSpace * 100) / 100) + ' GB';
+		document.getElementById('nzbdstatus-jobs0').value = curDL;
+		document.getElementById('nzbdstatus-jobs0-time').value = curTime;
 
 		nzbdStatus.goActive();
 
@@ -935,11 +902,11 @@ return;
 	{
 		if (nzbdStatus.checkForNZB())
 		{
-			document.getElementById('sabstatus-context-sendlink').hidden = false;
+			document.getElementById('nzbdstatus-context-sendlink').hidden = false;
 		}
 		else
 		{
-			document.getElementById('sabstatus-context-sendlink').hidden = true;
+			document.getElementById('nzbdstatus-context-sendlink').hidden = true;
 		}
 	},
 
@@ -968,9 +935,9 @@ return;
 
 		var menu = document.getElementById('contentAreaContextMenu');
 		menu.addEventListener('popupshowing', this.contextPopupShowing, false);
-		this.statusbar = document.getElementById('sabstatus');
-		this.statusicon = document.getElementById('sabstatus-image');
-		this.statuslabel = document.getElementById('sabstatus-label');
+		this.statusbar = document.getElementById('nzbdstatus');
+		this.statusicon = document.getElementById('nzbdstatus-image');
+		this.statuslabel = document.getElementById('nzbdstatus-label');
 		this.goIdle();
 		if (this.getPreference('onlyShowIcon'))
 		{
@@ -1039,7 +1006,7 @@ return;
 	// Preferences observer
 	observePreferences: function(subject, topic, data)
 	{
-		switch (data)
+		switch (data.split('.')[0])
 		{
 			case 'refreshRate':
 				this.refreshId = clearInterval(this.refreshId);
@@ -1087,29 +1054,15 @@ return;
 					}
 				}
 				break;
-			case 'legacyMode':
-				if (this.getPreference('legacyMode'))
+			case 'servers':
+				// Something with servers changed, lets narrow it down
+				switch (data.split('.')[1])
 				{
-					this.setPreference('queueUrl', 'queue/');
-					this.setPreference('pauseUrl', 'queue/resume');
-					this.setPreference('unpauseUrl', 'queue/resume');
-					this.setPreference('addUrl', 'addURL');
-					this.setPreference('addID', 'addID');
-					this.setPreference('addFile', 'addFile');
+					case 'count':
+						this.fillServerCache();
+						break;
 				}
-				else
-				{
-					this.setPreference('template', 'None');
-					this.setPreference('queueUrl', 'api?mode=qstatus&output=json');
-					this.setPreference('pauseUrl', 'api?mode=pause');
-					this.setPreference('unpauseUrl', 'api?mode=resume');
-					this.setPreference('addUrl', 'api');
-					this.setPreference('addID', 'api');
-					this.setPreference('addFile', 'api');
-				}
-			case 'sabusername':
-			case 'sabpassword':
-				this._askForPass = false;
+
 				break;
 		}
 	},
@@ -1118,10 +1071,42 @@ return;
 
 
 
-// Below here has been rewritten for v2
+// Below here has been rewritten || is brand new for v2
 
 
 
+	clickedOn: function(e)
+	{
+		try {
+
+		var favServer = nzbdStatus.getPreference('servers.favorite');
+		var fullUrl = nzbdStatus.getServerDetails(favServer);
+		if (e.button == 0)
+		{
+			var action = nzbdStatus.getPreference('leftClick');
+		}
+		else if (e.button == 1)
+		{
+			var action = nzbdStatus.getPreference('middleClick');
+		}
+		switch (action)
+		{
+			case 'refresh':
+				this.refreshStatus();
+				break;
+			case 'newtab':
+				getBrowser().addTab(fullUrl.url);
+				break;
+			case 'sametab':
+				loadURI(fullUrl.url);
+				break;
+			case 'newwindow':
+				window.open(fullUrl.url);
+				break;
+		}
+
+		} catch(e) { dump('clickedOn error:'+e); }
+	},
 
 	// Read the server details into the cache
 	fillServerCache: function()
@@ -1143,7 +1128,7 @@ return;
 			{
 				username = logins[0].username;
 				password = logins[0].password;
-	}
+			}
 			this.setServerDetails(i, {
 			 url : fullUrl,
 			 type: serverType,
