@@ -3,4 +3,4 @@ locale	nzbdstatus	en-US	chrome/locale/en-US/
 skin	nzbdstatus	classic/1.0	skin/content/
 content	nzbdstatus	chrome/content/	contentaccessible=yes
 skin	nzbdstatus	classic/1.0	skin/content/	contentaccessible=yes
-overlay	chrome://browser/content/browser.xul	chrome://nzbdstatus/content/sabnzbdstatus.xul
+overlay	chrome://browser/content/browser.xul	chrome://nzbdstatus/content/nzbdstatus.xul
