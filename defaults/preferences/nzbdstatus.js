@@ -18,12 +18,6 @@ pref('extensions.nzbdstatus.addUrl', 'api');
 pref('extensions.nzbdstatus.addID', 'api');
 pref('extensions.nzbdstatus.addFile', 'api');
 
-pref('extensions.nzbdstatus.legacyMode', false);
-
-pref('extensions.nzbdstatus.template', 'None');
-pref('extensions.nzbdstatus.sabusername', '');
-pref('extensions.nzbdstatus.sabpassword', '');
-
 pref('extensions.nzbdstatus.enableInNewzbin', true);
 pref('extensions.nzbdstatus.newzbinToSAB', 3);
 
