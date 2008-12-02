@@ -1,7 +1,0 @@
-tooltip#sabstatus-info row description:first-child {
-text-align:right;
-font-weight:bold;
-}
-tooltip#sabstatus-info progressmeter#sabstatus-mbleft {
-min-width:100px;
-}
