@@ -1,7 +1,10 @@
-tooltip#nzbdstatus-info row description:first-child {
+grid.nzbdstatus-tooltip-data row description:first-child {
 text-align:right;
 font-weight:bold;
 }
-tooltip#nzbdstatus-info progressmeter#nzbdstatus-mbleft {
+grid.nzbdstatus-tooltip-data progressmeter.nzbdstatus-mbleft {
 min-width:100px;
+}
+.nzbdstatus-hidden {
+visibility:collapse;
 }
