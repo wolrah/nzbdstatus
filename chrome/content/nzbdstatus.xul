@@ -4,18 +4,14 @@
 <overlay id='nzbdstatus-overlay' xmlns='http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul'>
 	<script type='application/x-javascript' src='chrome://nzbdstatus/content/nzbdstatus.js' />
 	<statusbar id='status-bar'>
-		<statusbarpanel id='nzbdstatus' context='nzbdstatus-context' tooltip='nzbdstatus-idle' onclick='nzbdStatus.clickedOn(event)'
-		 insertafter='adblock-status,statusbar-updates,statusbarpanel-progress,security-button,privacy-button,offline-status,popupIcon,statusbar-display,component-bar'>
-			<image id='nzbdstatus-image' />
-			<label id='nzbdstatus-label' />
-			<tooltip id='nzbdstatus-idle' noautohide='true'>
-				<description value='&nzbdstatus.tooltip_idle.value;' />
-			</tooltip>
-			<tooltip id='nzbdstatus-pause' noautohide='true'>
-				<description value='&nzbdstatus.tooltip_pause.value;' />
-			</tooltip>
-			<tooltip id='nzbdstatus-info' noautohide='true'>
-				<grid>
+		<statusbarpanel id='nzbdstatus-panel-0' class='nzbdstatus-panel' context='nzbdstatus-context-0'
+		 tooltip='nzbdstatus-tooltip-0' onclick='nzbdStatus.clickedOn(event)'
+		 insertafter='statusbar-updates,statusbarpanel-progress,security-button,privacy-button,download-monitor,statusbar-display'>
+			<image />
+			<label />
+			<tooltip id='nzbdstatus-tooltip-0' noautohide='true'>
+				<description value='&nzbdstatus.tooltip_idle.value;' class='nzbdstatus-tooltip-text' />
+				<grid class='nzbdstatus-tooltip-data nzbdstatus-hidden'>
 					<columns>
 						<column />
 						<column flex='1' />
@@ -23,31 +19,31 @@
 					<rows>
 						<row>
 							<description value='&nzbdstatus.tooltip_kbpersec.value;' />
-							<description id='nzbdstatus-kbpersec' />
+							<description class='nzbdstatus-kbpersec' />
 						</row>
 						<row>
 							<description value='&nzbdstatus.tooltip_jobs0.value;' />
-							<description id='nzbdstatus-jobs0' />
+							<description class='nzbdstatus-jobs0' />
 						</row>
 						<row>
 							<description value='&nzbdstatus.tooltip_jobs0_time.value;' />
-							<description id='nzbdstatus-jobs0-time' />
+							<description class='nzbdstatus-jobs0-time' />
 						</row>
 						<row>
 							<description value='&nzbdstatus.tooltip_mbleft.value;' />
-							<progressmeter id='nzbdstatus-mbleft' mode='determined' />
+							<progressmeter class='nzbdstatus-mbleft' mode='determined' />
 						</row>
 						<row>
 							<description value='&nzbdstatus.tooltip_diskspace1.value;' />
-							<description id='nzbdstatus-diskspace1' />
+							<description class='nzbdstatus-diskspace1' />
 						</row>
 					</rows>
 				</grid>
 			</tooltip>
 		</statusbarpanel>
-		<menupopup id='nzbdstatus-context'>
+		<menupopup id='nzbdstatus-context-0'>
 			<menuitem label='&nzbdstatus.menu_config;' oncommand='window.openDialog("chrome://nzbdstatus/content/configuration.xul", "nzbd-prefs", "chrome,dependent,titlebar,toolbar,centerscreen,resizable", "nzbd-gen")' />
-			<menuitem label='&nzbdstatus.menu_pause;' oncommand='nzbdStatus.togglePause()' type='checkbox' id='nzbdstatus-context-pause' />
+			<menuitem label='&nzbdstatus.menu_pause;' oncommand='nzbdStatus.togglePause()' type='checkbox' class='nzbdstatus-context-pause' />
 		</menupopup>
 	</statusbar>
 	<!-- Add our submenu to the main Context menu -->
