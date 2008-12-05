@@ -30,7 +30,8 @@ nzbdStatusObject.prototype = {
 	statusbar: null, // Shortcut
 	statusicon: null, // Shortcut
 	statuslabel: null, // Shortcut
-
+	favServer: null, // Our favorite server
+	serverDetails: Array(), // Cache for the server details
 	processingQueue: Array(), // Where what needs to be done is put
 	processingQueueActive: false,  // So we don't try to do things twice
 
@@ -46,7 +47,6 @@ nzbdStatusObject.prototype = {
 	_processingHttp: new XMLHttpRequest(), // One httpRequest object for the processing queue
 	_queueHttp: new XMLHttpRequest(), // One httpRequest object for the queue tracking
 	_historyHttp: new XMLHttpRequest(), // One httpRequest object for the history monitoring
-	_serverDetails: Array(), // Cache for server details
 
 	// Getters
 
@@ -156,18 +156,6 @@ nzbdStatusObject.prototype = {
 		return result;
 	},
 
-	// Return the cached details of the indicated server
-	getServerDetails: function(serverId)
-	{
-		return this._serverDetails[serverId];
-	},
-
-	// Populates the cache with the indicated server's details
-	setServerDetails: function(serverId, serverDetails)
-	{
-		this._serverDetails[serverId] = serverDetails;
-	},
-
 	sendAlert: function(icon, title, message)
 	{
 		try {
@@ -191,8 +179,7 @@ nzbdStatusObject.prototype = {
 
 	sendPause: function()
 	{
-		var favServer = nzbdStatus.getPreference('servers.favorite');
-		var sabUrl = nzbdStatus.getPreference('servers.'+favServer+'.url') + nzbdStatus.getPreference('pauseUrl');
+		var sabUrl = nzbdStatus.getPreference('servers.'+this.favServer+'.url') + nzbdStatus.getPreference('pauseUrl');
 		var xmlHttp = this.xmlHttp;
 		xmlHttp.open('GET', sabUrl, true);
 		xmlHttp.send(null);
@@ -202,8 +189,7 @@ nzbdStatusObject.prototype = {
 	{
 		try {
 
-		var favServer = nzbdStatus.getPreference('servers.favorite');
-		var sabUrl = nzbdStatus.getPreference('servers.'+favServer+'.url') + nzbdStatus.getPreference('unpauseUrl');
+		var sabUrl = nzbdStatus.getPreference('servers.'+this.favServer+'.url') + nzbdStatus.getPreference('unpauseUrl');
 		var xmlHttp = this.xmlHttp;
 		xmlHttp.open('GET', sabUrl, true);
 		xmlHttp.send(null);
@@ -229,8 +215,7 @@ nzbdStatusObject.prototype = {
 		var username = this.getPreference('sabusername');
 		var password = this.getPreference('sabpassword');
 		var postVars = 'ma_username='+username+'&ma_password='+password;
-		var favServer = nzbdStatus.getPreference('servers.favorite');
-		var sabUrl = this.getPreference('servers.'+favServer+'.url');
+		var sabUrl = this.getPreference('servers.'+this.favServer+'.url');
 		var xmlHttp = this.queueHttp;
 		xmlHttp.open('POST', sabUrl, true);
 		xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -248,8 +233,7 @@ nzbdStatusObject.prototype = {
 		if (tryingToLogin)
 		{
 			// We didn't login so we'll try to read the username/password from Firefox
-			var favServer = nzbdStatus.getPreference('servers.favorite');
-			var fullUrl = nzbdStatus.getPreference('servers.'+favServer+'.url');
+			var fullUrl = nzbdStatus.getPreference('servers.'+this.favServer+'.url');
 			var rootUrl = 'http://' + fullUrl.split('/')[2];
 			var notFound = true;
 			if ("@mozilla.org/passwordmanager;1" in Components.classes)
@@ -315,17 +299,17 @@ nzbdStatusObject.prototype = {
 		timeRemain = nzbdStatus.convertSecondsToTime(timeRemain);
 		nzbdStatus.statuslabel.value = timeRemain;
 
-		timeRemain = document.getElementById('nzbdstatus-jobs0-time').value;
+		timeRemain = document.getElementById('nzbdstatus-tooltip-0').getElementsByClassName('nzbdstatus-jobs0-time')[0].value;
 		timeRemain = nzbdStatus.convertTimeToSeconds(timeRemain) - 1;
 		timeRemain = nzbdStatus.convertSecondsToTime(timeRemain);
-		document.getElementById('nzbdstatus-jobs0-time').value = timeRemain;
+		document.getElementById('nzbdstatus-tooltip-0').getElementsByClassName('nzbdstatus-jobs0-time')[0].value = timeRemain;
 
 	} catch(e) { dump('countdown error:'+e); }
 	},
 
 	togglePause: function()
 	{
-		var toPause = (document.getElementById('nzbdstatus-context-pause').getAttribute('checked') != '');
+		var toPause = (document.getElementById('nzbdstatus-context-0').getElementsByClassName('nzbdstatus-context-pause')[0].getAttribute('checked') != '');
 		if (toPause)
 		{
 			this.goPaused();
@@ -340,7 +324,7 @@ nzbdStatusObject.prototype = {
 
 	goIdle: function()
 	{
-		document.getElementById('nzbdstatus-context-pause').removeAttribute('checked');
+		document.getElementById('nzbdstatus-context-0').getElementsByClassName('nzbdstatus-context-pause')[0].removeAttribute('checked');
 		this.statusicon.src = this.getPreference('iconIdle');
 		this.statusbar.setAttribute('tooltip', 'nzbdstatus-idle');
 		this.statuslabel.value = '';
@@ -361,7 +345,7 @@ nzbdStatusObject.prototype = {
 
 	goPaused: function()
 	{
-		document.getElementById('nzbdstatus-context-pause').setAttribute('checked', true);
+		document.getElementById('nzbdstatus-context-0').getElementsByClassName('nzbdstatus-context-pause')[0].setAttribute('checked', true);
 		this.statusicon.src = this.getPreference('iconPaused');
 		this.statusbar.setAttribute('tooltip', 'nzbdstatus-pause');
 		if (this.countdownId != null)
@@ -372,7 +356,7 @@ nzbdStatusObject.prototype = {
 
 	goActive: function()
 	{
-		document.getElementById('nzbdstatus-context-pause').removeAttribute('checked');
+		document.getElementById('nzbdstatus-context-0').getElementsByClassName('nzbdstatus-context-pause')[0].removeAttribute('checked');
 		this.statusicon.src = this.getPreference('iconDownload');
 		this.statusbar.setAttribute('tooltip', 'nzbdstatus-info');
 		this.statusbar.style.visibility = 'visible';
@@ -596,28 +580,32 @@ return;
 		curTime = nzbdStatus.convertSecondsToTime(curTime);
 
 		nzbdStatus.statuslabel.value = totalTimeRemain;
-		document.getElementById('nzbdstatus-kbpersec').value = Math.floor(speed) + ' KB/s';
-		document.getElementById('nzbdstatus-mbleft').setAttribute('value', totalPer);
-		document.getElementById('nzbdstatus-diskspace1').value = (Math.floor(finSpace * 100) / 100) + ' GB';
-		document.getElementById('nzbdstatus-jobs0').value = curDL;
-		document.getElementById('nzbdstatus-jobs0-time').value = curTime;
+		document.getElementById('nzbdstatus-tooltip-0').getElementsByClassName('nzbdstatus-kbpersec')[0].value = Math.floor(speed) + ' KB/s';
+		document.getElementById('nzbdstatus-tooltip-0').getElementsByClassName('nzbdstatus-mbleft')[0].setAttribute('value', totalPer);
+		document.getElementById('nzbdstatus-tooltip-0').getElementsByClassName('nzbdstatus-diskspace1')[0].value = (Math.floor(finSpace * 100) / 100) + ' GB';
+		document.getElementById('nzbdstatus-tooltip-0').getElementsByClassName('nzbdstatus-jobs0')[0].value = curDL;
+		document.getElementById('nzbdstatus-tooltip-0').getElementsByClassName('nzbdstatus-jobs0-time')[0].value = curTime;
 
 		nzbdStatus.goActive();
 
 		} catch(e) { dump('ajax error:' + e); }
 	},
 
-	refreshStatus: function()
+	refreshStatus: function(server)
 	{
 		try {
 
-		var favServer = nzbdStatus.getPreference('servers.favorite');
-		var queueUrl = nzbdStatus.getPreference('servers.'+favServer+'.url') + nzbdStatus.getPreference('queueUrl');
+		if (server == undefined)
+		{
+			server = this.favServer;
+		}
+
+		var queueUrl = nzbdStatus.getPreference('servers.'+server+'.url') + nzbdStatus.getPreference('queueUrl');
 		nzbdStatus.queueHttp.open('GET', queueUrl, true);
 		nzbdStatus.queueHttp.onload = nzbdStatus.queueReceived;
 		nzbdStatus.queueHttp.send(null);
 
-		var historyUrl = nzbdStatus.getPreference('servers.'+favServer+'.url') + nzbdStatus.getPreference('historyUrl');
+		var historyUrl = nzbdStatus.getPreference('servers.'+server+'.url') + nzbdStatus.getPreference('historyUrl');
 		nzbdStatus.historyHttp.open('GET', historyUrl, true);
 		nzbdStatus.historyHttp.overrideMimeType('text/xml');
 		nzbdStatus.historyHttp.onload = nzbdStatus.historyReceived;
@@ -638,23 +626,21 @@ return;
 		serverList.addEventListener('mouseout', function(e){var doc = e.target.ownerDocument;doc.getElementById('nzbdserverList').style.display='none';}, false);
 
 		var serverCount = this.getPreference('servers.count');
-		var favServer = this.getPreference('servers.favorite');
 		var serverItem, serverIcon, serverLink, serverDetails;
 		for (var i = 0; i < serverCount; i++)
 		{
 			serverItem = doc.createElement('li');
-			serverDetails = this.getServerDetails(i);
-			if (i == favServer)
+			if (i == this.favServer)
 			{
 				serverItem.className = 'selected'
 			}
 			serverLink = doc.createElement('a');
-			serverName = serverDetails.label;
+			serverName = this.serverDetails[i].label;
 			serverIcon = doc.createElement('img');
-			serverIcon.setAttribute('src', 'chrome://nzbdstatus/skin/'+serverDetails.icon+'.png');
-			serverIcon.setAttribute('alt', serverDetails.label);
+			serverIcon.setAttribute('src', 'chrome://nzbdstatus/skin/'+this.serverDetails[i].icon);
+			serverIcon.setAttribute('alt', this.serverDetails[i].label);
 			serverLink.appendChild(serverIcon);
-			serverLink.appendChild(doc.createTextNode(serverDetails.label));
+			serverLink.appendChild(doc.createTextNode(this.serverDetails[i].label));
 			serverItem.appendChild(serverLink);
 			serverItem.className += ' nzbServer'+i;
 			serverItem.addEventListener('click', nzbdStatus.queueNewzbinId, false);
@@ -662,7 +648,7 @@ return;
 		}
 		return serverList;
 
-		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump('getServerUL has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -730,7 +716,7 @@ return;
 			return;
 		}
 
-		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump('onPageLoad has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -771,7 +757,7 @@ return;
 			oldTo.parentNode.replaceChild(sendTo, oldTo);
 		}
 
-		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump('listingsPage has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -819,11 +805,9 @@ return;
 		try {
 
 		var sendIcon = doc.createElement('img');
-		var favServer = this.getPreference('servers.favorite');
-		var serverDetails = this.getServerDetails(favServer);
-		sendIcon.setAttribute('src', 'chrome://nzbdstatus/skin/'+serverDetails.icon+'.png');
+		sendIcon.setAttribute('src', 'chrome://nzbdstatus/skin/'+this.serverDetails[this.favServer].icon);
 		sendIcon.setAttribute('alt', 'nzbId'+postId);
-		sendIcon.className = 'nzbsend nzbServer'+favServer;
+		sendIcon.className = 'nzbsend nzbServer'+this.favServer;
 		sendIcon.title = 'Send to SABnzbd';
 		sendIcon.addEventListener('click', nzbdStatus.queueNewzbinId, false);
 		if (nzbdStatus.getPreference('servers.count') > 1)
@@ -833,7 +817,7 @@ return;
 		}
 		return sendIcon;
 
-		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump('makeSendIcon has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -851,7 +835,7 @@ return;
 		sList.style.top = (e.originalTarget.y - Math.floor((sList.offsetHeight - targ.offsetHeight) / 2)) + 'px';
 		return;
 
-		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump('showServerList has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -865,7 +849,7 @@ return;
 		sList.style.display = 'none';
 		return;
 
-		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump('hideServerList has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -915,8 +899,14 @@ return;
 	{
 		try {
 
+		// Store the favorite server
+		this.favServer = this.getPreference('servers.favorite');
+
 		// Load up the server details into the cache
 		this.fillServerCache();
+
+		// Create the additional widgets for the status bar (if needed)
+		this.createAllWidgets();
 
 		// Check to see if we need to put an observer on the download manager
 		var dlObs = this.observerService.enumerateObservers('nzbdStatus');
@@ -935,9 +925,9 @@ return;
 
 		var menu = document.getElementById('contentAreaContextMenu');
 		menu.addEventListener('popupshowing', this.contextPopupShowing, false);
-		this.statusbar = document.getElementById('nzbdstatus');
-		this.statusicon = document.getElementById('nzbdstatus-image');
-		this.statuslabel = document.getElementById('nzbdstatus-label');
+		this.statusbar = document.getElementById('nzbdstatus-panel-0');
+		this.statusicon = document.getElementById('nzbdstatus-panel-0').getElementsByTagName('image')[0];
+		this.statuslabel = document.getElementById('nzbdstatus-panel-0').getElementsByTagName('label')[0];
 		this.goIdle();
 		if (this.getPreference('onlyShowIcon'))
 		{
@@ -1056,13 +1046,25 @@ return;
 				break;
 			case 'servers':
 				// Something with servers changed, lets narrow it down
-				switch (data.split('.')[1])
+				var sData = data.split('.');
+				if (sData)
 				{
-					case 'count':
-						this.fillServerCache();
-						break;
+					switch (sData[1])
+					{
+						case 'count':
+							this.fillServerCache();
+							break;
+						case 'favorite':
+							this.favServer = this.getPreference('servers.favorite');
+							break;
+						default:
+							var sNum = sData[1].match(/\d+/);
+							if (sNum && (sNum[0] = sData[1]))
+							{
+								this.cacheDetailsOf(sNum[0]);
+							}
+					}
 				}
-
 				break;
 		}
 	},
@@ -1074,13 +1076,37 @@ return;
 // Below here has been rewritten || is brand new for v2
 
 
-
-	clickedOn: function(e)
+	// This creates a widget for each server then sticks it into the status bar
+	createAllWidgets: function()
 	{
 		try {
 
-		var favServer = nzbdStatus.getPreference('servers.favorite');
-		var fullUrl = nzbdStatus.getServerDetails(favServer);
+			var mainWidget = document.getElementById('nzbdstatus-panel-0');
+			var serverCount = this.getPreference('servers.count');
+			var serverDetails, newWidget, tooltip, popup, prevWidget = mainWidget;
+			mainWidget.getElementsByTagName('image')[0].setAttribute('src', 'chrome://nzbdstatus/skin/'+this.serverDetails[0].icon);
+
+			for (i = 1; i < serverCount; i++)
+			{
+				newWidget = mainWidget.cloneNode(true);
+				newWidget.setAttribute('id', 'nzbdstatus-panel-'+i);
+				newWidget.setAttribute('context', 'nzbdstatus-context-'+i);
+				newWidget.setAttribute('tooltip', 'nzbdstatus-tooltip-'+i);
+				newWidget.getElementsByTagName('tooltip')[0].setAttribute('id', 'nzbdstatus-tooltip-'+i);
+				newWidget.getElementsByTagName('menupopup')[0].setAttribute('id', 'nzbdstatus-context-'+i);
+				newWidget.getElementsByTagName('image')[0].setAttribute('src', 'chrome://nzbdstatus/skin/'+this.serverDetails[i].icon);
+				prevWidget = mainWidget.parentNode.insertBefore(newWidget, prevWidget.nextSibling);
+			}
+
+			document.getElementById('nzbdstatus-panel-'+this.favServer).className = document.getElementById('nzbdstatus-panel-'+this.favServer).className.replace(/nzbdstatus-hidden/,'');
+
+		} catch(e) { dump('createAllWidgets has thrown an error: '+e+'\n'); }
+	},
+
+	// Fired when a widget is clicked on
+	clickedOn: function(e)
+	{
+		var widgetClicked = e.currentTarget.id.match(/nzbdstatus-panel-(\d)+/)[1];
 		if (e.button == 0)
 		{
 			var action = nzbdStatus.getPreference('leftClick');
@@ -1092,20 +1118,18 @@ return;
 		switch (action)
 		{
 			case 'refresh':
-				this.refreshStatus();
+				nzbdStatus.refreshStatus(widgetClicked);
 				break;
 			case 'newtab':
-				getBrowser().addTab(fullUrl.url);
+				getBrowser().addTab(nzbdStatus.serverDetails[widgetClicked].url);
 				break;
 			case 'sametab':
-				loadURI(fullUrl.url);
+				loadURI(nzbdStatus.serverDetails[widgetClicked].url);
 				break;
 			case 'newwindow':
-				window.open(fullUrl.url);
+				window.open(nzbdStatus.serverDetails[widgetClicked].url);
 				break;
 		}
-
-		} catch(e) { dump('clickedOn error:'+e); }
 	},
 
 	// Read the server details into the cache
@@ -1114,33 +1138,45 @@ return;
 
 		try {
 
-		var fullUrl, rootUrl, notFound, serverType, logins, username = null, password = null;
-		var passwordManager = Components.classes["@mozilla.org/login-manager;1"]
-		 .getService(Components.interfaces.nsILoginManager);
 		var serverCount = this.getPreference('servers.count');
 		for (i = 0; i < serverCount; i++)
 		{
-			serverType = this.getPreference('servers.'+i+'.type');
-			fullUrl = this.getPreference('servers.'+i+'.url');
-			rootUrl = 'http://' + fullUrl.match(/\/\/([^\/]+)/)[1];
-			var logins = passwordManager.findLogins({}, rootUrl, rootUrl, null);
-			if (logins.length > 0)
-			{
-				username = logins[0].username;
-				password = logins[0].password;
-			}
-			this.setServerDetails(i, {
-			 url : fullUrl,
-			 type: serverType,
-			 label: this.getPreference('servers.'+i+'.label'),
-			 icon: this.getPreference('servers.'+i+'.icon'),
-			 username: username,
-			 password: password
-			});
+			this.cacheDetailsOf(i);
 		}
 
-		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump('fillServerCache has thrown an error: '+e+'\n'); }
 
+	},
+
+	// Loads the details for a single server into the cache
+	cacheDetailsOf: function(serverId)
+	{
+		try {
+
+		dump('sid:'+serverId+'\n');
+		var fullUrl, rootUrl, notFound, serverType, logins, username = null, password = null;
+		var passwordManager = Components.classes["@mozilla.org/login-manager;1"]
+		 .getService(Components.interfaces.nsILoginManager);
+		serverType = this.getPreference('servers.'+serverId+'.type');
+		fullUrl = this.getPreference('servers.'+serverId+'.url');
+		// This line will have to change to allow https lookups as well
+		rootUrl = 'http://' + fullUrl.match(/\/\/([^\/]+)/)[1];
+		var logins = passwordManager.findLogins({}, rootUrl, rootUrl, null);
+		if (logins.length > 0)
+		{
+			username = logins[0].username;
+			password = logins[0].password;
+		}
+		this.serverDetails[serverId] = {
+		 url : fullUrl,
+		 type: serverType,
+		 label: this.getPreference('servers.'+serverId+'.label'),
+		 icon: this.getPreference('servers.'+serverId+'.icon'),
+		 username: username,
+		 password: password
+		};
+
+		} catch(e) { dump('cacheDetailsOf has thrown an error: '+e+'\n'); }
 	},
 
 	// Do the oldest thing in the event queue
@@ -1180,13 +1216,13 @@ dump('in pq\n');
 			nzbdStatus.processingQueueActive = false;
 }
 
-		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump('processQueue has thrown an error: '+e+'\n'); }
 
 	},
 
 	// Add an event to the end of the event queue
 	queueEvent: function(newEvent)
-{
+	{
 
 		try {
 dump('in qe\n')
@@ -1197,7 +1233,7 @@ dump('in qe\n')
 			setTimeout(this.processQueue, 1); // Send this off so we can go about our day
 		}
 
-		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump('queueEvent has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -1207,7 +1243,7 @@ dump('in qe\n')
 		try {
 
 
-		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump('queueUrl has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -1227,14 +1263,14 @@ dump('in qf\n');
 
 		var newEvent = {
 		 action: 'sendFile',
-		 serverId: nzbdStatus.getPreference('servers.favorite'),
+		 serverId: nzbdStatus.favServer,
 		 path: dlCom.targetFile.path,
 		 filename: filename,
 		 deleteAfter: true
 		 };
 		nzbdStatus.queueEvent(newEvent);
 
-		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump('queueFile has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -1263,7 +1299,7 @@ dump('in qf\n');
 			}
 			else
 			{
-				serverId = nzbdStatus.getPreference('servers.favorite');
+				serverId = nzbdStatus.favServer;
 			}
 		}
 		var newzbinIdName = nzbdStatus.selectSingleNode(doc, doc, '//A[@href="/browse/post/'+nzbId+'/"]');
@@ -1286,7 +1322,7 @@ dump('in qf\n');
 		 };
 		nzbdStatus.queueEvent(newEvent);
 
-		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump('queueNewzbinId has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -1297,7 +1333,7 @@ dump('in qf\n');
 		try {
 
 
-		var serverDetails = this.getServerDetails(eventDetails.serverId);
+		var serverDetails = this.serverDetails[eventDetails.serverId];
 		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
 
 		switch (serverDetails.type)
@@ -1340,7 +1376,7 @@ dump('in qf\n');
 		gContextMenu.target.style.opacity = '.25';
 */
 
-		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump('sendUrl has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -1371,7 +1407,7 @@ dump('in sf\n');
 		siStream.close();
 		fiStream.close();
 
-		var serverDetails = this.getServerDetails(eventDetails.serverId);
+		var serverDetails = this.serverDetails[eventDetails.serverId];
 		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
 
 		switch (serverDetails.type)
@@ -1409,7 +1445,7 @@ dump('in sf\n');
 		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout);
 		processingHttp.send(requestbody);
 
-		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump('sendFile has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -1419,7 +1455,7 @@ dump('in sf\n');
 
 		try {
 
-		var serverDetails = this.getServerDetails(eventDetails.serverId);
+		var serverDetails = this.serverDetails[eventDetails.serverId];
 		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
 
 		switch (serverDetails.type)
@@ -1446,7 +1482,7 @@ dump('in sf\n');
 		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout);
 		processingHttp.send(null);
 
-		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump('sendNewzbinId has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -1557,7 +1593,7 @@ dump('in pr\n');
 		// Go do the next thing in the queue
 		setTimeout(nzbdStatus.processQueue, 1);
 
-		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump('processingResponse has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -1570,7 +1606,7 @@ dump('in er\n');
 		processingHttp.abort();
 		nzbdStatus.processingResponse('', eventDetails, serverDetails)
 
-		} catch(e) { dump(arguments.callee.toString().match(/(.*)\(/)[1]+' has thrown an error: '+e+'\n'); }
+		} catch(e) { dump('abortRequestProcessing has thrown an error: '+e+'\n'); }
 
 	}
 
