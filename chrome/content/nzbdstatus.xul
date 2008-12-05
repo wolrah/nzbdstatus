@@ -4,7 +4,7 @@
 <overlay id='nzbdstatus-overlay' xmlns='http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul'>
 	<script type='application/x-javascript' src='chrome://nzbdstatus/content/nzbdstatus.js' />
 	<statusbar id='status-bar'>
-		<statusbarpanel id='nzbdstatus-panel-0' class='nzbdstatus-panel nzbdstatus-hidden' context='nzbdstatus-context-0'
+		<statusbarpanel id='nzbdstatus-panel-0' class='nzbdstatus-panel' context='nzbdstatus-context-0'
 		 tooltip='nzbdstatus-tooltip-0' onclick='nzbdStatus.clickedOn(event)'
 		 insertafter='statusbar-updates,statusbarpanel-progress,security-button,privacy-button,download-monitor,statusbar-display'>
 			<image />
