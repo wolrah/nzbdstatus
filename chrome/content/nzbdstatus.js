@@ -322,12 +322,20 @@ nzbdStatusObject.prototype = {
 		}
 	},
 
-	goIdle: function()
+	goIdle: function(serverId)
 	{
-		document.getElementById('nzbdstatus-context-0').getElementsByClassName('nzbdstatus-context-pause')[0].removeAttribute('checked');
-		this.statusicon.src = this.getPreference('iconIdle');
-		this.statusbar.setAttribute('tooltip', 'nzbdstatus-idle');
-		this.statuslabel.value = '';
+		if (serverId == undefined)
+		{
+			serverId = this.favServer;
+		}
+		var widget = document.getElementById('nzbdstatus-panel-'+serverId)
+		widget.getElementsByClassName('nzbdstatus-context-pause')[0].removeAttribute('checked');
+		widget.getElementsByTagName('image')[0].setAttribute('src', this.getPreference('iconIdle'));
+		widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].setAttribute('value', '&nzbdstatus.tooltip_idle.value;');
+		widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].className = widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].className.replace(/nzbdstatus-hidden/g, '');
+		widget.getElementsByClassName('nzbdstatus-tooltip-data')[0].className += ' nzbdstatus-hidden';
+		widget.getElementsByTagName('label')[0].setAttribute('value', '');
+
 		if (this.getPreference('alwaysShowIcon'))
 		{
 			this.statusbar.style.visibility = 'visible';
@@ -343,23 +351,40 @@ nzbdStatusObject.prototype = {
 		}
 	},
 
-	goPaused: function()
+	goPaused: function(serverId)
 	{
-		document.getElementById('nzbdstatus-context-0').getElementsByClassName('nzbdstatus-context-pause')[0].setAttribute('checked', true);
-		this.statusicon.src = this.getPreference('iconPaused');
-		this.statusbar.setAttribute('tooltip', 'nzbdstatus-pause');
+		if (serverId == undefined)
+		{
+			serverId = this.favServer;
+		}
+		var widget = document.getElementById('nzbdstatus-panel-'+serverId)
+		widget.getElementsByClassName('nzbdstatus-context-pause')[0].setAttribute('checked', true);
+		widget.getElementsByTagName('image')[0].setAttribute('src', this.getPreference('iconPaused'));
+		widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].setAttribute('value', '&nzbdstatus.tooltip_pause.value;');
+		widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].className = widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].className.replace(/nzbdstatus-hidden/g, '');
+		widget.getElementsByClassName('nzbdstatus-tooltip-data')[0].className += ' nzbdstatus-hidden';
+		widget.className = widget.className.replace(/nzbdstatus-hidden/g, '');
+
 		if (this.countdownId != null)
 		{
 			this.countdownId = clearInterval(this.countdownId);
 		}
 	},
 
-	goActive: function()
+	goActive: function(serverId)
 	{
-		document.getElementById('nzbdstatus-context-0').getElementsByClassName('nzbdstatus-context-pause')[0].removeAttribute('checked');
-		this.statusicon.src = this.getPreference('iconDownload');
-		this.statusbar.setAttribute('tooltip', 'nzbdstatus-info');
-		this.statusbar.style.visibility = 'visible';
+		if (serverId == undefined)
+		{
+			serverId = this.favServer;
+		}
+		var widget = document.getElementById('nzbdstatus-panel-'+serverId)
+		widget.getElementsByClassName('nzbdstatus-context-pause')[0].removeAttribute('checked');
+		widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].className += ' nzbdstatus-hidden';
+		widget.getElementsByClassName('nzbdstatus-tooltip-data')[0].className = widget.getElementsByClassName('nzbdstatus-tooltip-data')[0].className.replace(/nzbdstatus-hidden/g, '');
+		widget.getElementsByTagName('image')[0].setAttribute('src', this.getPreference('iconDownload'));
+		widget.className = widget.className.replace(/nzbdstatus-hidden/g, '');
+
+
 		if (this.getPreference('onlyShowIcon'))
 		{
 			this.statuslabel.style.visibility = 'collapse';
@@ -1153,7 +1178,6 @@ return;
 	{
 		try {
 
-		dump('sid:'+serverId+'\n');
 		var fullUrl, rootUrl, notFound, serverType, logins, username = null, password = null;
 		var passwordManager = Components.classes["@mozilla.org/login-manager;1"]
 		 .getService(Components.interfaces.nsILoginManager);
