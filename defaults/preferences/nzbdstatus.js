@@ -35,24 +35,24 @@ pref('extensions.nzbdstatus.servers.timeoutSecs', 15000);
 pref('extensions.nzbdstatus.servers.0.url', 'http://localhost:8080/sabnzbd/');
 pref('extensions.nzbdstatus.servers.0.label', 'Home');
 pref('extensions.nzbdstatus.servers.0.type', 'sabnzbd+');
-pref('extensions.nzbdstatus.servers.0.icon', 'yellow');
+pref('extensions.nzbdstatus.servers.0.icon', 'yellow.png');
 
 pref('extensions.nzbdstatus.servers.1.url', 'http://localhost:8080/sabnzbd/');
-pref('extensions.nzbdstatus.servers.1.label', 'Home');
+pref('extensions.nzbdstatus.servers.1.label', 'Copy of Home');
 pref('extensions.nzbdstatus.servers.1.type', 'sabnzbd+');
-pref('extensions.nzbdstatus.servers.1.icon', 'yellow');
+pref('extensions.nzbdstatus.servers.1.icon', 'flag_blue.png');
 
 pref('extensions.nzbdstatus.servers.2.url', 'http://dq5.no-ip.info:8080/sabnzbd/');
 pref('extensions.nzbdstatus.servers.2.label', 'Work');
 pref('extensions.nzbdstatus.servers.2.type', 'sabnzbd+');
-pref('extensions.nzbdstatus.servers.2.icon', 'yellow');
+pref('extensions.nzbdstatus.servers.2.icon', 'flag_red.png');
 
-pref('extensions.nzbdstatus.servers.3.url', 'http://192.168.1.100:8080/sabnzbd/');
+pref('extensions.nzbdstatus.servers.3.url', 'http://localhost:8080/sabnzbd/');
 pref('extensions.nzbdstatus.servers.3.label', 'NAS');
 pref('extensions.nzbdstatus.servers.3.type', 'sabnzbd+');
-pref('extensions.nzbdstatus.servers.3.icon', 'yellow');
+pref('extensions.nzbdstatus.servers.3.icon', 'yellow.png');
 
 pref('extensions.nzbdstatus.servers.4.url', 'http://dq5.no-ip.info:8080/sabnzbd/');
 pref('extensions.nzbdstatus.servers.4.label', 'Test');
 pref('extensions.nzbdstatus.servers.4.type', 'sabnzbd+');
-pref('extensions.nzbdstatus.servers.4.icon', 'yellow');
+pref('extensions.nzbdstatus.servers.4.icon', 'yellow.png');
