@@ -42,6 +42,8 @@ nzbdStatusObject.prototype = {
 	 .getBranch('extensions.nzbdstatus.'),
 	_observerService: Components.classes['@mozilla.org/observer-service;1']
 	 .getService(Components.interfaces.nsIObserverService),
+	_JSON: Components.classes["@mozilla.org/dom/json;1"]
+	 .createInstance(Components.interfaces.nsIJSON),
 	_askForPass: false,
 	_handleDownloads: true,
 	_processingHttp: new XMLHttpRequest(), // One httpRequest object for the processing queue
@@ -290,29 +292,7 @@ nzbdStatusObject.prototype = {
 		nzbdStatus.refreshStatus();
 	},
 
-	countdown: function()
-	{
-		try {
-
-		var timeRemain = nzbdStatus.statuslabel.value;
-		if (timeRemain == '' || timeRemain == '0:00:00')
-		{
-			nzbdStatus.goIdle();
-			return;
-		}
-
-		timeRemain = nzbdStatus.convertTimeToSeconds(timeRemain) - 1;
-		timeRemain = nzbdStatus.convertSecondsToTime(timeRemain);
-		nzbdStatus.statuslabel.value = timeRemain;
-
-		timeRemain = document.getElementById('nzbdstatus-tooltip-0').getElementsByClassName('nzbdstatus-jobs0-time')[0].value;
-		timeRemain = nzbdStatus.convertTimeToSeconds(timeRemain) - 1;
-		timeRemain = nzbdStatus.convertSecondsToTime(timeRemain);
-		document.getElementById('nzbdstatus-tooltip-0').getElementsByClassName('nzbdstatus-jobs0-time')[0].value = timeRemain;
-
-	} catch(e) { dump('countdown error:'+e); }
-	},
-
+/*
 	goIdle: function(serverId)
 	{
 		if (serverId == undefined)
@@ -361,14 +341,14 @@ nzbdStatusObject.prototype = {
 			this.countdownId = clearInterval(this.countdownId);
 		}
 	},
-
+*/
 	goActive: function(serverId)
 	{
 		if (serverId == undefined)
 		{
 			serverId = this.favServer;
 		}
-		var widget = document.getElementById('nzbdstatus-panel-'+serverId)
+		var widget = document.getElementById('nzbdstatus-panel-'+serverId);
 		widget.getElementsByClassName('nzbdstatus-context-pause')[0].removeAttribute('checked');
 		widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].className += ' nzbdstatus-hidden';
 		widget.getElementsByClassName('nzbdstatus-tooltip-data')[0].className = widget.getElementsByClassName('nzbdstatus-tooltip-data')[0].className.replace(/nzbdstatus-hidden/g, '');
@@ -484,13 +464,13 @@ return;
 		var output = nzbdStatus.queueHttp.responseText;
 		if (output == '')
 		{
-			nzbdStatus.goIdle();
+			nzbdStatus.displayIdle();
 			return;
 		}
 
 		if (output.search(/<title>Login<\/title>/i) > -1)
 		{
-			nzbdStatus.goIdle();
+			nzbdStatus.displayIdle();
 			nzbdStatus.loginToSAB();
 			return;
 		}
@@ -580,12 +560,12 @@ return;
 
 		if (status == 'pause')
 		{
-			nzbdStatus.goPaused();
+			nzbdStatus.displayPaused();
 			return;
 		}
 		if ((Math.floor(totalMbRemain) == 0) || speed == 0)
 		{
-			nzbdStatus.goIdle();
+			nzbdStatus.displayIdle();
 			return;
 		}
 
@@ -915,8 +895,9 @@ return;
 	{
 		try {
 
-		// Store the favorite server
+		// Load up some preferences into the object
 		this.favServer = this.getPreference('servers.favorite');
+		this.refreshRate = this.getPreference('refreshRate');
 
 		// Load up the server details into the cache
 		this.fillServerCache();
@@ -928,6 +909,7 @@ return;
 		var dlObs = this.observerService.enumerateObservers('nzbdStatus');
 		if (!dlObs.hasMoreElements())
 		{
+			// It's just us, so toss on an observer
 			if (this.getPreference('enableFilesToServer'))
 			{
 				this.observerService.addObserver(this, 'dl-done', false);
@@ -935,31 +917,39 @@ return;
 		}
 		else
 		{
+			// There's someone else out there, we'll let them handle it
 			this._handleDownloads = false;
 		}
 		this.observerService.addObserver(this, 'nzbdStatus', false);
 
-		var menu = document.getElementById('contentAreaContextMenu');
-		menu.addEventListener('popupshowing', this.contextPopupShowing, false);
-		this.statusbar = document.getElementById('nzbdstatus-panel-0');
-		this.statusicon = document.getElementById('nzbdstatus-panel-0').getElementsByTagName('image')[0];
-		this.statuslabel = document.getElementById('nzbdstatus-panel-0').getElementsByTagName('label')[0];
-		this.goIdle();
-		if (this.getPreference('onlyShowIcon'))
-		{
-			this.statuslabel.style.visibility = 'collapse';
-		}
 		// Put an observer on the preferences
 		this.preferences.QueryInterface(Components.interfaces.nsIPrefBranch2);
 		this.preferences.addObserver('', this, false);
-		this.refreshRate = this.getPreference('refreshRate');
-		this.refreshStatus();
-		this.refreshId = window.setInterval(this.refreshStatus, this.refreshRate*60*1000);
+
+		// Start the monitors
+		this.refreshAll();
+		this.refreshId = window.setInterval(this.refreshAll, this.refreshRate*60*1000);
+
+		// Add the onload handler
 		var appcontent = document.getElementById('appcontent');   // browser
 		if (appcontent)
 		{
 			appcontent.addEventListener('load', this.onPageLoad, true);
 		}
+
+/*
+		var menu = document.getElementById('contentAreaContextMenu');
+		menu.addEventListener('popupshowing', this.contextPopupShowing, false);
+		this.statusbar = document.getElementById('nzbdstatus-panel-0');
+		this.statusicon = document.getElementById('nzbdstatus-panel-0').getElementsByTagName('image')[0];
+		this.statuslabel = document.getElementById('nzbdstatus-panel-0').getElementsByTagName('label')[0];
+		this.displayIdle();
+		if (this.getPreference('onlyShowIcon'))
+		{
+			this.statuslabel.style.visibility = 'collapse';
+		}
+*/
+
 
 		} catch(e) { dump('startup error:'+e+'\n'); }
 	},
@@ -1021,8 +1011,8 @@ return;
 				{
 					this.refreshRate = 1;
 				}
-				this.refreshStatus();
-				this.refreshId = window.setInterval(this.refreshStatus, this.refreshRate*60*1000);
+				this.refreshAll();
+				this.refreshId = window.setInterval(this.refreshAll, this.refreshRate*60*1000);
 				break;
 			case 'disabled':
 				if (this.getPreference('disabled'))
@@ -1033,8 +1023,8 @@ return;
 				}
 				else
 				{
-					this.goIdle();
-					this.refreshId = window.setInterval(this.refreshStatus, this.refreshRate*60*1000);
+					this.displayIdle();
+					this.refreshId = window.setInterval(this.refreshAll, this.refreshRate*60*1000);
 				}
 				break;
 			case 'onlyShowIcon':
@@ -1119,6 +1109,44 @@ return;
 		} catch(e) { dump('createAllWidgets has thrown an error: '+e+'\n'); }
 	},
 
+	// Queue a refresh request for each widget
+	refreshAll: function()
+	{
+		try {
+
+		var serverCount = nzbdStatus.getPreference('servers.count');
+		for (i = 0; i < serverCount; i++)
+		{
+			nzbdStatus.queueRefresh(i);
+		}
+
+		} catch(e) { dump('refreshAll has thrown an error: '+e+'\n'); }
+	},
+
+	// Count down a second
+	countdown: function()
+	{
+		try {
+
+		var countdowners = document.getElementById('status-bar').getElementsByClassName('nzbdstatus-time');
+		var timeRemain;
+
+		for (i = 0; i < countdowners.length; i++)
+		{
+			timeRemain = countdowners[i].value;
+			if (timeRemain == '' || timeRemain == '0:00:00')
+			{
+				nzbdStatus.displayIdle(i);
+				continue;
+			}
+			timeRemain = nzbdStatus.convertTimeToSeconds(timeRemain) - 1;
+			timeRemain = nzbdStatus.convertSecondsToTime(timeRemain);
+			countdowners[i].value = timeRemain;
+		}
+
+		} catch(e) { dump('countdown error:'+e); }
+	},
+
 	// Fired when a widget is clicked on
 	clickedOn: function(e)
 	{
@@ -1167,6 +1195,7 @@ return;
 		} catch(e) { dump('togglePause has thrown an error: '+e+'\n'); }
 	},
 
+	// Make the changes needed for when a widget is paused
 	displayPaused: function(serverId)
 	{
 		var widget = document.getElementById('nzbdstatus-panel-'+serverId);
@@ -1175,18 +1204,23 @@ return;
 		widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].setAttribute('value', '&nzbdstatus.tooltip_pause.value;');
 		widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].className = widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].className.replace(/nzbdstatus-hidden/g, '');
 		widget.getElementsByClassName('nzbdstatus-tooltip-data')[0].className += ' nzbdstatus-hidden';
+		widget.getElementsByTagName('label')[0].className = widget.getElementsByTagName('label')[0].className.replace(/nzbdstatus-time/g, '');
+		widget.getElementsByClassName('nzbdstatus-jobs0-time')[0].className = widget.getElementsByClassName('nzbdstatus-jobs0-time')[0].className.replace(/nzbdstatus-time/g, '');
 		widget.className = widget.className.replace(/nzbdstatus-hidden/g, '');
 	},
 
+	// Make the changes needed for when a widget goes idle
 	displayIdle: function(serverId)
 	{
-		var widget = document.getElementById('nzbdstatus-panel-'+serverId)
+		var widget = document.getElementById('nzbdstatus-panel-'+serverId);
 		widget.getElementsByClassName('nzbdstatus-context-pause')[0].removeAttribute('checked');
 		widget.getElementsByTagName('image')[0].setAttribute('src', this.getPreference('iconIdle'));
 		widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].setAttribute('value', '&nzbdstatus.tooltip_idle.value;');
 		widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].className = widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].className.replace(/nzbdstatus-hidden/g, '');
 		widget.getElementsByClassName('nzbdstatus-tooltip-data')[0].className += ' nzbdstatus-hidden';
-		widget.getElementsByTagName('label')[0].setAttribute('value', '');
+		widget.getElementsByTagName('label')[0].value = '';
+		widget.getElementsByTagName('label')[0].className = widget.getElementsByTagName('label')[0].className.replace(/nzbdstatus-time/g, '');
+		widget.getElementsByClassName('nzbdstatus-jobs0-time')[0].className = widget.getElementsByClassName('nzbdstatus-jobs0-time')[0].className.replace(/nzbdstatus-time/g, '');
 /*
 		if (this.getPreference('alwaysShowIcon'))
 		{
@@ -1202,6 +1236,37 @@ return;
 			this.countdownId = clearInterval(this.countdownId);
 		}
 */
+	},
+
+	// Make the changes neeeded for when a widget goes active
+	displayActive: function(serverId)
+	{
+		try {
+
+		var widget = document.getElementById('nzbdstatus-panel-'+serverId);
+		widget.getElementsByClassName('nzbdstatus-context-pause')[0].removeAttribute('checked');
+		widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].className += ' nzbdstatus-hidden';
+		widget.getElementsByClassName('nzbdstatus-tooltip-data')[0].className = widget.getElementsByClassName('nzbdstatus-tooltip-data')[0].className.replace(/nzbdstatus-hidden/g, '');
+		widget.getElementsByTagName('image')[0].setAttribute('src', this.getPreference('iconDownload'));
+		widget.getElementsByTagName('label')[0].className += ' nzbdstatus-time';
+		widget.getElementsByClassName('nzbdstatus-jobs0-time')[0].className += ' nzbdstatus-time';
+		widget.className = widget.className.replace(/nzbdstatus-hidden/g, '');
+
+
+		if (this.getPreference('onlyShowIcon'))
+		{
+			widget.getElementsByTagName('label')[0].className += ' nzbdstatus-hidden';
+		}
+		else
+		{
+			widget.getElementsByTagName('label')[0].className = widget.getElementsByTagName('label')[0].className.replace(/nzbdstatus-hidden/g, '');
+		}
+		if (this.countdownId == null)
+		{
+			this.countdownId = window.setInterval(this.countdown, 1000);
+		}
+
+		} catch(e) { dump('displayActive has thrown an error: '+e+'\n'); }
 	},
 
 	// Read the server details into the cache
@@ -1317,6 +1382,12 @@ dump('in qe\n')
 
 		try {
 
+		var newEvent = {
+		 action: 'sendUrl',
+		 serverId: nzbdStatus.favServer,
+		 url: url
+		 };
+		nzbdStatus.queueEvent(newEvent);
 
 		} catch(e) { dump('queueUrl has thrown an error: '+e+'\n'); }
 
@@ -1607,6 +1678,33 @@ dump('in sf\n');
 	{
 		try {
 
+		var serverDetails = this.serverDetails[eventDetails.serverId];
+		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
+
+		switch (serverDetails.type)
+		{
+			case 'sabnzbd+':
+				fullUrl += 'api?mode=qstatus&output=json';
+				if (serverDetails.username != null || serverDetails.password != null)
+				{
+					fullUrl += '&ma_username='+serverDetails.username+'&ma_password='+serverDetails.password;
+				}
+				// Optional: &cat=<category>&pp=<job-option>&script=<script>
+				break;
+			case 'hellanzb':
+			case 'nzbget':
+			default:
+				// Something that's not been implemented yet
+				dump('Unsupported server type `'+serverDetails.type+'` requested\n');
+				break;
+		}
+
+		var processingHttp = nzbdStatus.processingHttp;
+		processingHttp.open('GET', fullUrl, true);
+		processingHttp.onload = function() { nzbdStatus.processingResponse(this.responseText, eventDetails, serverDetails) };
+		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout);
+		processingHttp.send(null);
+
 		} catch(e) { dump('sendRefresh has thrown an error: '+e+'\n'); }
 	},
 
@@ -1701,6 +1799,19 @@ dump('in pr\n');
 					// Failure or unknown response
 					responseStatus = false;
 				}
+				if (eventDetails.action == 'sendRefresh')
+				{
+					try
+					{
+						var refreshObject = nzbdStatus._JSON.decode(responseText);
+						responseStatus = true;
+					}
+					catch (e)
+					{
+						dump('Could not dejson '+responseText+'\n');
+						responseStatus = false;
+					}
+				}
 				break;
 			case 'hellanzb':
 			case 'nzbget':
@@ -1771,7 +1882,15 @@ dump('in pr\n');
 					}
 					break;
 				case 'sendRefresh':
-					// Won't have this here
+					if (responseStatus)
+					{
+						nzbdStatus.processRefresh(serverDetails, refreshObject);
+					}
+					else
+					{
+						alertMessage = 'Could not retrieve data from '+serverDetails.label;
+						alertTitle = serverDetails.label+' Failure Detected';
+					}
 					break;
 				case 'sendPause':
 					if (responseStatus)
@@ -1788,6 +1907,7 @@ dump('in pr\n');
 					if (responseStatus)
 					{
 						nzbdStatus.displayIdle(eventDetails.serverId);
+						nzbdStatus.queueRefresh(eventDetails.serverId);
 					}
 					else
 					{
@@ -1825,6 +1945,68 @@ dump('in er\n');
 
 		} catch(e) { dump('abortRequestProcessing has thrown an error: '+e+'\n'); }
 
+	},
+
+	processRefresh: function(serverDetails, refreshObject)
+	{
+		try {
+dump('in prref\n');
+
+		var paused = false, speed, totalTimeRemain, totalMb, totalMbRemain, totalPer, curDL, curTime, curMbRemain;
+		var finSpace, queue;
+
+		switch (serverDetails.type)
+		{
+			case 'sabnzbd+':
+				speed = refreshObject.kbpersec;
+				totalMbRemain = refreshObject.mbleft;
+				totalMb = refreshObject.mb;
+				if (refreshObject.noofslots > 0)
+				{
+					curDL = refreshObject.jobs[0].filename.replace(/\.nzb$/i, '');
+					curMbRemain = refreshObject.jobs[0].mbleft;
+				}
+				finSpace = refreshObject.diskspace1;
+				paused = refreshObject.paused;
+				break;
+			case 'hellanzb':
+			case 'nzbget':
+			default:
+				// Something that's not been implemented yet
+				dump('Unsupported server type `'+serverDetails.type+'` requested\n');
+				break;
+		}
+
+
+		if (paused)
+		{
+			nzbdStatus.displayPaused(serverDetails.id);
+			return;
+		}
+		if ((Math.floor(totalMbRemain) == 0) || speed == 0)
+		{
+			nzbdStatus.displayIdle(serverDetails.id);
+			return;
+		}
+
+		totalPer = Math.floor((1 - (totalMbRemain / totalMb)) * 100)+'%';
+		totalTimeRemain = (totalMbRemain * 1024) / speed;
+		totalTimeRemain = nzbdStatus.convertSecondsToTime(totalTimeRemain);
+		curTime = (curMbRemain * 1024) / speed;
+		curTime = nzbdStatus.convertSecondsToTime(curTime);
+dump('totaltr:'+totalTimeRemain+'\n');
+		var widget = document.getElementById('nzbdstatus-panel-'+serverDetails.id);
+		widget.getElementsByTagName('label')[0].value = totalTimeRemain;
+		widget.getElementsByClassName('nzbdstatus-kbpersec')[0].setAttribute('value', Math.floor(speed) + ' KB/s');
+		widget.getElementsByClassName('nzbdstatus-mbleft')[0].setAttribute('value', totalPer);
+		widget.getElementsByClassName('nzbdstatus-diskspace1')[0].setAttribute('value', (Math.floor(finSpace * 100) / 100) + ' GB');
+		widget.getElementsByClassName('nzbdstatus-jobs0')[0].setAttribute('value', curDL);
+		widget.getElementsByClassName('nzbdstatus-jobs0-time')[0].setAttribute('value', curTime);
+
+		nzbdStatus.displayActive(serverDetails.id);
+
+
+		} catch(e) { dump('processRefresh has thrown an error: '+e+'\n'); }
 	}
 
 	// Don't forget to add a comma
