@@ -341,7 +341,7 @@ nzbdStatusObject.prototype = {
 			this.countdownId = clearInterval(this.countdownId);
 		}
 	},
-/*
+
 	goPaused: function(serverId)
 	{
 		if (serverId == undefined)
@@ -361,7 +361,7 @@ nzbdStatusObject.prototype = {
 			this.countdownId = clearInterval(this.countdownId);
 		}
 	},
-*/
+
 	goActive: function(serverId)
 	{
 		if (serverId == undefined)
@@ -1151,16 +1151,57 @@ return;
 	// Check to see if a pause or a resume should be sent
 	togglePause: function(e)
 	{
-		var widget = e.currentTarget.id.match(/nzbdstatus-panel-(\d)+/)[1];
+		try {
+
+		var widget = e.currentTarget.parentNode.id.match(/nzbdstatus-context-(\d)+/)[1];
 		var toPause = (document.getElementById('nzbdstatus-panel-'+widget).getElementsByClassName('nzbdstatus-context-pause')[0].getAttribute('checked') != '');
 		if (toPause)
 		{
-			this.queuePause(widget);
+			nzbdStatus.queuePause(widget);
 		}
 		else
 		{
-			this.queueResume(widget);
+			nzbdStatus.queueResume(widget);
 		}
+
+		} catch(e) { dump('togglePause has thrown an error: '+e+'\n'); }
+	},
+
+	displayPaused: function(serverId)
+	{
+		var widget = document.getElementById('nzbdstatus-panel-'+serverId);
+		widget.getElementsByClassName('nzbdstatus-context-pause')[0].setAttribute('checked', true);
+		widget.getElementsByTagName('image')[0].setAttribute('src', this.getPreference('iconPaused'));
+		widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].setAttribute('value', '&nzbdstatus.tooltip_pause.value;');
+		widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].className = widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].className.replace(/nzbdstatus-hidden/g, '');
+		widget.getElementsByClassName('nzbdstatus-tooltip-data')[0].className += ' nzbdstatus-hidden';
+		widget.className = widget.className.replace(/nzbdstatus-hidden/g, '');
+	},
+
+	displayIdle: function(serverId)
+	{
+		var widget = document.getElementById('nzbdstatus-panel-'+serverId)
+		widget.getElementsByClassName('nzbdstatus-context-pause')[0].removeAttribute('checked');
+		widget.getElementsByTagName('image')[0].setAttribute('src', this.getPreference('iconIdle'));
+		widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].setAttribute('value', '&nzbdstatus.tooltip_idle.value;');
+		widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].className = widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].className.replace(/nzbdstatus-hidden/g, '');
+		widget.getElementsByClassName('nzbdstatus-tooltip-data')[0].className += ' nzbdstatus-hidden';
+		widget.getElementsByTagName('label')[0].setAttribute('value', '');
+/*
+		if (this.getPreference('alwaysShowIcon'))
+		{
+			this.statusbar.style.visibility = 'visible';
+			this.statuslabel.style.visibility = 'collapse';
+		}
+		else
+		{
+			this.statusbar.style.visibility = 'collapse';
+		}
+		if (this.countdownId != null)
+		{
+			this.countdownId = clearInterval(this.countdownId);
+		}
+*/
 	},
 
 	// Read the server details into the cache
@@ -1735,18 +1776,7 @@ dump('in pr\n');
 				case 'sendPause':
 					if (responseStatus)
 					{
-						var widget = document.getElementById('nzbdstatus-panel-'+eventDetails.serverId);
-						widget.getElementsByClassName('nzbdstatus-context-pause')[0].setAttribute('checked', true);
-						widget.getElementsByTagName('image')[0].setAttribute('src', this.getPreference('iconPaused'));
-						widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].setAttribute('value', '&nzbdstatus.tooltip_pause.value;');
-						widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].className = widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].className.replace(/nzbdstatus-hidden/g, '');
-						widget.getElementsByClassName('nzbdstatus-tooltip-data')[0].className += ' nzbdstatus-hidden';
-						widget.className = widget.className.replace(/nzbdstatus-hidden/g, '');
-
-		if (this.countdownId != null)
-		{
-			this.countdownId = clearInterval(this.countdownId);
-		}
+						nzbdStatus.displayPaused(eventDetails.serverId);
 					}
 					else
 					{
@@ -1755,7 +1785,15 @@ dump('in pr\n');
 					}
 					break;
 				case 'sendResume':
-					//
+					if (responseStatus)
+					{
+						nzbdStatus.displayIdle(eventDetails.serverId);
+					}
+					else
+					{
+						alertMessage = serverDetails.label+' failed to resume';
+						alertTitle = serverDetails.label+' Failure Detected';
+					}
 					break;
 				default:
 			}
