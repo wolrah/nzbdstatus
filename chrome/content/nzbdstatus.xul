@@ -42,7 +42,7 @@
 			</tooltip>
 			<menupopup id='nzbdstatus-context-0'>
 				<menuitem label='&nzbdstatus.menu_config;' oncommand='window.openDialog("chrome://nzbdstatus/content/configuration.xul", "nzbd-prefs", "chrome,dependent,titlebar,toolbar,centerscreen,resizable", "nzbd-gen")' />
-				<menuitem label='&nzbdstatus.menu_pause;' oncommand='nzbdStatus.togglePause()' type='checkbox' class='nzbdstatus-context-pause' />
+				<menuitem label='&nzbdstatus.menu_pause;' oncommand='nzbdStatus.togglePause(event)' type='checkbox' class='nzbdstatus-context-pause' />
 			</menupopup>
 		</statusbarpanel>
 	</statusbar>
