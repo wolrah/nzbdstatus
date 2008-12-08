@@ -1,3 +1,12 @@
 prefwindow#sabnzb-prefs {
-	min-width: 35em;
+min-width: 25em;
+}
+prefwindow listbox {
+width:auto;
+}
+prefwindow #nzbdserver-deck {
+margin-left:1em;
+}
+prefwindow #nzbdserver-deck hbox {
+pack:center;
 }
