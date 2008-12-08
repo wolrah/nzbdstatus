@@ -2,8 +2,8 @@
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <?xml-stylesheet href="chrome://nzbdstatus/content/configuration.css" type="text/css"?>
 <!DOCTYPE overlay SYSTEM "chrome://nzbdstatus/locale/configuration.dtd">
-<prefwindow id='sabnzb-prefs' title='&sabstatus.window_config.title;' buttons='accept,cancel' type='prefwindow'
- xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" onload='prefonload()'>
+<prefwindow id='nzbd-prefs' title='&sabstatus.window_config.title;' buttons='accept,cancel' type='prefwindow'
+ xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" onload='nzbdStatusConfig.prefonload()'>
 
 <prefpane id='sabnzb-gen' label='&sabstatus.gen_prefpane.label;' image='chrome://nzbdstatus/skin/config.png'>
 	<preferences>
@@ -56,26 +56,31 @@
 </prefpane>
 
 <prefpane id='nzbd-servers' label='Servers' image='chrome://nzbdstatus/skin/server.png'>
-	<preferences>
-		<preference id='nzburl1' name='extensions.nzbdstatus.servers.1.url' type='string' />
-		<preference id='nzblabel1' name='extensions.nzbdstatus.servers.1.label' type='string' />
-		<preference id='nzbtype1' name='extensions.nzbdstatus.servers.1.type' type='string' />
-		<preference id='nzbcolor1' name='extensions.nzbdstatus.servers.1.color' type='string' />
+	<preferences id='nzbdserver-preferences'>
+		<preference id='nzbdlabel-template' name='extensions.nzbdstatus.servers.0.label' type='string' />
+		<preference id='nzbdurl-template' name='extensions.nzbdstatus.servers.0.url' type='string' />
+		<preference id='nzbdserver-template' name='extensions.nzbdstatus.servers.0.type' type='string' />
+		<preference id='nzbdicon-template' name='extensions.nzbdstatus.servers.0.icon' type='string' />
+		<preference id='nzbdshownotif-template' name='extensions.nzbdstatus.servers.0.howNotifications' type='bool' />
+		<preference id='nzbdenable-template' name='extensions.nzbdstatus.servers.0.enabled' type='bool' />
+		<preference id='nzbdshowstatus-template' name='extensions.nzbdstatus.servers.0.showInStatusBar' type='bool' />
+		<preference id='nzbdfav' name='extensions.nzbdstatus.servers.favorite' type='int' />
 	</preferences>
 
-<hbox>
-	<button label='Add Server' icon='add' oncommand='addServer();' />
-	<button label='Test All Servers' icon='network' />
-	</hbox>
-<groupbox id='server1'>
-	<caption label='Server 1' />
-	<grid>
-		<columns>
-			<column flex='1' />
-			<column />
-		</columns>
-		<rows>
-			<row>
+	<groupbox flex='1'>
+	<hbox>
+		<vbox>
+			<listbox id='nzbdserver-list' rows='5' flex='1' onselect='nzbdStatusConfig.changeServerDeck()'>
+				<listhead>
+					<listheader label='Server Name'/>
+				</listhead>
+			</listbox>
+			<button label='Add' icon='add' oncommand='nzbdStatusConfig.addServer();' />
+			<button label='Delete' icon='remove' oncommand='nzbdStatusConfig.removeServer();' />
+		</vbox>
+		<deck id='nzbdserver-deck' selectedindex='1'>
+			<vbox id='nzbdserver-deck-template'>
+				<caption label='Template' />
 				<grid>
 					<columns>
 						<column />
@@ -83,52 +88,65 @@
 					</columns>
 					<rows>
 						<row>
-	<hbox align='center'>
-								<label value='URL' />
-	</hbox>
-							<textbox flex='1' preference='nzburl1' />
+							<hbox align='center'>
+								<label value='Name' />
+							</hbox>
+							<textbox flex='1' class='nzbd-updatepref' preference='nzbdlabel-template' />
 						</row>
 						<row>
-	<hbox align='center'>
-								<label value='Name' />
-	</hbox>
-							<textbox flex='1' preference='nzblabel1' />
+							<hbox align='center'>
+								<label value='URL' />
+							</hbox>
+							<textbox flex='1' class='nzbd-updatepref' preference='nzbdurl-template' />
 						</row>
 					</rows>
 				</grid>
-				<vbox>
-					<button disabled='true' label='Move Up' />
-					<button label='Move Down' />
-				</vbox>
-			</row>
-			<row>
-	<hbox align='center'>
+				<hbox pack='center'>
+					<grid>
+						<rows>
+							<row>
+								<radio preference='nzbdfav' label='Favorite' group='favorite' />
+								<checkbox class='nzbd-updatepref' preference='nzbdshownotif-template' label='Show Notifications' />
+							</row>
+							<row>
+								<checkbox class='nzbd-updatepref' preference='nzbdenable-template' label='Enabled Server' />
+								<checkbox class='nzbd-updatepref' preference='nzbdshowstatus-template' label='Show In Status Bar' />
+							</row>
+						</rows>
+					</grid>
+				</hbox>
+				<hbox align='center'>
 					<label value='Server' />
-					<menulist preference='nzbtype1'>
-			<menupopup>
+					<menulist class='nzbd-updatepref' preference='nzbdserver-template'>
+						<menupopup>
 							<menuitem label='SABnzbd+' value='sabnzbd+' />
 							<menuitem label='HellaNZB' value='hellanzb' />
-			</menupopup>
-		</menulist>
-					<label value='Color' />
-					<menulist preference='nzbcolor1'>
-			<menupopup>
-							<menuitem label='Yellow' value='yellow' image='chrome://nzbdstatus/skin/download.png'>
-								<image src='chrome://nzbdstatus/skin/download.png' />
-								<label value='Yellow' />
+						</menupopup>
+					</menulist>
+					<label value='Icon' />
+					<menulist class='nzbd-updatepref' preference='nzbdicon-template'>
+						<menupopup>
+							<menuitem value='yellow.png' image='chrome://nzbdstatus/skin/yellow.png'>
+								<image src='chrome://nzbdstatus/skin/yellow.png' />
 							</menuitem>
-							<menuitem label='Red' value='red' image='chrome://nzbdstatus/skin/download.png'>
-								<image src='chrome://nzbdstatus/skin/download.png' />
-								<label value='Red' />
+							<menuitem value='flag_blue.png' image='chrome://nzbdstatus/skin/flag_blue.png'>
+								<image src='chrome://nzbdstatus/skin/flag_blue.png' />
 							</menuitem>
-			</menupopup>
-		</menulist>
+							<menuitem value='flag_red.png' image='chrome://nzbdstatus/skin/flag_red.png'>
+								<image src='chrome://nzbdstatus/skin/flag_red.png' />
+							</menuitem>
+						</menupopup>
+					</menulist>
+				</hbox>
+				<hbox pack='center'>
+					<button disabled='true' label='Move Left' icon='go-back' />
+					<button label='Move Right' icon='go-forward' />
+					<button label='Test' icon='network' />
+				</hbox>
+			</vbox>
+		</deck>
 	</hbox>
-				<button label='Delete' icon='remove' />
-			</row>
-		</rows>
-	</grid>
-</groupbox>
+	</groupbox>
 
 </prefpane>
 
