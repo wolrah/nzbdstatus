@@ -1059,6 +1059,7 @@ return;
 					{
 						case 'count':
 							this.fillServerCache();
+							// Need someway to edit the widgets that've been added/removed
 							break;
 						case 'favorite':
 							this.favServer = this.getPreference('servers.favorite');
@@ -1486,6 +1487,12 @@ dump('in qe\n')
 		} catch(e) { dump('queueRefresh has thrown an error: '+e+'\n'); }
 	},
 
+	queueRefreshSoon: function(serverId)
+	{
+		// Have a five second delay before asking for a refresh
+		window.setTimeout(function() { nzbdStatus.queueRefresh(serverId); }, 5000);
+	},
+
 	queuePause: function(serverId)
 	{
 		try {
@@ -1545,7 +1552,7 @@ dump('in qe\n')
 		var processingHttp = nzbdStatus.processingHttp;
 		processingHttp.open('GET', fullUrl, true);
 		processingHttp.onload = function() { nzbdStatus.processingResponse(this.responseText, eventDetails, serverDetails) };
-		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout);
+		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout*1000);
 		processingHttp.send(null);
 /*
 		if (gContextMenu && gContextMenu.getLinkURL)
@@ -1630,7 +1637,7 @@ dump('in sf\n');
 		processingHttp.setRequestHeader('Connection', 'close');
 		processingHttp.setRequestHeader('Content-Length', requestbody.length);
 		processingHttp.onload = function() { nzbdStatus.processingResponse(this.responseText, eventDetails, serverDetails) };
-		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout);
+		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout*1000);
 		processingHttp.send(requestbody);
 
 		} catch(e) { dump('sendFile has thrown an error: '+e+'\n'); }
@@ -1667,7 +1674,7 @@ dump('in sf\n');
 		var processingHttp = nzbdStatus.processingHttp;
 		processingHttp.open('GET', fullUrl, true);
 		processingHttp.onload = function() { nzbdStatus.processingResponse(this.responseText, eventDetails, serverDetails) };
-		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout);
+		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout*1000);
 		processingHttp.send(null);
 
 		} catch(e) { dump('sendNewzbinId has thrown an error: '+e+'\n'); }
@@ -1702,7 +1709,7 @@ dump('in sf\n');
 		var processingHttp = nzbdStatus.processingHttp;
 		processingHttp.open('GET', fullUrl, true);
 		processingHttp.onload = function() { nzbdStatus.processingResponse(this.responseText, eventDetails, serverDetails) };
-		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout);
+		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout*1000);
 		processingHttp.send(null);
 
 		} catch(e) { dump('sendRefresh has thrown an error: '+e+'\n'); }
@@ -1736,7 +1743,7 @@ dump('in sf\n');
 		var processingHttp = nzbdStatus.processingHttp;
 		processingHttp.open('GET', fullUrl, true);
 		processingHttp.onload = function() { nzbdStatus.processingResponse(this.responseText, eventDetails, serverDetails) };
-		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout);
+		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout*1000);
 		processingHttp.send(null);
 
 		} catch(e) { dump('sendPause has thrown an error: '+e+'\n'); }
@@ -1770,7 +1777,7 @@ dump('in sf\n');
 		var processingHttp = nzbdStatus.processingHttp;
 		processingHttp.open('GET', fullUrl, true);
 		processingHttp.onload = function() { nzbdStatus.processingResponse(this.responseText, eventDetails, serverDetails) };
-		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout);
+		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout*1000);
 		processingHttp.send(null);
 
 		} catch(e) { dump('sendResume has thrown an error: '+e+'\n'); }
@@ -1907,7 +1914,7 @@ dump('in pr\n');
 					if (responseStatus)
 					{
 						nzbdStatus.displayIdle(eventDetails.serverId);
-						nzbdStatus.queueRefresh(eventDetails.serverId);
+						nzbdStatus.queueRefreshSoon(eventDetails.serverId);
 					}
 					else
 					{
@@ -1950,7 +1957,6 @@ dump('in er\n');
 	processRefresh: function(serverDetails, refreshObject)
 	{
 		try {
-dump('in prref\n');
 
 		var paused = false, speed, totalTimeRemain, totalMb, totalMbRemain, totalPer, curDL, curTime, curMbRemain;
 		var finSpace, queue;
@@ -1985,6 +1991,7 @@ dump('in prref\n');
 		}
 		if ((Math.floor(totalMbRemain) == 0) || speed == 0)
 		{
+			dump('speed:'+speed+':totalrm:'+totalMbRemain+'\n');
 			nzbdStatus.displayIdle(serverDetails.id);
 			return;
 		}
@@ -1994,7 +2001,7 @@ dump('in prref\n');
 		totalTimeRemain = nzbdStatus.convertSecondsToTime(totalTimeRemain);
 		curTime = (curMbRemain * 1024) / speed;
 		curTime = nzbdStatus.convertSecondsToTime(curTime);
-dump('totaltr:'+totalTimeRemain+'\n');
+
 		var widget = document.getElementById('nzbdstatus-panel-'+serverDetails.id);
 		widget.getElementsByTagName('label')[0].value = totalTimeRemain;
 		widget.getElementsByClassName('nzbdstatus-kbpersec')[0].setAttribute('value', Math.floor(speed) + ' KB/s');
@@ -2004,7 +2011,6 @@ dump('totaltr:'+totalTimeRemain+'\n');
 		widget.getElementsByClassName('nzbdstatus-jobs0-time')[0].setAttribute('value', curTime);
 
 		nzbdStatus.displayActive(serverDetails.id);
-
 
 		} catch(e) { dump('processRefresh has thrown an error: '+e+'\n'); }
 	}
