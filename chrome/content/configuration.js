@@ -84,12 +84,32 @@ nzbdStatusConfigObject.prototype = {
 		return success;
 	},
 
+	// Applies the given XPath and returns the first single node
+	selectSingleNode: function(doc, context, xpath)
+	{
+		var nodeList = doc.evaluate(xpath, context, null, 9 /* XPathResult.FIRST_ORDERED_NODE_TYPE */, null);
+		return nodeList.singleNodeValue;
+	},
+
+	// Applies the given XPath and returns all the nodes in it
+	selectNodes: function(doc, context, xpath)
+	{
+		var nodes = doc.evaluate(xpath, context, null, 7 /* XPathResult.ORDERED_NODE_SNAPSHOT_TYPE */, null);
+		var result = new Array(nodes.snapshotLength);
+		for (var i=0; i<result.length; i++)
+		{
+			result[i] = nodes.snapshotItem(i);
+		}
+		return result;
+	},
+
 	prefonload: function()
 	{
 		try {
 		nzbdStatusConfig.buildServerList();
 		nzbdStatusConfig.buildServerDeck();
 		nzbdStatusConfig.buildServerPreferences();
+		nzbdStatusConfig.inactivateMovement();
 		// Check to see if we're supposed to open a certain panel
 		if (window.arguments && window.arguments.length != 0)
 		{
@@ -97,6 +117,7 @@ nzbdStatusConfigObject.prototype = {
 			document.getElementById('nzbd-prefs').showPane(selected);
 		}
 		window.sizeToContent();
+		document.getElementById('nzbdserver-list').selectedIndex = 0;
 		} catch(e) {dump('prefonload error: '+e+'\n'); }
 	},
 
@@ -117,79 +138,135 @@ nzbdStatusConfigObject.prototype = {
 
 	buildServerDeck: function()
 	{
-		var sDeck = document.getElementById('nzbdserver-deck');
-		var sTemplate = document.getElementById('nzbdserver-deck-template');
-		var sPrefs = document.getElementById('nzbdserver-preferences');
 		var serverCount = this.getPreference('servers.count');
-		var newDeck, elems, nAtt;
+		var fav = this.getPreference('servers.favorite');
 		for (i = 0; i < serverCount; i++)
 		{
-			newDeck = sTemplate.cloneNode(true);
-			newDeck.getElementsByTagName('caption')[0].setAttribute('label', this.getPreference('servers.'+i+'.label'));
-			elems = newDeck.getElementsByClassName('nzbd-updatepref');
-			for (j = 0; j < elems.length; j++)
-			{
-				nAtt = elems[j].getAttribute('preference');
-				elems[j].setAttribute('preference', nAtt.replace(/template/, i));
-			}
-			elems = newDeck.getElementsByTagName('radio');
-			elems[0].setAttribute('value', i);
+			this.addServerDeck(i);
+		}
+		var favDeck = document.getElementById('nzbdserver-deck-'+fav);
+		favDeck.getElementsByTagName('radio')[0].setAttribute('selected', 'true');
+	},
+
+	addServerDeck: function(serverId)
+	{
+		var sDeck = document.getElementById('nzbdserver-deck');
+		var sTemplate = document.getElementById('nzbdserver-deck-template');
+		var newDeck = sTemplate.cloneNode(true);
+		var nAtt;
+		newDeck.getElementsByTagName('caption')[0].setAttribute('label', this.getPreference('servers.'+serverId+'.label'));
+		newDeck.setAttribute('id', newDeck.id.replace(/template/, serverId));
+		var elems = newDeck.getElementsByTagName('radio');
+		elems[0].setAttribute('value', serverId);
+		elems[0].setAttribute('selected', 'false');
+		elems = newDeck.getElementsByClassName('nzbd-updatepref');
+		for (j = 0; j < elems.length; j++)
+		{
+			nAtt = elems[j].getAttribute('preference');
+			elems[j].setAttribute('preference', nAtt.replace(/template/, serverId));
+		}
+		if (document.getElementById('nzbdserver-deck-'+(serverId+1)))
+		{
+			sDeckInsertBefore(newDeck, document.getElementById('nzbdserver-deck-'+(serverId+1)));
+		}
+		else
+		{
 			sDeck.insertBefore(newDeck, sTemplate);
 		}
 	},
 
 	buildServerPreferences: function()
 	{
-		var sPrefs = document.getElementById('nzbdserver-preferences');
 		var serverCount = this.getPreference('servers.count');
-		var newPref;
 		for (i = 0; i < serverCount; i++)
 		{
-			newPref = document.createElement('preference');
-			newPref.setAttribute('id', 'nzbdlabel-'+i);
-			newPref.setAttribute('name', 'extensions.nzbdstatus.servers.'+i+'.label');
-			newPref.setAttribute('type', 'string');
-			sPrefs.appendChild(newPref);
-			newPref = document.createElement('preference');
-			newPref.setAttribute('id', 'nzbdurl-'+i);
-			newPref.setAttribute('name', 'extensions.nzbdstatus.servers.'+i+'.url');
-			newPref.setAttribute('type', 'string');
-			sPrefs.appendChild(newPref);
-			newPref = document.createElement('preference');
-			newPref.setAttribute('id', 'nzbdserver-'+i);
-			newPref.setAttribute('name', 'extensions.nzbdstatus.servers.'+i+'.type');
-			newPref.setAttribute('type', 'string');
-			sPrefs.appendChild(newPref);
-			newPref = document.createElement('preference');
-			newPref.setAttribute('id', 'nzbdicon-'+i);
-			newPref.setAttribute('name', 'extensions.nzbdstatus.servers.'+i+'.icon');
-			newPref.setAttribute('type', 'string');
-			sPrefs.appendChild(newPref);
-			newPref = document.createElement('preference');
-			newPref.setAttribute('id', 'nzbdshownotif-'+i);
-			newPref.setAttribute('name', 'extensions.nzbdstatus.servers.'+i+'.showNotifications');
-			newPref.setAttribute('type', 'bool');
-			sPrefs.appendChild(newPref);
-			newPref = document.createElement('preference');
-			newPref.setAttribute('id', 'nzbdenable-'+i);
-			newPref.setAttribute('name', 'extensions.nzbdstatus.servers.'+i+'.enable');
-			newPref.setAttribute('type', 'bool');
-			sPrefs.appendChild(newPref);
-			newPref = document.createElement('preference');
-			newPref.setAttribute('id', 'nzbdshowstatus-'+i);
-			newPref.setAttribute('name', 'extensions.nzbdstatus.servers.'+i+'.showInStatusBar');
-			newPref.setAttribute('type', 'bool');
-			sPrefs.appendChild(newPref);
+			this.addServerPreferences(i);
 		}
+	},
 
+	addServerPreferences: function(serverId)
+	{
+		var sPrefs = document.getElementById('nzbdserver-preferences');
+		var newPref = document.createElement('preference');
+		newPref.setAttribute('id', 'nzbdlabel-'+serverId);
+		newPref.setAttribute('name', 'extensions.nzbdstatus.servers.'+serverId+'.label');
+		newPref.setAttribute('type', 'string');
+		sPrefs.appendChild(newPref);
+		newPref = document.createElement('preference');
+		newPref.setAttribute('id', 'nzbdurl-'+serverId);
+		newPref.setAttribute('name', 'extensions.nzbdstatus.servers.'+serverId+'.url');
+		newPref.setAttribute('type', 'string');
+		sPrefs.appendChild(newPref);
+		newPref = document.createElement('preference');
+		newPref.setAttribute('id', 'nzbdserver-'+serverId);
+		newPref.setAttribute('name', 'extensions.nzbdstatus.servers.'+serverId+'.type');
+		newPref.setAttribute('type', 'string');
+		sPrefs.appendChild(newPref);
+		newPref = document.createElement('preference');
+		newPref.setAttribute('id', 'nzbdicon-'+serverId);
+		newPref.setAttribute('name', 'extensions.nzbdstatus.servers.'+serverId+'.icon');
+		newPref.setAttribute('type', 'string');
+		sPrefs.appendChild(newPref);
+		newPref = document.createElement('preference');
+		newPref.setAttribute('id', 'nzbdshownotif-'+serverId);
+		newPref.setAttribute('name', 'extensions.nzbdstatus.servers.'+serverId+'.showNotifications');
+		newPref.setAttribute('type', 'bool');
+		sPrefs.appendChild(newPref);
+		newPref = document.createElement('preference');
+		newPref.setAttribute('id', 'nzbdenable-'+serverId);
+		newPref.setAttribute('name', 'extensions.nzbdstatus.servers.'+serverId+'.enable');
+		newPref.setAttribute('type', 'bool');
+		sPrefs.appendChild(newPref);
+		newPref = document.createElement('preference');
+		newPref.setAttribute('id', 'nzbdshowstatus-'+serverId);
+		newPref.setAttribute('name', 'extensions.nzbdstatus.servers.'+serverId+'.showInStatusBar');
+		newPref.setAttribute('type', 'bool');
+		sPrefs.appendChild(newPref);
+	},
+
+	inactivateMovement: function()
+	{
+		document.getElementById('nzbdserver-deck-0').getElementsByClassName('goback')[0].setAttribute('disabled', 'true');
+		var count = nzbdStatusConfig.getPreference('servers.count');
+		document.getElementById('nzbdserver-deck-'+(count-1)).getElementsByClassName('goforward')[0].setAttribute('disabled', 'true');
+	},
+
+	addServer: function()
+	{
+		//
+		var curSID = document.getElementById('nzbdserver-list').currentIndex;
+		var newSID = curSID + 1;
+		var maxSID = nzbdStatusConfig.getPreference('servers.count');
+		nzbdStatusConfig.addServerPreferences(newSID);
+		nzbdStatusConfig.setPreference('servers.count', maxSID+1);
+		nzbdStatusConfig.inactivateMovement();
+	},
+
+	removeServer: function()
+	{
+		//
+		nzbdStatusConfig.inactivateMovement();
 	},
 
 	changeServerDeck: function()
 	{
-		try {
 		var switchTo = document.getElementById('nzbdserver-list').currentIndex;
 		document.getElementById('nzbdserver-deck').selectedIndex = switchTo;
-		} catch(e) {dump('prefonload error: '+e+'\n'); }
+	},
+
+	moveLeft: function()
+	{
+		//
+	},
+
+	moveRight: function()
+	{
+		//
+	},
+
+	testConnection: function()
+	{
+		//
 	}
 
 }
