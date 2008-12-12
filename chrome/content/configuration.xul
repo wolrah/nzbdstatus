@@ -78,6 +78,7 @@
 			<button label='Add' icon='add' oncommand='nzbdStatusConfig.addServer();' />
 			<button label='Delete' icon='remove' oncommand='nzbdStatusConfig.removeServer();' />
 		</vbox>
+		<radiogroup preference='nzbdfav'>
 		<deck id='nzbdserver-deck' selectedindex='1'>
 			<vbox id='nzbdserver-deck-template'>
 				<caption label='Template' />
@@ -105,7 +106,7 @@
 					<grid>
 						<rows>
 							<row>
-								<radio preference='nzbdfav' label='Favorite' group='favorite' />
+								<radio label='Favorite' group='favorite' value='-1' />
 								<checkbox class='nzbd-updatepref' preference='nzbdshownotif-template' label='Show Notifications' />
 							</row>
 							<row>
@@ -115,7 +116,7 @@
 						</rows>
 					</grid>
 				</hbox>
-				<hbox align='center'>
+				<hbox align='center' pack='center'>
 					<label value='Server' />
 					<menulist class='nzbd-updatepref' preference='nzbdserver-template'>
 						<menupopup>
@@ -139,12 +140,13 @@
 					</menulist>
 				</hbox>
 				<hbox pack='center'>
-					<button disabled='true' label='Move Left' icon='go-back' />
-					<button label='Move Right' icon='go-forward' />
-					<button label='Test' icon='network' />
+					<button label='Move Left' icon='go-back' class='goback' oncommand='nzbdStatusConfig.moveLeft();' />
+					<button label='Move Right' icon='go-forward' class='goforward' oncommand='nzbdStatusConfig.moveRight();' />
+					<button label='Test' icon='network' oncommand='nzbdStatusconfig.testConnection();' />
 				</hbox>
 			</vbox>
 		</deck>
+		</radiogroup>
 	</hbox>
 	</groupbox>
 
