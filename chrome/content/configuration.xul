@@ -61,8 +61,8 @@
 		<preference id='nzbdurl-template' name='extensions.nzbdstatus.servers.0.url' type='string' />
 		<preference id='nzbdserver-template' name='extensions.nzbdstatus.servers.0.type' type='string' />
 		<preference id='nzbdicon-template' name='extensions.nzbdstatus.servers.0.icon' type='string' />
-		<preference id='nzbdshownotif-template' name='extensions.nzbdstatus.servers.0.howNotifications' type='bool' />
-		<preference id='nzbdenable-template' name='extensions.nzbdstatus.servers.0.enabled' type='bool' />
+		<preference id='nzbdshownotif-template' name='extensions.nzbdstatus.servers.0.showNotifications' type='bool' />
+		<preference id='nzbdenable-template' name='extensions.nzbdstatus.servers.0.enable' type='bool' />
 		<preference id='nzbdshowstatus-template' name='extensions.nzbdstatus.servers.0.showInStatusBar' type='bool' />
 		<preference id='nzbdfav' name='extensions.nzbdstatus.servers.favorite' type='int' />
 	</preferences>
