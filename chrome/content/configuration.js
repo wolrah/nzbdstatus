@@ -124,23 +124,20 @@ nzbdStatusConfigObject.prototype = {
 	buildServerList: function()
 	{
 		try {
-		var sList = document.getElementById('nzbdserver-list');
-		var serverCount = this.getPreference('servers.count');
-		var newListItem;
-		for (i = 0; i < serverCount; i++)
+		var j = 0, sList = document.getElementById('nzbdserver-list');
+		var serverOrder = this.getPreference('servers.order').split(',');
+		for each (var i in serverOrder)
 		{
-			newListItem = document.createElement('listitem');
-			newListItem.setAttribute('label', this.getPreference('servers.'+i+'.label'));
-			sList.appendChild(newListItem);
+			sList.insertItemAt(j++, this.getPreference('servers.'+i+'.label'), i);
 		}
 		} catch(e) {dump('buildlists error: '+e+'\n'); }
 	},
 
 	buildServerDeck: function()
 	{
-		var serverCount = this.getPreference('servers.count');
 		var fav = this.getPreference('servers.favorite');
-		for (i = 0; i < serverCount; i++)
+		var serverOrder = this.getPreference('servers.order').split(',');
+		for each (var i in serverOrder)
 		{
 			this.addServerDeck(i);
 		}
@@ -148,7 +145,7 @@ nzbdStatusConfigObject.prototype = {
 		favDeck.getElementsByTagName('radio')[0].setAttribute('selected', 'true');
 	},
 
-	addServerDeck: function(serverId)
+	addServerDeck: function(serverId, iAfter)
 	{
 		var sDeck = document.getElementById('nzbdserver-deck');
 		var sTemplate = document.getElementById('nzbdserver-deck-template');
@@ -165,20 +162,20 @@ nzbdStatusConfigObject.prototype = {
 			nAtt = elems[j].getAttribute('preference');
 			elems[j].setAttribute('preference', nAtt.replace(/template/, serverId));
 		}
-		if (document.getElementById('nzbdserver-deck-'+(serverId+1)))
+		if (iAfter == undefined)
 		{
-			sDeckInsertBefore(newDeck, document.getElementById('nzbdserver-deck-'+(serverId+1)));
+			sDeck.insertBefore(newDeck, sTemplate);
 		}
 		else
 		{
-			sDeck.insertBefore(newDeck, sTemplate);
+			sDeck.insertBefore(newDeck, document.getElementById('nzbdserver-deck-'+iAfter).nextSibling);
 		}
 	},
 
 	buildServerPreferences: function()
 	{
-		var serverCount = this.getPreference('servers.count');
-		for (i = 0; i < serverCount; i++)
+		var serverOrder = this.getPreference('servers.order').split(',');
+		for each (var i in serverOrder)
 		{
 			this.addServerPreferences(i);
 		}
@@ -226,20 +223,45 @@ nzbdStatusConfigObject.prototype = {
 
 	inactivateMovement: function()
 	{
-		document.getElementById('nzbdserver-deck-0').getElementsByClassName('goback')[0].setAttribute('disabled', 'true');
-		var count = nzbdStatusConfig.getPreference('servers.count');
-		document.getElementById('nzbdserver-deck-'+(count-1)).getElementsByClassName('goforward')[0].setAttribute('disabled', 'true');
+		var serverOrder = this.getPreference('servers.order').split(',');
+		var firstS = serverOrder[0];
+		var lastS = serverOrder[serverOrder.length-1];
+		document.getElementById('nzbdserver-deck-'+firstS).getElementsByClassName('goback')[0].setAttribute('disabled', 'true');
+		document.getElementById('nzbdserver-deck-'+lastS).getElementsByClassName('goforward')[0].setAttribute('disabled', 'true');
+	},
+
+	activateMovement: function()
+	{
+		var serverOrder = this.getPreference('servers.order').split(',');
+		var firstS = serverOrder[0];
+		var lastS = serverOrder[serverOrder.length-1];
+		document.getElementById('nzbdserver-deck-'+firstS).getElementsByClassName('goback')[0].setAttribute('disabled', 'false');
+		document.getElementById('nzbdserver-deck-'+lastS).getElementsByClassName('goforward')[0].setAttribute('disabled', 'false');
 	},
 
 	addServer: function()
 	{
-		//
-		var curSID = document.getElementById('nzbdserver-list').currentIndex;
-		var newSID = curSID + 1;
+		try {
+
+		nzbdStatusConfig.activateMovement();
+		var sList = document.getElementById('nzbdserver-list');
+		var curSID = sList.currentIndex;
 		var maxSID = nzbdStatusConfig.getPreference('servers.count');
+		var newSID = maxSID;
+		var serverOrder = nzbdStatusConfig.getPreference('servers.order').split(',');
+		sList.insertItemAt(curSID+1, 'New Server', newSID);
+
 		nzbdStatusConfig.addServerPreferences(newSID);
-		nzbdStatusConfig.setPreference('servers.count', maxSID+1);
+		nzbdStatusConfig.addServerDeck(newSID, sList.getItemAtIndex(curSID).value);
 		nzbdStatusConfig.inactivateMovement();
+
+		serverOrder.splice(curSID + 1, 0, newSID);
+		nzbdStatusConfig.setPreference('servers.order', serverOrder.join(','));
+		nzbdStatusConfig.setPreference('servers.count', maxSID+1);
+
+		sList.selectItem(sList.getItemAtIndex(curSID+1));
+
+		} catch(e) { dump('error addServer:'+e+'\n'); }
 	},
 
 	removeServer: function()
