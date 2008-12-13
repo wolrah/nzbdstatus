@@ -92,7 +92,7 @@
 							<hbox align='center'>
 								<label value='Name' />
 							</hbox>
-							<textbox flex='1' class='nzbd-updatepref' preference='nzbdlabel-template' />
+							<textbox flex='1' class='nzbd-updatepref' preference='nzbdlabel-template' onkeyup='nzbdStatusConfig.updateName(event);' />
 						</row>
 						<row>
 							<hbox align='center'>

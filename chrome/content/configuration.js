@@ -289,6 +289,15 @@ nzbdStatusConfigObject.prototype = {
 	testConnection: function()
 	{
 		//
+	},
+
+	updateName: function(e)
+	{
+		var newLabel = e.target.value;
+		var serverId = e.target.getAttribute('preference').match(/nzbdlabel-(\d+)/)[1];
+		var serverOrder = nzbdStatusConfig.getPreference('servers.order').split(',');
+		document.getElementById('nzbdserver-deck-'+serverId).getElementsByTagName('caption')[0].setAttribute('label', newLabel);
+		document.getElementById('nzbdserver-list').getElementsByTagName('listitem')[serverOrder.indexOf(serverId)].setAttribute('label', newLabel);
 	}
 
 }
