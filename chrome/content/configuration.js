@@ -249,17 +249,17 @@ nzbdStatusConfigObject.prototype = {
 		var maxSID = nzbdStatusConfig.getPreference('servers.count');
 		var newSID = maxSID;
 		var serverOrder = nzbdStatusConfig.getPreference('servers.order').split(',');
-		sList.insertItemAt(curSID+1, 'New Server', newSID);
+		sList.insertItemAt(curSID + 1, 'New Server', newSID);
 
 		nzbdStatusConfig.addServerPreferences(newSID);
 		nzbdStatusConfig.addServerDeck(newSID, sList.getItemAtIndex(curSID).value);
-		nzbdStatusConfig.inactivateMovement();
 
 		serverOrder.splice(curSID + 1, 0, newSID);
 		nzbdStatusConfig.setPreference('servers.order', serverOrder.join(','));
-		nzbdStatusConfig.setPreference('servers.count', maxSID+1);
+		nzbdStatusConfig.setPreference('servers.count', maxSID + 1);
 
-		sList.selectItem(sList.getItemAtIndex(curSID+1));
+		nzbdStatusConfig.inactivateMovement();
+		sList.moveByOffset(1, true, false);
 
 		} catch(e) { dump('error addServer:'+e+'\n'); }
 	},
@@ -279,11 +279,34 @@ nzbdStatusConfigObject.prototype = {
 	moveLeft: function()
 	{
 		//
+		sList.insertBefore(sList.getSelectedItem(0), sList.getSelectedItem(0).previousSibling);
 	},
 
 	moveRight: function()
 	{
-		//
+		try {
+
+		var sList = document.getElementById('nzbdserver-list');
+		var curSID = sList.currentIndex;
+		if ((curSID + 1) >= nzbdStatusConfig.getPreference('servers.count'))
+		{
+			return;
+		}
+		nzbdStatusConfig.activateMovement();
+		var sDeck = document.getElementById('nzbdserver-deck');
+
+		sList.insertBefore(sList.getSelectedItem(0).nextSibling, sList.getSelectedItem(0));
+		sDeck.insertBefore(sDeck.childNodes[curSID+1], sDeck.childNodes[curSID]);
+		nzbdStatusConfig.changeServerDeck();
+
+		var serverOrder = nzbdStatusConfig.getPreference('servers.order').split(',');
+		var x = serverOrder[curSID];
+		serverOrder[curSID] = serverOrder[curSID+1];
+		serverOrder[curSID+1] = x;
+		nzbdStatusConfig.setPreference('servers.order', serverOrder.join(','));
+		nzbdStatusConfig.inactivateMovement();
+
+		} catch(e) { console.warn(e); }
 	},
 
 	testConnection: function()
