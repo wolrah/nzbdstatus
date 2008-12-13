@@ -27,6 +27,7 @@ pref('extensions.nzbdstatus.filesToSAB', 3);
 pref('extensions.nzbdstatus.editorMode', false);
 
 pref('extensions.nzbdstatus.servers.count', 5);
+pref('extensions.nzbdstatus.servers.order', '0,1,4,3,2');
 pref('extensions.nzbdstatus.servers.favorite', 0);
 
 pref('extensions.nzbdstatus.servers.retryLimit', 3);
