@@ -78,13 +78,13 @@ nzbdStatusObject.prototype = {
 
 	// Ajax for the history only to prevent conflicts
 	get historyHttp()
-		{
+	{
 		return this._historyHttp;
 	},
 
 	// Ajax for the processing queue
 	get processingHttp()
-		{
+	{
 		return this._processingHttp;
 	},
 
@@ -873,21 +873,12 @@ return;
 		{
 			return true;
 		}
+		if (href.match(/newzbin\.com\/browse\/post\/(\d+)/i))
+		{
+			return true;
+		}
 
 		} catch(e) { dump('checkForNZB error: '+e+'\n'); }
-	},
-
-	// Runs when the context menu popup opens
-	contextPopupShowing: function()
-	{
-		if (nzbdStatus.checkForNZB())
-		{
-			document.getElementById('nzbdstatus-context-sendlink').hidden = false;
-		}
-		else
-		{
-			document.getElementById('nzbdstatus-context-sendlink').hidden = true;
-		}
 	},
 
 	// Initialization and starting of timers are done here
@@ -904,6 +895,8 @@ return;
 
 		// Create the additional widgets for the status bar (if needed)
 		this.createAllWidgets();
+		// Add the servers to the context menu
+		this.fillContextMenu();
 
 		// Check to see if we need to put an observer on the download manager
 		var dlObs = this.observerService.enumerateObservers('nzbdStatus');
@@ -937,9 +930,11 @@ return;
 			appcontent.addEventListener('load', this.onPageLoad, true);
 		}
 
-/*
+		// Add a listener to the context menu
 		var menu = document.getElementById('contentAreaContextMenu');
 		menu.addEventListener('popupshowing', this.contextPopupShowing, false);
+
+/*
 		this.statusbar = document.getElementById('nzbdstatus-panel-0');
 		this.statusicon = document.getElementById('nzbdstatus-panel-0').getElementsByTagName('image')[0];
 		this.statuslabel = document.getElementById('nzbdstatus-panel-0').getElementsByTagName('label')[0];
@@ -1083,17 +1078,30 @@ return;
 // Below here has been rewritten || is brand new for v2
 
 
+	// Runs when the context menu popup opens
+	contextPopupShowing: function()
+	{
+		if (nzbdStatus.checkForNZB())
+		{
+			document.getElementById('nzbdstatus-context-sendlink').hidden = false;
+		}
+		else
+		{
+			document.getElementById('nzbdstatus-context-sendlink').hidden = true;
+		}
+	},
+
 	// This creates a widget for each server then sticks it into the status bar
 	createAllWidgets: function()
 	{
 		try {
 
 			var mainWidget = document.getElementById('nzbdstatus-panel-0');
-			var serverCount = this.getPreference('servers.count');
+			var serverOrder = this.getPreference('servers.order').split(',');
 			var serverDetails, newWidget, tooltip, popup, prevWidget = mainWidget;
 			mainWidget.getElementsByTagName('image')[0].setAttribute('src', 'chrome://nzbdstatus/skin/'+this.serverDetails[0].icon);
 
-			for (i = 1; i < serverCount; i++)
+			for each (var i in serverOrder)
 			{
 				newWidget = mainWidget.cloneNode(true);
 				newWidget.setAttribute('id', 'nzbdstatus-panel-'+i);
@@ -1108,6 +1116,24 @@ return;
 			document.getElementById('nzbdstatus-panel-'+this.favServer).className = document.getElementById('nzbdstatus-panel-'+this.favServer).className.replace(/nzbdstatus-hidden/,'');
 
 		} catch(e) { dump('createAllWidgets has thrown an error: '+e+'\n'); }
+	},
+
+	// Stick each server into the context menu
+	fillContextMenu: function()
+	{
+		var root = document.getElementById('nzbdstatus-context-sendlink');
+		var template = document.getElementById('nzbdstatus-context-server-template');
+		var serverOrder = this.getPreference('servers.order').split(',');
+
+		for each (var i in serverOrder)
+		{
+			var newContext = template.cloneNode(true);
+			newContext.setAttribute('id', 'nzbdstatus-context-server-'+i);
+			newContext.setAttribute('label', this.serverDetails[i].label);
+			newContext.setAttribute('image', 'chrome://nzbdstatus/skin/'+this.serverDetails[i].icon);
+			root.appendChild(newContext);
+		}
+		template.setAttribute('hidden', 'true');
 	},
 
 	// Queue a refresh request for each widget
