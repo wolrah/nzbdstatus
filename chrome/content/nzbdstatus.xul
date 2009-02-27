@@ -48,6 +48,10 @@
 	</statusbar>
 	<!-- Add our submenu to the main Context menu -->
 	<popup id='contentAreaContextMenu'>
-		<menuitem id='nzbdstatus-context-sendlink' oncommand='nzbdStatus.sendUrl()' label='&nzbdstatus.menu_sendurl.label;' />
+		<menu id='nzbdstatus-context-sendlink' label='Send link to server' hidden='true'>
+			<menupopup>
+				<menuitem id='nzbdstatus-context-server-template' oncommand='nzbdStatus.sendUrl()' />
+			</menupopup>
+		</menu>
 	</popup>
 </overlay>
