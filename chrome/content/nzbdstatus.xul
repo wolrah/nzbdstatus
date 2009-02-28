@@ -4,12 +4,12 @@
 <overlay id='nzbdstatus-overlay' xmlns='http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul'>
 	<script type='application/x-javascript' src='chrome://nzbdstatus/content/nzbdstatus.js' />
 	<statusbar id='status-bar'>
-		<statusbarpanel id='nzbdstatus-panel-0' class='nzbdstatus-panel' context='nzbdstatus-context-0'
-		 tooltip='nzbdstatus-tooltip-0' onclick='nzbdStatus.clickedOn(event)'
+		<statusbarpanel id='nzbdstatus-panel-template' class='nzbdstatus-panel' context='nzbdstatus-context-template'
+		 tooltip='nzbdstatus-tooltip-template' onclick='nzbdStatus.clickedOn(event)'
 		 insertafter='statusbar-updates,statusbarpanel-progress,security-button,privacy-button,download-monitor,statusbar-display'>
 			<image />
 			<label class='nzbdstatus-hidden' />
-			<tooltip id='nzbdstatus-tooltip-0' noautohide='true'>
+			<tooltip id='nzbdstatus-tooltip-template' noautohide='true'>
 				<description value='&nzbdstatus.tooltip_idle.value;' class='nzbdstatus-tooltip-text' />
 				<grid class='nzbdstatus-tooltip-data nzbdstatus-hidden'>
 					<columns>
@@ -40,7 +40,7 @@
 					</rows>
 				</grid>
 			</tooltip>
-			<menupopup id='nzbdstatus-context-0'>
+			<menupopup id='nzbdstatus-context-template'>
 				<menuitem label='&nzbdstatus.menu_config;' oncommand='window.openDialog("chrome://nzbdstatus/content/configuration.xul", "nzbd-prefs", "chrome,dependent,titlebar,toolbar,centerscreen,resizable", "nzbd-gen")' />
 				<menuitem label='&nzbdstatus.menu_pause;' oncommand='nzbdStatus.togglePause(event)' type='checkbox' class='nzbdstatus-context-pause' />
 			</menupopup>
@@ -50,7 +50,7 @@
 	<popup id='contentAreaContextMenu'>
 		<menu id='nzbdstatus-context-sendlink' label='Send link to server' hidden='true'>
 			<menupopup>
-				<menuitem id='nzbdstatus-context-server-template' oncommand='nzbdStatus.sendUrl()' />
+				<menuitem id='nzbdstatus-context-server-template' oncommand='nzbdStatus.queueUrl(event)' />
 			</menupopup>
 		</menu>
 	</popup>
