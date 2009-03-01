@@ -612,18 +612,15 @@ return;
 
 	getServerUL: function(doc)
 	{
-
-		try {
-
 		var serverList = doc.createElement('ul');
 		serverList.id = 'nzbdserverList';
 		serverList.className ='nzbdservers tabMenu nzbsend';
 		serverList.addEventListener('mouseover', function(e){var doc = e.target.ownerDocument;doc.getElementById('nzbdserverList').style.display='block';}, false);
 		serverList.addEventListener('mouseout', function(e){var doc = e.target.ownerDocument;doc.getElementById('nzbdserverList').style.display='none';}, false);
 
-		var serverCount = this.getPreference('servers.count');
 		var serverItem, serverIcon, serverLink, serverDetails;
-		for (var i = 0; i < serverCount; i++)
+		var serverOrder = this.getPreference('servers.order').split(',');
+		for each (var i in serverOrder)
 		{
 			serverItem = doc.createElement('li');
 			if (i == this.favServer)
@@ -640,12 +637,13 @@ return;
 			serverItem.appendChild(serverLink);
 			serverItem.className += ' nzbServer'+i;
 			serverItem.addEventListener('click', nzbdStatus.queueNewzbinId, false);
+			if (!this.getPreference('servers.'+i+'.enable'))
+			{
+				serverItem.style.display = 'none';
+			}
 			serverList.appendChild(serverItem);
 		}
 		return serverList;
-
-		} catch(e) { dump('getServerUL has thrown an error: '+e+'\n'); }
-
 	},
 
 	// This happens every page load
@@ -712,7 +710,7 @@ return;
 			return;
 		}
 
-		} catch(e) { dump('onPageLoad has thrown an error: '+e+'\n'); }
+		} catch(e) { dump('onPageLoad error `'+e.message+'`on line:'+e.lineNumber+'\n'); }
 
 	},
 
@@ -946,7 +944,7 @@ return;
 */
 
 
-		} catch(e) { dump('startup error:'+e+'\n'); }
+		} catch(e) { dump('startup error `'+e.message+'`on line:'+e.lineNumber+'\n'); }
 	},
 
 	// Shutdown stuff done here
@@ -997,6 +995,8 @@ return;
 	// Preferences observer
 	observePreferences: function(subject, topic, data)
 	{
+		try {
+
 		switch (data.split('.')[0])
 		{
 			case 'refreshRate':
@@ -1069,6 +1069,9 @@ return;
 				}
 				break;
 		}
+
+		} catch(e) { dump('preference error `'+e.message+'`on line:'+e.lineNumber+'\n'); }
+
 	},
 
 
@@ -1094,35 +1097,40 @@ return;
 	// This creates a widget for each server then sticks it into the status bar
 	createAllWidgets: function()
 	{
-		try {
+		var mainWidget = document.getElementById('nzbdstatus-panel-template');
+		var serverOrder = this.getPreference('servers.order').split(',');
+		var serverDetails, newWidget, tooltip, popup, prevWidget = mainWidget;
+		mainWidget.getElementsByTagName('image')[0].setAttribute('src', 'chrome://nzbdstatus/skin/'+this.serverDetails[0].icon);
 
-			var mainWidget = document.getElementById('nzbdstatus-panel-0');
-			var serverOrder = this.getPreference('servers.order').split(',');
-			var serverDetails, newWidget, tooltip, popup, prevWidget = mainWidget;
-			mainWidget.getElementsByTagName('image')[0].setAttribute('src', 'chrome://nzbdstatus/skin/'+this.serverDetails[0].icon);
-
-			for each (var i in serverOrder)
+		for each (var i in serverOrder)
+		{
+			newWidget = mainWidget.cloneNode(true);
+			newWidget.setAttribute('id', 'nzbdstatus-panel-'+i);
+			newWidget.setAttribute('context', 'nzbdstatus-context-'+i);
+			newWidget.setAttribute('tooltip', 'nzbdstatus-tooltip-'+i);
+			newWidget.getElementsByTagName('tooltip')[0].setAttribute('id', 'nzbdstatus-tooltip-'+i);
+			newWidget.getElementsByTagName('menupopup')[0].setAttribute('id', 'nzbdstatus-context-'+i);
+			newWidget.getElementsByTagName('image')[0].setAttribute('src', 'chrome://nzbdstatus/skin/'+this.serverDetails[i].icon);
+			if (!this.getPreference('servers.'+i+'.enable'))
 			{
-				newWidget = mainWidget.cloneNode(true);
-				newWidget.setAttribute('id', 'nzbdstatus-panel-'+i);
-				newWidget.setAttribute('context', 'nzbdstatus-context-'+i);
-				newWidget.setAttribute('tooltip', 'nzbdstatus-tooltip-'+i);
-				newWidget.getElementsByTagName('tooltip')[0].setAttribute('id', 'nzbdstatus-tooltip-'+i);
-				newWidget.getElementsByTagName('menupopup')[0].setAttribute('id', 'nzbdstatus-context-'+i);
-				newWidget.getElementsByTagName('image')[0].setAttribute('src', 'chrome://nzbdstatus/skin/'+this.serverDetails[i].icon);
-				prevWidget = mainWidget.parentNode.insertBefore(newWidget, prevWidget.nextSibling);
+				newWidget.setAttribute('hidden', 'true');
 			}
+			if (!this.getPreference('servers.'+i+'.showInStatusBar'))
+			{
+				newWidget.setAttribute('hidden', 'true');
+			}
+			mainWidget.parentNode.insertBefore(newWidget, mainWidget);
+		}
 
-			document.getElementById('nzbdstatus-panel-'+this.favServer).className = document.getElementById('nzbdstatus-panel-'+this.favServer).className.replace(/nzbdstatus-hidden/,'');
-
-		} catch(e) { dump('createAllWidgets has thrown an error: '+e+'\n'); }
+		mainWidget.setAttribute('hidden', 'true');
+		document.getElementById('nzbdstatus-panel-'+this.favServer).setAttribute('hidden', 'false');
 	},
 
 	// Stick each server into the context menu
 	fillContextMenu: function()
 	{
-		var root = document.getElementById('nzbdstatus-context-sendlink');
 		var template = document.getElementById('nzbdstatus-context-server-template');
+		var root = template.parentNode;
 		var serverOrder = this.getPreference('servers.order').split(',');
 
 		for each (var i in serverOrder)
@@ -1131,6 +1139,10 @@ return;
 			newContext.setAttribute('id', 'nzbdstatus-context-server-'+i);
 			newContext.setAttribute('label', this.serverDetails[i].label);
 			newContext.setAttribute('image', 'chrome://nzbdstatus/skin/'+this.serverDetails[i].icon);
+			if (!this.getPreference('servers.'+i+'.enable'))
+			{
+				newContext.setAttribute('hidden', 'true');
+			}
 			root.appendChild(newContext);
 		}
 		template.setAttribute('hidden', 'true');
@@ -1141,13 +1153,17 @@ return;
 	{
 		try {
 
-		var serverCount = nzbdStatus.getPreference('servers.count');
-		for (i = 0; i < serverCount; i++)
+		var serverOrder = nzbdStatus.getPreference('servers.order').split(',');
+		for each (var i in serverOrder)
 		{
-			nzbdStatus.queueRefresh(i);
+			if (nzbdStatus.getPreference('servers.'+i+'.enable'))
+			{
+				nzbdStatus.queueRefresh(i);
+			}
 		}
 
-		} catch(e) { dump('refreshAll has thrown an error: '+e+'\n'); }
+		} catch(e) { dump('refreshAll error `'+e.message+'`on line:'+e.lineNumber+'\n'); }
+
 	},
 
 	// Count down a second
@@ -1299,24 +1315,16 @@ return;
 	// Read the server details into the cache
 	fillServerCache: function()
 	{
-
-		try {
-
 		var serverCount = this.getPreference('servers.count');
 		for (i = 0; i < serverCount; i++)
 		{
 			this.cacheDetailsOf(i);
 		}
-
-		} catch(e) { dump('fillServerCache has thrown an error: '+e+'\n'); }
-
 	},
 
 	// Loads the details for a single server into the cache
 	cacheDetailsOf: function(serverId)
 	{
-		try {
-
 		var fullUrl, rootUrl, notFound, serverType, logins, username = null, password = null;
 		var passwordManager = Components.classes["@mozilla.org/login-manager;1"]
 		 .getService(Components.interfaces.nsILoginManager);
@@ -1339,8 +1347,6 @@ return;
 		 username: username,
 		 password: password
 		};
-
-		} catch(e) { dump('cacheDetailsOf has thrown an error: '+e+'\n'); }
 	},
 
 	// Do the oldest thing in the event queue
@@ -1383,7 +1389,7 @@ dump('in pq\n');
 			nzbdStatus.processingQueueActive = false;
 		}
 
-		} catch(e) { dump('processQueue has thrown an error: '+e+'\n'); }
+		} catch(e) { dump('processQueue error `'+e.message+'`on line:'+e.lineNumber+'\n'); }
 
 	},
 
@@ -1400,23 +1406,66 @@ dump('in qe\n')
 			setTimeout(this.processQueue, 1); // Send this off so we can go about our day
 		}
 
-		} catch(e) { dump('queueEvent has thrown an error: '+e+'\n'); }
+		} catch(e) { dump('queueEvent error `'+e.message+'`on line:'+e.lineNumber+'\n'); }
 
 	},
 
 	queueUrl: function(e)
 	{
-
 		try {
 
-		var newEvent = {
-		 action: 'sendUrl',
-		 serverId: nzbdStatus.favServer,
-		 url: url
-		 };
+		// I stole this if/else block from somewhere, I don't know what it means
+		if (gContextMenu && gContextMenu.getLinkURL)
+		{
+			var href = gContextMenu.getLinkURL();
+		}
+		else if (gContextMenu && gContextMenu.linkURL)
+		{
+			var href = gContextMenu.linkURL();
+		}
+		// We wern't able to obtain a link that they clicked on, so give up
+		if (!href)
+		{
+			return false;
+		}
+		// Which server in the menu did they select
+		if (e.target.id.match(/nzbdstatus-context-server-(\d+)/))
+		{
+			var serverId = e.target.id.match(/nzbdstatus-context-server-(\d+)/)[1];
+		}
+		else
+		{
+			var serverId = nzbdStatus.favServer;
+		}
+
+
+		if (href.match(/newzbin\.com\/browse\/post\/(\d+)/i))
+		{
+			// If they clicked a link with a newzbin id, send the ID
+			var postId = href.match(/newzbin\.com\/browse\/post\/(\d+)/i)[1];
+			var newEvent = {
+			 action: 'sendNewzbinId',
+			 serverId: serverId,
+			 newzbinId: postId,
+			 newzbinIdName: '',
+			 icon: gContextMenu.target,
+			 tries: 0
+			 };
+		}
+		else
+		{
+			// Send the URL
+			var newEvent = {
+			 action: 'sendUrl',
+			 serverId: serverId,
+			 url: href,
+			 tries: 0
+			 };
+		}
+
 		nzbdStatus.queueEvent(newEvent);
 
-		} catch(e) { dump('queueUrl has thrown an error: '+e+'\n'); }
+		} catch(e) { dump('queueUrl error `'+e.message+'`on line:'+e.lineNumber+'\n'); }
 
 	},
 
@@ -1903,6 +1952,7 @@ dump('in pr\n');
 					{
 						alertMessage = serverDetails.label+' has received Newzbin report #'+eventDetails.newzbinId;
 						alertTitle = 'Newzbin Report Received';
+						eventDetails.icon.style.opacity = '.25';
 					}
 					else
 					{
