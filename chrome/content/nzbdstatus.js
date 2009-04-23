@@ -1315,8 +1315,8 @@ return;
 	// Read the server details into the cache
 	fillServerCache: function()
 	{
-		var serverCount = this.getPreference('servers.count');
-		for (i = 0; i < serverCount; i++)
+		var serverOrder = this.getPreference('servers.order').split(',');
+		for each (var i in serverOrder)
 		{
 			this.cacheDetailsOf(i);
 		}
@@ -1325,25 +1325,32 @@ return;
 	// Loads the details for a single server into the cache
 	cacheDetailsOf: function(serverId)
 	{
-		var fullUrl, rootUrl, notFound, serverType, logins, username = null, password = null;
+		var rootUrl, notFound, logins, username = null, password = null;
 		var passwordManager = Components.classes["@mozilla.org/login-manager;1"]
 		 .getService(Components.interfaces.nsILoginManager);
-		serverType = this.getPreference('servers.'+serverId+'.type');
-		fullUrl = this.getPreference('servers.'+serverId+'.url');
-		// This line will have to change to allow https lookups as well
-		rootUrl = 'http://' + fullUrl.match(/\/\/([^\/]+)/)[1];
-		var logins = passwordManager.findLogins({}, rootUrl, rootUrl, null);
-		if (logins.length > 0)
+		var serverType = this.getPreference('servers.'+serverId+'.type');
+		var fullUrl = this.getPreference('servers.'+serverId+'.url');
+		var apikey = this.getPreference('servers.'+serverId+'.apikey');
+
+		if (apikey == '')
 		{
-			username = logins[0].username;
-			password = logins[0].password;
+			// There's no apikey stored so we'll check if there's a password saved
+			rootUrl = fullUrl.match(/(https?:\/\/([^\/]+))/)[1];
+			var logins = passwordManager.findLogins({}, rootUrl, rootUrl, null);
+			if (logins.length > 0)
+			{
+				username = logins[0].username;
+				password = logins[0].password;
+			}
 		}
+
 		this.serverDetails[serverId] = {
 		 id: serverId,
 		 url: fullUrl,
 		 type: serverType,
 		 label: this.getPreference('servers.'+serverId+'.label'),
 		 icon: this.getPreference('servers.'+serverId+'.icon'),
+		 apikey: apikey,
 		 username: username,
 		 password: password
 		};
@@ -1614,6 +1621,10 @@ dump('in qe\n')
 				{
 					fullUrl += '&ma_username='+serverDetails.username+'&ma_password='+serverDetails.password;
 				}
+				if (serverDetails.apikey != '')
+				{
+					fullUrl += '&apikey='+serverDetails.apikey;
+				}
 				// Optional: &cat=<category>&pp=<job-option>&script=<script>
 				break;
 			case 'hellanzb':
@@ -1688,6 +1699,10 @@ dump('in sf\n');
 				{
 					fullUrl += '&ma_username='+serverDetails.username+'&ma_password='+serverDetails.password;
 				}
+				if (serverDetails.apikey != '')
+				{
+					fullUrl += '&apikey='+serverDetails.apikey;
+				}
 				// Optional: &cat=<category>&pp=<job-option>&script=<script>
 				var d = new Date();
 				var boundary = '--------' + d.getTime();
@@ -1736,6 +1751,10 @@ dump('in sf\n');
 				{
 					fullUrl += '&ma_username='+serverDetails.username+'&ma_password='+serverDetails.password;
 				}
+				if (serverDetails.apikey != '')
+				{
+					fullUrl += '&apikey='+serverDetails.apikey;
+				}
 				// Optional: &cat=<category>&pp=<job-option>&script=<script>
 				break;
 			case 'hellanzb':
@@ -1771,6 +1790,10 @@ dump('in sf\n');
 				{
 					fullUrl += '&ma_username='+serverDetails.username+'&ma_password='+serverDetails.password;
 				}
+				if (serverDetails.apikey != '')
+				{
+					fullUrl += '&apikey='+serverDetails.apikey;
+				}
 				// Optional: &cat=<category>&pp=<job-option>&script=<script>
 				break;
 			case 'hellanzb':
@@ -1805,6 +1828,10 @@ dump('in sf\n');
 				{
 					fullUrl += '&ma_username='+serverDetails.username+'&ma_password='+serverDetails.password;
 				}
+				if (serverDetails.apikey != '')
+				{
+					fullUrl += '&apikey='+serverDetails.apikey;
+				}
 				// Optional: &cat=<category>&pp=<job-option>&script=<script>
 				break;
 			case 'hellanzb':
@@ -1838,6 +1865,10 @@ dump('in sf\n');
 				if (serverDetails.username != null || serverDetails.password != null)
 				{
 					fullUrl += '&ma_username='+serverDetails.username+'&ma_password='+serverDetails.password;
+				}
+				if (serverDetails.apikey != '')
+				{
+					fullUrl += '&apikey='+serverDetails.apikey;
 				}
 				// Optional: &cat=<category>&pp=<job-option>&script=<script>
 				break;
