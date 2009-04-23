@@ -27,7 +27,7 @@ pref('extensions.nzbdstatus.filesToSAB', 3);
 pref('extensions.nzbdstatus.editorMode', false);
 
 pref('extensions.nzbdstatus.servers.count', 5);
-pref('extensions.nzbdstatus.servers.order', '0,1,4,3,2');
+pref('extensions.nzbdstatus.servers.order', '0,1,2,3,4');
 pref('extensions.nzbdstatus.servers.favorite', 0);
 
 pref('extensions.nzbdstatus.servers.retryLimit', 3);
@@ -36,39 +36,44 @@ pref('extensions.nzbdstatus.servers.timeoutSecs', 15);
 pref('extensions.nzbdstatus.servers.0.enable', true);
 pref('extensions.nzbdstatus.servers.0.showNotifications', true);
 pref('extensions.nzbdstatus.servers.0.showInStatusBar', true);
-pref('extensions.nzbdstatus.servers.0.label', 'Home');
+pref('extensions.nzbdstatus.servers.0.label', 'Server 1');
 pref('extensions.nzbdstatus.servers.0.url', 'http://localhost:8080/sabnzbd/');
+pref('extensions.nzbdstatus.servers.0.apikey', '');
 pref('extensions.nzbdstatus.servers.0.type', 'sabnzbd+');
-pref('extensions.nzbdstatus.servers.0.icon', 'yellow.png');
+pref('extensions.nzbdstatus.servers.0.icon', 'flag_blue.png');
 
 pref('extensions.nzbdstatus.servers.1.enable', true);
 pref('extensions.nzbdstatus.servers.1.showNotifications', true);
 pref('extensions.nzbdstatus.servers.1.showInStatusBar', true);
-pref('extensions.nzbdstatus.servers.1.label', 'Copy of Home');
+pref('extensions.nzbdstatus.servers.1.label', 'Server 2');
 pref('extensions.nzbdstatus.servers.1.url', 'http://localhost:8080/sabnzbd/');
+pref('extensions.nzbdstatus.servers.1.apikey', '');
 pref('extensions.nzbdstatus.servers.1.type', 'sabnzbd+');
-pref('extensions.nzbdstatus.servers.1.icon', 'flag_blue.png');
+pref('extensions.nzbdstatus.servers.1.icon', 'flag_green.png');
 
 pref('extensions.nzbdstatus.servers.2.enable', true);
 pref('extensions.nzbdstatus.servers.2.showNotifications', true);
 pref('extensions.nzbdstatus.servers.2.showInStatusBar', true);
-pref('extensions.nzbdstatus.servers.2.label', 'Work');
-pref('extensions.nzbdstatus.servers.2.url', 'http://dq5.no-ip.info:8080/sabnzbd/');
+pref('extensions.nzbdstatus.servers.2.label', 'Server 3');
+pref('extensions.nzbdstatus.servers.2.url', 'http://localhost:8080/sabnzbd/');
+pref('extensions.nzbdstatus.servers.2.apikey', '');
 pref('extensions.nzbdstatus.servers.2.type', 'sabnzbd+');
-pref('extensions.nzbdstatus.servers.2.icon', 'flag_red.png');
+pref('extensions.nzbdstatus.servers.2.icon', 'flag_orange.png');
 
 pref('extensions.nzbdstatus.servers.3.enable', true);
 pref('extensions.nzbdstatus.servers.3.showNotifications', true);
 pref('extensions.nzbdstatus.servers.3.showInStatusBar', true);
-pref('extensions.nzbdstatus.servers.3.label', 'NAS');
+pref('extensions.nzbdstatus.servers.3.label', 'Server 4');
 pref('extensions.nzbdstatus.servers.3.url', 'http://localhost:8080/sabnzbd/');
+pref('extensions.nzbdstatus.servers.3.apikey', '');
 pref('extensions.nzbdstatus.servers.3.type', 'sabnzbd+');
-pref('extensions.nzbdstatus.servers.3.icon', 'yellow.png');
+pref('extensions.nzbdstatus.servers.3.icon', 'flag_pink.png');
 
 pref('extensions.nzbdstatus.servers.4.enable', true);
 pref('extensions.nzbdstatus.servers.4.showNotifications', true);
 pref('extensions.nzbdstatus.servers.4.showInStatusBar', true);
-pref('extensions.nzbdstatus.servers.4.label', 'Test');
-pref('extensions.nzbdstatus.servers.4.url', 'http://dq5.no-ip.info:8080/sabnzbd/');
+pref('extensions.nzbdstatus.servers.4.label', 'Server 5');
+pref('extensions.nzbdstatus.servers.4.url', 'http://localhost:8080/sabnzbd/');
+pref('extensions.nzbdstatus.servers.4.apikey', '');
 pref('extensions.nzbdstatus.servers.4.type', 'sabnzbd+');
-pref('extensions.nzbdstatus.servers.4.icon', 'yellow.png');
+pref('extensions.nzbdstatus.servers.4.icon', 'flag_purple.png');
