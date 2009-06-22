@@ -1256,6 +1256,10 @@ return;
 	displayIdle: function(serverId)
 	{
 		var widget = document.getElementById('nzbdstatus-panel-'+serverId);
+		if (!widget)
+		{
+			return;
+		}
 		widget.getElementsByClassName('nzbdstatus-context-pause')[0].removeAttribute('checked');
 		widget.getElementsByTagName('image')[0].setAttribute('src', this.getPreference('iconIdle'));
 		widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].setAttribute('value', '&nzbdstatus.tooltip_idle.value;');
@@ -1446,10 +1450,10 @@ dump('in qe\n')
 		}
 
 
-		if (href.match(/newzbin\.com\/browse\/post\/(\d+)/i))
+		if (href.match(/newz(bin|xxx)\.com\/browse\/post\/(\d+)/i))
 		{
 			// If they clicked a link with a newzbin id, send the ID
-			var postId = href.match(/newzbin\.com\/browse\/post\/(\d+)/i)[1];
+			var postId = href.match(/newz(bin|xxx)\.com\/browse\/post\/(\d+)/i)[2];
 			var newEvent = {
 			 action: 'sendNewzbinId',
 			 serverId: serverId,
