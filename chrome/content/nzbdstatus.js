@@ -14,7 +14,7 @@
 //      MA 02110-1301, USA.
 
 // Originally based off inpheaux's SABnzbd/Newzbin Greasemonkey script, has deviated a bit since then
-// (c) 2008 Ben Dusinberre
+// (c) 2009 Ben Dusinberre
 
 // The nzbdStatusObject definition itself
 function nzbdStatusObject()
@@ -2124,6 +2124,27 @@ dump('in er\n');
 		nzbdStatus.displayActive(serverDetails.id);
 
 		} catch(e) { dump('processRefresh has thrown an error: '+e+'\n'); }
+	},
+
+	errorLogger: function(fName, error)
+	{
+		if (!nzbdStatus.getPreference('showErrors'))
+		{
+			return;
+		}
+		var msg = fName + ' threw error `' + error.message + '` on line: ' + error.lineNumber + '\n';
+		switch (SABnzbdStatus.getPreference('errorMode'))
+		{
+			case 0: // alert
+				alert(msg);
+				break;
+			case 1: // dump
+				dump(msg);
+				break;
+			case 2: // console.log
+				console.log(msg);
+				break;
+		}
 	}
 
 	// Don't forget to add a comma
