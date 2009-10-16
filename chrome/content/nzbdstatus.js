@@ -208,7 +208,6 @@ nzbdStatusObject.prototype = {
 */
 	loginToSAB: function()
 	{
-		try {
 
 		// To prevent getting stuck in an endless loop
 		if (this._askForPass)
@@ -231,7 +230,6 @@ nzbdStatusObject.prototype = {
 		xmlHttp.onload = nzbdStatus.processLogin;
 		xmlHttp.send(postVars);
 
-		} catch(e) {dump('logsab:'+e);}
 	},
 
 	processLogin: function()
@@ -408,7 +406,7 @@ nzbdStatusObject.prototype = {
 
 	historyReceived: function()
 	{
-		try {
+
 return;
 		var nzbHistory = nzbdStatus.historyHttp.responseText;
 		if (nzbHistory == '')
@@ -453,13 +451,10 @@ return;
 			}
 		}
 
-		} catch(e) { dump('historyReceived error:' + e); }
-
 	},
 
 	queueReceived: function()
 	{
-		try {
 
 		var output = nzbdStatus.queueHttp.responseText;
 		if (output == '')
@@ -584,12 +579,10 @@ return;
 
 		nzbdStatus.goActive();
 
-		} catch(e) { dump('ajax error:' + e); }
 	},
 
 	refreshStatus: function(server)
 	{
-		try {
 
 		if (server == undefined)
 		{
@@ -607,7 +600,6 @@ return;
 		nzbdStatus.historyHttp.onload = nzbdStatus.historyReceived;
 		nzbdStatus.historyHttp.send(null);
 
-		} catch(e) { dump('refresh error:' + e); }
 	},
 
 	getServerUL: function(doc)
@@ -710,7 +702,7 @@ return;
 			return;
 		}
 
-		} catch(e) { dump('onPageLoad error `'+e.message+'`on line:'+e.lineNumber+'\n'); }
+		} catch(e) { nzbdStatus.errorLogger('onPageLoad',e); }
 
 	},
 
@@ -727,7 +719,6 @@ return;
 
 	listingsPage: function(doc)
 	{
-		try {
 
 		var results = nzbdStatus.selectNodes(doc, doc, '//form/table/tbody[not(@class="dateLine")]');  // Can't really make it any more specific and have it work in lite and regular still
 		if (results.length == 1 && (results[0].textContent.search('No results') > -1))
@@ -750,8 +741,6 @@ return;
 			oldTo = nzbdStatus.selectSingleNode(doc, row, 'tr/td/a[@title="Download report NZB"]');
 			oldTo.parentNode.replaceChild(sendTo, oldTo);
 		}
-
-		} catch(e) { dump('listingsPage has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -796,8 +785,6 @@ return;
 	makeSendIcon: function(doc, postId)
 	{
 
-		try {
-
 		var sendIcon = doc.createElement('img');
 		sendIcon.setAttribute('src', 'chrome://nzbdstatus/skin/'+this.serverDetails[this.favServer].icon);
 		sendIcon.setAttribute('alt', 'nzbId'+postId);
@@ -811,14 +798,10 @@ return;
 		}
 		return sendIcon;
 
-		} catch(e) { dump('makeSendIcon has thrown an error: '+e+'\n'); }
-
 	},
 
 	showServerList: function(e)
 	{
-
-		try {
 
 		var doc = e.target.ownerDocument, targ = e.target;
 		var sList = doc.getElementById('nzbdserverList');
@@ -829,21 +812,15 @@ return;
 		sList.style.top = (e.originalTarget.y - Math.floor((sList.offsetHeight - targ.offsetHeight) / 2)) + 'px';
 		return;
 
-		} catch(e) { dump('showServerList has thrown an error: '+e+'\n'); }
-
 	},
 
 	hideServerList: function(e)
 	{
 
-		try {
-
 		var doc = e.target.ownerDocument;
 		var sList = doc.getElementById('nzbdserverList');
 		sList.style.display = 'none';
 		return;
-
-		} catch(e) { dump('hideServerList has thrown an error: '+e+'\n'); }
 
 	},
 
@@ -876,7 +853,7 @@ return;
 			return true;
 		}
 
-		} catch(e) { dump('checkForNZB error: '+e+'\n'); }
+		} catch(e) { nzbdStatus.errorLogger('checkForNZB',e); }
 	},
 
 	// Initialization and starting of timers are done here
@@ -944,7 +921,7 @@ return;
 */
 
 
-		} catch(e) { dump('startup error `'+e.message+'`on line:'+e.lineNumber+'\n'); }
+		} catch(e) { nzbdStatus.errorLogger('startup',e); }
 	},
 
 	// Shutdown stuff done here
@@ -1070,7 +1047,7 @@ return;
 				break;
 		}
 
-		} catch(e) { dump('preference error `'+e.message+'`on line:'+e.lineNumber+'\n'); }
+		} catch(e) { nzbdStatus.errorLogger('preference',e); }
 
 	},
 
@@ -1151,7 +1128,6 @@ return;
 	// Queue a refresh request for each widget
 	refreshAll: function()
 	{
-		try {
 
 		var serverOrder = nzbdStatus.getPreference('servers.order').split(',');
 		for each (var i in serverOrder)
@@ -1162,14 +1138,11 @@ return;
 			}
 		}
 
-		} catch(e) { dump('refreshAll error `'+e.message+'`on line:'+e.lineNumber+'\n'); }
-
 	},
 
 	// Count down a second
 	countdown: function()
 	{
-		try {
 
 		var countdowners = document.getElementById('status-bar').getElementsByClassName('nzbdstatus-time');
 		var timeRemain;
@@ -1187,7 +1160,6 @@ return;
 			countdowners[i].value = timeRemain;
 		}
 
-		} catch(e) { dump('countdown error:'+e); }
 	},
 
 	// Fired when a widget is clicked on
@@ -1222,7 +1194,6 @@ return;
 	// Check to see if a pause or a resume should be sent
 	togglePause: function(e)
 	{
-		try {
 
 		var widget = e.currentTarget.parentNode.id.match(/nzbdstatus-context-(\d)+/)[1];
 		var toPause = (document.getElementById('nzbdstatus-panel-'+widget).getElementsByClassName('nzbdstatus-context-pause')[0].getAttribute('checked') != '');
@@ -1235,7 +1206,6 @@ return;
 			nzbdStatus.queueResume(widget);
 		}
 
-		} catch(e) { dump('togglePause has thrown an error: '+e+'\n'); }
 	},
 
 	// Make the changes needed for when a widget is paused
@@ -1288,7 +1258,6 @@ return;
 	// Make the changes neeeded for when a widget goes active
 	displayActive: function(serverId)
 	{
-		try {
 
 		var widget = document.getElementById('nzbdstatus-panel-'+serverId);
 		widget.getElementsByClassName('nzbdstatus-context-pause')[0].removeAttribute('checked');
@@ -1313,7 +1282,6 @@ return;
 			this.countdownId = window.setInterval(this.countdown, 1000);
 		}
 
-		} catch(e) { dump('displayActive has thrown an error: '+e+'\n'); }
 	},
 
 	// Read the server details into the cache
@@ -1364,8 +1332,6 @@ return;
 	processQueue: function()
 	{
 
-		try {
-dump('in pq\n');
 		if (nzbdStatus.processingQueue.length > 0)
 		{
 			var currentEvent = nzbdStatus.processingQueue.shift();
@@ -1400,24 +1366,18 @@ dump('in pq\n');
 			nzbdStatus.processingQueueActive = false;
 		}
 
-		} catch(e) { dump('processQueue error `'+e.message+'`on line:'+e.lineNumber+'\n'); }
-
 	},
 
 	// Add an event to the end of the event queue
 	queueEvent: function(newEvent)
 	{
 
-		try {
-dump('in qe\n')
 		this.processingQueue.push(newEvent);
 		if (!this.processingQueueActive)
 		{
 			this.processingQueueActive = true;
 			setTimeout(this.processQueue, 1); // Send this off so we can go about our day
 		}
-
-		} catch(e) { dump('queueEvent error `'+e.message+'`on line:'+e.lineNumber+'\n'); }
 
 	},
 
@@ -1476,7 +1436,7 @@ dump('in qe\n')
 
 		nzbdStatus.queueEvent(newEvent);
 
-		} catch(e) { dump('queueUrl error `'+e.message+'`on line:'+e.lineNumber+'\n'); }
+		} catch(e) { nzbdStatus.errorLogger('queueUrl',e); }
 
 	},
 
@@ -1503,7 +1463,7 @@ dump('in qe\n')
 		 };
 		nzbdStatus.queueEvent(newEvent);
 
-		} catch(e) { dump('queueFile has thrown an error: '+e+'\n'); }
+		} catch(e) { nzbdStatus.errorLogger('queueFile',e); }
 
 	},
 
@@ -1555,13 +1515,12 @@ dump('in qe\n')
 		 };
 		nzbdStatus.queueEvent(newEvent);
 
-		} catch(e) { dump('queueNewzbinId has thrown an error: '+e+'\n'); }
+		} catch(e) { nzbdStatus.errorLogger('queueNewzbinId',e); }
 
 	},
 
 	queueRefresh: function(serverId)
 	{
-		try {
 
 		var newEvent = {
 		 action: 'sendRefresh',
@@ -1570,7 +1529,6 @@ dump('in qe\n')
 		 };
 		nzbdStatus.queueEvent(newEvent);
 
-		} catch(e) { dump('queueRefresh has thrown an error: '+e+'\n'); }
 	},
 
 	queueRefreshSoon: function(serverId)
@@ -1581,7 +1539,6 @@ dump('in qe\n')
 
 	queuePause: function(serverId)
 	{
-		try {
 
 		var newEvent = {
 		 action: 'sendPause',
@@ -1590,12 +1547,10 @@ dump('in qe\n')
 		 };
 		nzbdStatus.queueEvent(newEvent);
 
-		} catch(e) { dump('queuePause has thrown an error: '+e+'\n'); }
 	},
 
 	queueResume: function(serverId)
 	{
-		try {
 
 		var newEvent = {
 		 action: 'sendResume',
@@ -1604,15 +1559,11 @@ dump('in qe\n')
 		 };
 		nzbdStatus.queueEvent(newEvent);
 
-		} catch(e) { dump('queueResume has thrown an error: '+e+'\n'); }
 	},
 
 	// Process a Send URL event
 	sendUrl: function(eventDetails)
 	{
-
-		try {
-
 
 		var serverDetails = this.serverDetails[eventDetails.serverId];
 		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
@@ -1661,16 +1612,11 @@ dump('in qe\n')
 		gContextMenu.target.style.opacity = '.25';
 */
 
-		} catch(e) { dump('sendUrl has thrown an error: '+e+'\n'); }
-
 	},
 
 	// Process a Send File event
 	sendFile: function(eventDetails)
 	{
-
-		try {
-dump('in sf\n');
 
 		var file = Components.classes['@mozilla.org/file/local;1']
 		 .createInstance(Components.interfaces.nsILocalFile);
@@ -1734,15 +1680,11 @@ dump('in sf\n');
 		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout*1000);
 		processingHttp.send(requestbody);
 
-		} catch(e) { dump('sendFile has thrown an error: '+e+'\n'); }
-
 	},
 
 	// Process a Send Newzbin ID event
 	sendNewzbinId: function(eventDetails)
 	{
-
-		try {
 
 		var serverDetails = this.serverDetails[eventDetails.serverId];
 		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
@@ -1775,13 +1717,10 @@ dump('in sf\n');
 		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout*1000);
 		processingHttp.send(null);
 
-		} catch(e) { dump('sendNewzbinId has thrown an error: '+e+'\n'); }
-
 	},
 
 	sendRefresh: function(eventDetails)
 	{
-		try {
 
 		var serverDetails = this.serverDetails[eventDetails.serverId];
 		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
@@ -1814,12 +1753,10 @@ dump('in sf\n');
 		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout*1000);
 		processingHttp.send(null);
 
-		} catch(e) { dump('sendRefresh has thrown an error: '+e+'\n'); }
 	},
 
 	sendPause: function(eventDetails)
 	{
-		try {
 
 		var serverDetails = this.serverDetails[eventDetails.serverId];
 		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
@@ -1852,12 +1789,10 @@ dump('in sf\n');
 		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout*1000);
 		processingHttp.send(null);
 
-		} catch(e) { dump('sendPause has thrown an error: '+e+'\n'); }
 	},
 
 	sendResume: function(eventDetails)
 	{
-		try {
 
 		var serverDetails = this.serverDetails[eventDetails.serverId];
 		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
@@ -1890,14 +1825,10 @@ dump('in sf\n');
 		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout*1000);
 		processingHttp.send(null);
 
-		} catch(e) { dump('sendResume has thrown an error: '+e+'\n'); }
 	},
 
 	processingResponse: function(responseText, eventDetails, serverDetails)
 	{
-
-		try {
-dump('in pr\n');
 
 		var alertMessage, alertTitle, responseStatus, retryLimit = nzbdStatus.getPreference('servers.retryLimit');
 		clearTimeout(serverDetails.timeout);
@@ -2048,26 +1979,18 @@ dump('in pr\n');
 		// Go do the next thing in the queue
 		setTimeout(nzbdStatus.processQueue, 1);
 
-		} catch(e) { dump('processingResponse has thrown an error: '+e+'\n'); }
-
 	},
 
 	abortRequestProcessing: function(processingHttp, eventDetails, serverDetails)
 	{
 
-		try {
-dump('in er\n');
-
 		processingHttp.abort();
 		nzbdStatus.processingResponse('', eventDetails, serverDetails)
-
-		} catch(e) { dump('abortRequestProcessing has thrown an error: '+e+'\n'); }
 
 	},
 
 	processRefresh: function(serverDetails, refreshObject)
 	{
-		try {
 
 		var paused = false, speed, totalTimeRemain, totalMb, totalMbRemain, totalPer, curDL, curTime, curMbRemain;
 		var finSpace, queue;
@@ -2123,7 +2046,6 @@ dump('in er\n');
 
 		nzbdStatus.displayActive(serverDetails.id);
 
-		} catch(e) { dump('processRefresh has thrown an error: '+e+'\n'); }
 	},
 
 	errorLogger: function(fName, error)
