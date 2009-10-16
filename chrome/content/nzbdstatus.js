@@ -158,6 +158,30 @@ nzbdStatusObject.prototype = {
 		return result;
 	},
 
+	// Crawl the feed handling preferences and stick ours at the end
+	addFeedHandler: function()
+	{
+		var prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService);
+		var branch = prefs.getBranch("browser.contentHandlers.types.");
+		var children = branch.getChildList("", {});
+		var total = children.length / 3;
+		var found = false;
+		for (i = 0; i < total; i++)
+		{
+			if (branch.getCharPref(i+'.uri') == 'chrome://nzbdstatus/content/newfeed.xul?uri=%s')
+			{
+				found = true;
+			}
+		}
+		if (!found)
+		{
+			branch.setCharPref(total+'.title', 'nzbdStatus');
+			branch.setCharPref(total+'.type', 'application/vnd.mozilla.maybe.feed');
+			branch.setCharPref(total+'.uri', 'chrome://nzbdstatus/content/newfeed.xul?uri=%s');
+		}
+		this.setPreference('addFeedHandler', false);
+	},
+
 	sendAlert: function(icon, title, message)
 	{
 		try {
@@ -860,6 +884,11 @@ return;
 	startup: function()
 	{
 		try {
+
+		if (this.getPreference('addFeedHandler'))
+		{
+			this.addFeedHandler();
+		}
 
 		// Load up some preferences into the object
 		this.favServer = this.getPreference('servers.favorite');
