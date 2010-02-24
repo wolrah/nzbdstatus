@@ -3,9 +3,9 @@
 	<Description about="urn:mozilla:install-manifest">
 		<!-- Extension Settings -->
 		<em:id>sabnzbdstatus@dq5studios.com</em:id>
-		<em:version>2.0.0b</em:version>
+		<em:version>2.0b</em:version>
 		<em:type>2</em:type>
-		<em:homepageURL>https://nzbdstatus.bountysource.com/</em:homepageURL>
+		<em:homepageURL>https://sourceforge.net/projects/nzbdstatus/</em:homepageURL>
 		<em:iconURL>chrome://nzbdstatus/skin/icon.png</em:iconURL>
 		<em:optionsURL>chrome://nzbdstatus/content/configuration.xul</em:optionsURL>
 
@@ -14,7 +14,7 @@
 			<Description>
 				<em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id> <!-- Firefox -->
 				<em:minVersion>3.0</em:minVersion>
-				<em:maxVersion>3.5.*</em:maxVersion>
+				<em:maxVersion>3.6.*</em:maxVersion>
 			</Description>
 		</em:targetApplication>
 
