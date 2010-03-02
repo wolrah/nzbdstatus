@@ -3,9 +3,10 @@
 <?xml-stylesheet href="chrome://nzbdstatus/content/configuration.css" type="text/css"?>
 <!DOCTYPE overlay SYSTEM "chrome://nzbdstatus/locale/configuration.dtd">
 <prefwindow id='nzbd-prefs' title='&sabstatus.window_config.title;' buttons='accept,cancel' type='prefwindow'
- xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" onload='nzbdStatusConfig.prefonload()'>
+ xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" xmlns:html="http://www.w3.org/1999/xhtml" onload='nzbdStatusConfig.prefonload()'>
 
-<prefpane id='sabnzb-gen' label='&sabstatus.gen_prefpane.label;' image='chrome://nzbdstatus/skin/config.png'>
+
+<prefpane id='sabnzb-gen' label='General' image='chrome://nzbdstatus/skin/config.png'>
 	<preferences>
 		<preference id='refreshrate' name='extensions.nzbdstatus.refreshRate' type='int' />
 		<preference id='alwaysshow' name='extensions.nzbdstatus.alwaysShowIcon' type='bool' />
@@ -14,46 +15,52 @@
 		<preference id='middleclick' name='extensions.nzbdstatus.middleClick' type='string' />
 	</preferences>
 
-<groupbox>
-	<caption label='&sabstatus.gen_caption.label;' />
-	<hbox align='center'>
-		<label control='refreshrate' value='&sabstatus.pref_refreshrate.value;' />
-		<textbox preference='refreshrate' id='refreshrate' flex='1' />
-		<label value='&sabstatus.pref_refreshrate_units.value;' />
-	</hbox>
-</groupbox>
-<groupbox>
-	<caption label='&sabstatus.sbar_caption.label;' />
-	<hbox align='center'>
-		<checkbox label='&sabstatus.pref_alwaysshow.value;' preference='alwaysshow' id='alwaysshow' />
-	</hbox>
-	<hbox align='center'>
-		<checkbox label='&sabstatus.pref_onlyshow.value;' preference='onlyshow' id='onlyshow' />
-	</hbox>
-	<hbox align='center'>
-		<label control='leftclick' value='&sabstatus.pref_leftclick.label;' />
-		<menulist preference='leftclick' id='leftclick' flex='1'>
-			<menupopup>
-				<menuitem label='&sabstatus.pref_sbarclick_refresh.value;' value='refresh' />
-				<menuitem label='&sabstatus.pref_sbarclick_newtab.value;' value='newtab' />
-				<menuitem label='&sabstatus.pref_sbarclick_sametab.value;' value='sametab' />
-				<menuitem label='&sabstatus.pref_sbarclick_newwindow.value;' value='newwindow' />
-			</menupopup>
-		</menulist>
-	</hbox>
-	<hbox align='center'>
-		<label control='middleclick' value='&sabstatus.pref_middleclick.label;' />
-		<menulist preference='middleclick' id='middleclick' flex='1'>
-			<menupopup>
-				<menuitem label='&sabstatus.pref_sbarclick_refresh.value;' value='refresh' />
-				<menuitem label='&sabstatus.pref_sbarclick_newtab.value;' value='newtab' />
-				<menuitem label='&sabstatus.pref_sbarclick_sametab.value;' value='sametab' />
-				<menuitem label='&sabstatus.pref_sbarclick_newwindow.value;' value='newwindow' />
-			</menupopup>
-		</menulist>
-	</hbox>
-</groupbox>
+	<groupbox>
+		<caption label='Mouse Settings' />
+		<hbox align='center'>
+			<label control='leftclick' value='&sabstatus.pref_leftclick.label;' />
+			<menulist preference='leftclick' id='leftclick' flex='1'>
+				<menupopup>
+					<menuitem label='&sabstatus.pref_sbarclick_refresh.value;' value='refresh' />
+					<menuitem label='&sabstatus.pref_sbarclick_newtabfocus.value;' value='newtabfocus' />
+					<menuitem label='&sabstatus.pref_sbarclick_newtabbackground.value;' value='newtab' />
+					<menuitem label='&sabstatus.pref_sbarclick_sametab.value;' value='sametab' />
+					<menuitem label='&sabstatus.pref_sbarclick_newwindow.value;' value='newwindow' />
+					<menuitem label='&sabstatus.pref_sbarclick_qnewtabfocus.value;' value='qnewtabfocus' />
+					<menuitem label='&sabstatus.pref_sbarclick_qnewtabbackground.value;' value='qnewtab' />
+					<menuitem label='&sabstatus.pref_sbarclick_qsametab.value;' value='qsametab' />
+					<menuitem label='&sabstatus.pref_sbarclick_qnewwindow.value;' value='qnewwindow' />
+				</menupopup>
+			</menulist>
+		</hbox>
+		<hbox align='center'>
+			<label control='middleclick' value='&sabstatus.pref_middleclick.label;' />
+			<menulist preference='middleclick' id='middleclick' flex='1'>
+				<menupopup>
+					<menuitem label='&sabstatus.pref_sbarclick_refresh.value;' value='refresh' />
+					<menuitem label='&sabstatus.pref_sbarclick_newtabfocus.value;' value='newtabfocus' />
+					<menuitem label='&sabstatus.pref_sbarclick_newtabbackground.value;' value='newtab' />
+					<menuitem label='&sabstatus.pref_sbarclick_sametab.value;' value='sametab' />
+					<menuitem label='&sabstatus.pref_sbarclick_newwindow.value;' value='newwindow' />
+					<menuitem label='&sabstatus.pref_sbarclick_qnewtabfocus.value;' value='qnewtabfocus' />
+					<menuitem label='&sabstatus.pref_sbarclick_qnewtabbackground.value;' value='qnewtab' />
+					<menuitem label='&sabstatus.pref_sbarclick_qsametab.value;' value='qsametab' />
+					<menuitem label='&sabstatus.pref_sbarclick_qnewwindow.value;' value='qnewwindow' />
+				</menupopup>
+			</menulist>
+		</hbox>
+	</groupbox>
+	<groupbox>
+		<caption label='&sabstatus.downopts_caption.label;' />
+		<hbox align='center' onclick='nzbdStatusConfig.togglePrompt();'>
+			<checkbox label='&sabstatus.pref_downopts_sendfile.value;' preference='sendfiles' id='sabsendfiles' />
+		</hbox>
+		<hbox align='center'>
+			<checkbox label='&sabstatus.pref_downopts_prompt.value;' preference='askenable' id='sabaskenable' />
+		</hbox>
+	</groupbox>
 </prefpane>
+
 
 <prefpane id='nzbd-servers' label='Servers' image='chrome://nzbdstatus/skin/server.png'>
 	<preferences id='nzbdserver-preferences'>
@@ -78,8 +85,8 @@
 					<listheader label='Server Name'/>
 				</listhead>
 			</listbox>
-			<button label='Add' icon='add' oncommand='nzbdStatusConfig.addServer();' />
-			<button label='Delete' icon='remove' oncommand='nzbdStatusConfig.removeServer();' />
+			<button label='Add' icon='add' oncommand='nzbdStatusConfig.addServer();'  />
+			<button label='Remove' icon='remove' oncommand='nzbdStatusConfig.removeServer();' />
 		</vbox>
 		<radiogroup preference='nzbdfav'>
 		<deck id='nzbdserver-deck' selectedindex='1'>
@@ -93,6 +100,33 @@
 					<rows>
 						<row>
 							<hbox align='center'>
+								<label value='Server' />
+							</hbox>
+							<hbox align='center'>
+								<menulist class='nzbd-updatepref' preference='nzbdserver-template'>
+									<menupopup>
+										<menuitem label='SABnzbd+' value='sabnzbd+' />
+										<menuitem label='HellaNZB' value='hellanzb' />
+									</menupopup>
+								</menulist>
+								<label value='Icon' />
+								<menulist class='nzbd-updatepref' preference='nzbdicon-template'>
+									<menupopup>
+										<menuitem value='yellow.png' image='chrome://nzbdstatus/skin/flag_red.png'>
+											<image src='chrome://nzbdstatus/skin/flag_red.png' />
+										</menuitem>
+										<menuitem value='flag_blue.png' image='chrome://nzbdstatus/skin/flag_blue.png'>
+											<image src='chrome://nzbdstatus/skin/flag_blue.png' />
+										</menuitem>
+										<menuitem value='flag_red.png' image='chrome://nzbdstatus/skin/flag_yellow.png'>
+											<image src='chrome://nzbdstatus/skin/flag_yellow.png' />
+										</menuitem>
+									</menupopup>
+								</menulist>
+							</hbox>
+						</row>
+						<row>
+							<hbox align='center'>
 								<label value='Name' />
 							</hbox>
 							<textbox flex='1' class='nzbd-updatepref' preference='nzbdlabel-template' onkeyup='nzbdStatusConfig.updateName(event);' />
@@ -101,106 +135,120 @@
 							<hbox align='center'>
 								<label value='URL' />
 							</hbox>
-							<textbox flex='1' class='nzbd-updatepref' preference='nzbdurl-template' />
+							<textbox flex='1' class='nzbd-updatepref' preference='nzbdurl-template' newlines='stripsurroundingwhitespace' />
 						</row>
 						<row>
 							<hbox align='center'>
 								<label value='API Key' />
 							</hbox>
-							<textbox flex='1' class='nzbd-updatepref' preference='nzbdapikey-template' />
-						</row>
-						<row>
-							<hbox align='center'>
-								<label value='Username' />
-							</hbox>
-							<hbox align='center'>
-								<textbox flex='1' class='nzbd-updatepref' size="8" preference='nzbdusername-template' />
-								<label value='Password' />
-								<textbox flex='1' class='nzbd-updatepref' size="8" preference='nzbdpasssword-template' />
-							</hbox>
+							<textbox flex='1' class='nzbd-updatepref' preference='nzbdapikey-template' newlines='stripsurroundingwhitespace' />
 						</row>
 					</rows>
 				</grid>
 				<hbox pack='center'>
-					<grid>
-						<rows>
-							<row>
-								<radio label='Favorite' group='favorite' value='-1' />
-								<checkbox class='nzbd-updatepref' preference='nzbdshownotif-template' label='Show Notifications' />
-							</row>
-							<row>
-								<checkbox class='nzbd-updatepref' preference='nzbdenable-template' label='Enabled Server' />
-								<checkbox class='nzbd-updatepref' preference='nzbdshowstatus-template' label='Show In Status Bar' />
-							</row>
-						</rows>
-					</grid>
+					<checkbox class='nzbd-updatepref' preference='nzbdenable-template' label='Enable Server' />
+					<checkbox class='nzbd-updatepref' preference='nzbdshowstatus-template' label='Show Status Bar Icon' />
 				</hbox>
-				<hbox align='center' pack='center'>
-					<label value='Server' />
-					<menulist class='nzbd-updatepref' preference='nzbdserver-template'>
-						<menupopup>
-							<menuitem label='SABnzbd+' value='sabnzbd+' />
-							<menuitem label='HellaNZB' value='hellanzb' />
-						</menupopup>
-					</menulist>
-					<label value='Icon' />
-					<menulist class='nzbd-updatepref' preference='nzbdicon-template'>
-						<menupopup>
-							<menuitem value='yellow.png' image='chrome://nzbdstatus/skin/yellow.png'>
-								<image src='chrome://nzbdstatus/skin/yellow.png' />
-							</menuitem>
-							<menuitem value='flag_blue.png' image='chrome://nzbdstatus/skin/flag_blue.png'>
-								<image src='chrome://nzbdstatus/skin/flag_blue.png' />
-							</menuitem>
-							<menuitem value='flag_red.png' image='chrome://nzbdstatus/skin/flag_red.png'>
-								<image src='chrome://nzbdstatus/skin/flag_red.png' />
-							</menuitem>
-						</menupopup>
-					</menulist>
+				<hbox>
+					<button label='Set Password' oncommand='nzbdStatusconfig.testConnection();' />
+					<button label='Test Connection' oncommand='nzbdStatusconfig.testConnection();' />
 				</hbox>
-				<hbox pack='center'>
-					<button label='Move Left' icon='go-back' class='goback' oncommand='nzbdStatusConfig.moveLeft();' />
-					<button label='Move Right' icon='go-forward' class='goforward' oncommand='nzbdStatusConfig.moveRight();' />
-					<button label='Test' icon='network' oncommand='nzbdStatusconfig.testConnection();' />
-				</hbox>
+				<label value='Test connection results' />
 			</vbox>
 		</deck>
 		</radiogroup>
 	</hbox>
 	</groupbox>
-
 </prefpane>
 
 
-<prefpane id='sabnzb-newzbin' label='Newzbin' image='chrome://nzbdstatus/skin/newzbin.png'>
-	<preferences>
-		<preference id='enableinnewzbin' name='extensions.nzbdstatus.enableInNewzbin' type='bool' />
-		<preference id='newzbintosab' name='extensions.nzbdstatus.newzbinToSAB' type='int' />
-	</preferences>
-
-<groupbox>
-	<caption label='&sabstatus.newzbin_caption.label;' />
-	<hbox align='center'>
-		<checkbox label='&sabstatus.pref_enableinnewzbin.value;' preference='enableinnewzbin' id='enableinnewzbin' />
-	</hbox>
-	<hbox align='center'>
-		<label control='newzbintosab' value='&sabstatus.pref_newzbintosab.label;' />
-		<menulist preference='newzbintosab' id='newzbintosab' flex='1'>
-			<menupopup>
-				<menuitem label='&sabstatus.pref_sabproclevel.value6;' value='6' />
-				<menuitem label='&sabstatus.pref_sabproclevel.value5;' value='5' />
-				<menuitem label='&sabstatus.pref_sabproclevel.value4;' value='4' />
-				<menuitem label='&sabstatus.pref_sabproclevel.value3;' value='3' />
-				<menuitem label='&sabstatus.pref_sabproclevel.value2;' value='2' />
-				<menuitem label='&sabstatus.pref_sabproclevel.value1;' value='1' />
-				<menuitem label='&sabstatus.pref_sabproclevel.value0;' value='0' />
-				<menuitem label='&sabstatus.pref_sabproclevel.valued;' value='-1' />
-			</menupopup>
-		</menulist>
-	</hbox>
-</groupbox>
-
+<prefpane id='nzbd-category' label='Categories' image='chrome://nzbdstatus/skin/category.png'>
+	<groupbox flex='1'>
+	<hbox>
+		<vbox>
+			<listbox id='nzbdserver-list' rows='5' flex='1' onselect='nzbdStatusConfig.changeServerDeck()'>
+				<listhead>
+					<listheader label='Server Name'/>
+				</listhead>
+			</listbox>
+		</vbox>
+			<grid>
+				<columns>
+					<column flex='1' />
+					<column />
+					<column flex='1' />
+				</columns>
+				<rows>
+					<row>
+			<label value='Website Category' />
+			<spacer />
+			<label value='Server Category' />
+					</row>
+					<row>
+			<menulist>
+			  <menupopup>
+			    <menuitem label="Movies" value="l"/>
+			  </menupopup>
+			</menulist>
+			<hbox align='center'>
+				<image src='chrome://nzbdstatus/skin/right.png' />
+			</hbox>
+			<menulist>
+			  <menupopup>
+			    <menuitem label="Movies" value="l"/>
+			  </menupopup>
+			</menulist>
+					</row>
+					<row>
+			<menulist>
+			  <menupopup>
+			    <menuitem label="TV" value="l"/>
+			  </menupopup>
+			</menulist>
+			<hbox align='center'>
+				<image src='chrome://nzbdstatus/skin/right.png' />
+			</hbox>
+			<menulist>
+			  <menupopup>
+			    <menuitem label="TV-Archive" value="l"/>
+			  </menupopup>
+			</menulist>
+					</row>
+				</rows>
+			</grid>
+		</hbox>
+	</groupbox>
 </prefpane>
+
+
+<prefpane id='about' label='--About--' image='chrome://nzbdstatus/skin/about.png'>
+	<groupbox>
+		<vbox>
+			<text value='nzbdStatus' style='font-weight: bold; font-size: x-large;' />
+			<text value='version number' id='sabversion' />
+			<separator class="thin" />
+			<text value='--created--' style='font-weight: bold;' />
+			<text value='Ben Dusinberre' />
+			<separator class='thin' />
+			<text value='--translated--' style='font-weight: bold;' />
+			<text value='lantash (de-CH)' />
+			<text value='Severin (de-CH)' />
+			<text value='foxace (fr-FR)' />
+			<text value='Malmis (sv-SE)' />
+			<text value='edgard.magalhaes of babelzilla (pt-BR)' />
+			<text value='jcfp (nl-NL)' />
+			<separator class='thin' />
+			<hbox>
+				<html:a href='http://sourceforge.net/projects/nzbdstatus/' target='_blank' style='color:#00b'>--support--</html:a>
+			</hbox>
+			<separator class='thin' />
+			<hbox>
+				<html:a href='https://addons.mozilla.org/addon/7617?src=external-about' target='_blank' style='color:#00b'>--donate--</html:a>
+			</hbox>
+		</vbox>
+	</groupbox>
+</prefpane>
+
 
 <script type="application/x-javascript" src="chrome://nzbdstatus/content/configuration.js" />
 
