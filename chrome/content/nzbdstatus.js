@@ -184,13 +184,9 @@ nzbdStatusObject.prototype = {
 
 	sendAlert: function(icon, title, message)
 	{
-		try {
-
 		var alertsService = Components.classes["@mozilla.org/alerts-service;1"]
 		 .getService(Components.interfaces.nsIAlertsService);
 		alertsService.showAlertNotification(icon, title, message, false, "", null, "nzbdStatus");
-
-		} catch(e) {}
 	},
 
 	sendDownloadAlert: function(title, message)
@@ -693,10 +689,13 @@ return;
 			// Not logged in so drop out because they probably don't have a NewzBin account
 			return;
 		}
-		var newzbinJS = doc.createElement('script');
-		newzbinJS.type = 'text/javascript';
-		newzbinJS.src = 'chrome://nzbdstatus/content/newzbin.js';
-		doc.getElementsByTagName('head')[0].appendChild(newzbinJS);
+		// Check if there's an add to bookmarks button so we can add our send all reports button
+		var results = SABnzbdStatus.selectNodes(doc, doc, '//input[@name="add_to_bookmarks"]');
+		if (results != null && results.length > 0)
+		{
+			SABnzbdStatus.addSendAllButton(doc);
+		}
+		// Insert the CSS needed to style our menu
 		var newzbinCSS = doc.createElement('link');
 		newzbinCSS.rel = 'stylesheet';
 		newzbinCSS.type = 'text/css';
@@ -885,69 +884,62 @@ return;
 	{
 		try {
 
-		if (this.getPreference('addFeedHandler'))
+		// Localization hook
+		nzbdStatus.stringsBundle = document.getElementById("nzb-string-bundle");
+
+		// Add in our RSS feed handler
+		if (nzbdStatus.getPreference('addFeedHandler'))
 		{
-			this.addFeedHandler();
+			nzbdStatus.addFeedHandler();
 		}
 
-		// Load up some preferences into the object
-		this.favServer = this.getPreference('servers.favorite');
-		this.refreshRate = this.getPreference('refreshRate');
+#		// Load up some preferences into the object
+#		this.favServer = this.getPreference('servers.favorite');
+#		this.refreshRate = this.getPreference('refreshRate');
 
 		// Load up the server details into the cache
-		this.fillServerCache();
+		nzbdStatus.fillServerCache();
 
 		// Create the additional widgets for the status bar (if needed)
-		this.createAllWidgets();
+		nzbdStatus.createAllWidgets();
 		// Add the servers to the context menu
-		this.fillContextMenu();
+		nzbdStatus.fillContextMenu();
 
 		// Check to see if we need to put an observer on the download manager
-		var dlObs = this.observerService.enumerateObservers('nzbdStatus');
+		var dlObs = nzbdStatus.observerService.enumerateObservers('nzbdStatus');
 		if (!dlObs.hasMoreElements())
 		{
 			// It's just us, so toss on an observer
-			if (this.getPreference('enableFilesToServer'))
+			if (nzbdStatus.getPreference('enableFilesToServer'))
 			{
-				this.observerService.addObserver(this, 'dl-done', false);
+				nzbdStatus.observerService.addObserver(nzbdStatus, 'dl-done', false);
 			}
 		}
 		else
 		{
 			// There's someone else out there, we'll let them handle it
-			this._handleDownloads = false;
+			nzbdStatus._handleDownloads = false;
 		}
-		this.observerService.addObserver(this, 'nzbdStatus', false);
+		nzbdStatus.observerService.addObserver(nzbdStatus, 'nzbdStatus', false);
 
 		// Put an observer on the preferences
-		this.preferences.QueryInterface(Components.interfaces.nsIPrefBranch2);
-		this.preferences.addObserver('', this, false);
+		nzbdStatus.preferences.QueryInterface(Components.interfaces.nsIPrefBranch2);
+		nzbdStatus.preferences.addObserver('', nzbdStatus, false);
 
 		// Start the monitors
-		this.refreshAll();
-		this.refreshId = window.setInterval(this.refreshAll, this.refreshRate*60*1000);
+		nzbdStatus.refreshAll();
+		nzbdStatus.refreshId = window.setInterval(nzbdStatus.refreshAll, nzbdStatus.refreshRate*60*1000);
 
 		// Add the onload handler
 		var appcontent = document.getElementById('appcontent');   // browser
 		if (appcontent)
 		{
-			appcontent.addEventListener('load', this.onPageLoad, true);
+			appcontent.addEventListener('load', nzbdStatus.onPageLoad, true);
 		}
 
 		// Add a listener to the context menu
 		var menu = document.getElementById('contentAreaContextMenu');
-		menu.addEventListener('popupshowing', this.contextPopupShowing, false);
-
-/*
-		this.statusbar = document.getElementById('nzbdstatus-panel-0');
-		this.statusicon = document.getElementById('nzbdstatus-panel-0').getElementsByTagName('image')[0];
-		this.statuslabel = document.getElementById('nzbdstatus-panel-0').getElementsByTagName('label')[0];
-		this.displayIdle();
-		if (this.getPreference('onlyShowIcon'))
-		{
-			this.statuslabel.style.visibility = 'collapse';
-		}
-*/
+		menu.addEventListener('popupshowing', nzbdStatus.contextPopupShowing, false);
 
 
 		} catch(e) { nzbdStatus.errorLogger('startup',e); }
