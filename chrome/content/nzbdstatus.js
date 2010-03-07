@@ -13,8 +13,7 @@
 //      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 //      MA 02110-1301, USA.
 
-// Originally based off inpheaux's SABnzbd/Newzbin Greasemonkey script, has deviated a bit since then
-// (c) 2009 Ben Dusinberre
+// (c) 2010 Ben Dusinberre
 
 // The nzbdStatusObject definition itself
 function nzbdStatusObject()
@@ -31,7 +30,7 @@ nzbdStatusObject.prototype = {
 	statusicon: null, // Shortcut
 	statuslabel: null, // Shortcut
 	favServer: null, // Our favorite server
-	serverDetails: Array(), // Cache for the server details
+	servers: Array(), // Cache for the server details
 	processingQueue: Array(), // Where what needs to be done is put
 	processingQueueActive: false,  // So we don't try to do things twice
 
@@ -893,15 +892,17 @@ return;
 			nzbdStatus.addFeedHandler();
 		}
 
-#		// Load up some preferences into the object
-#		this.favServer = this.getPreference('servers.favorite');
-#		this.refreshRate = this.getPreference('refreshRate');
+		// Load up some preferences into the object
+//		this.favServer = this.getPreference('servers.favorite');
+//		this.refreshRate = this.getPreference('refreshRate');
+		nzbdStatus.serverOrder = nzbdStatus.getPreference('servers.order').split(',');
 
 		// Load up the server details into the cache
-		nzbdStatus.fillServerCache();
+		nzbdStatus.loadServers();
 
 		// Create the additional widgets for the status bar (if needed)
 		nzbdStatus.createAllWidgets();
+return;
 		// Add the servers to the context menu
 		nzbdStatus.fillContextMenu();
 
@@ -1051,7 +1052,7 @@ return;
 					switch (sData[1])
 					{
 						case 'count':
-							this.fillServerCache();
+							this.loadServers();
 							// Need someway to edit the widgets that've been added/removed
 							break;
 						case 'favorite':
@@ -1061,7 +1062,7 @@ return;
 							var sNum = sData[1].match(/\d+/);
 							if (sNum && (sNum[0] = sData[1]))
 							{
-								this.cacheDetailsOf(sNum[0]);
+								this.loadDetailsOf(sNum[0]);
 							}
 					}
 				}
@@ -1095,12 +1096,9 @@ return;
 	// This creates a widget for each server then sticks it into the status bar
 	createAllWidgets: function()
 	{
-		var mainWidget = document.getElementById('nzbdstatus-panel-template');
-		var serverOrder = this.getPreference('servers.order').split(',');
-		var serverDetails, newWidget, tooltip, popup, prevWidget = mainWidget;
-		mainWidget.getElementsByTagName('image')[0].setAttribute('src', 'chrome://nzbdstatus/skin/'+this.serverDetails[0].icon);
+		var newWidget, templateWidget = document.getElementById('nzbdstatus-panel-template');
 
-		for each (var i in serverOrder)
+		for each (var i in nzbdStatus.serverOrder)
 		{
 			newWidget = mainWidget.cloneNode(true);
 			newWidget.setAttribute('id', 'nzbdstatus-panel-'+i);
@@ -1108,20 +1106,17 @@ return;
 			newWidget.setAttribute('tooltip', 'nzbdstatus-tooltip-'+i);
 			newWidget.getElementsByTagName('tooltip')[0].setAttribute('id', 'nzbdstatus-tooltip-'+i);
 			newWidget.getElementsByTagName('menupopup')[0].setAttribute('id', 'nzbdstatus-context-'+i);
-			newWidget.getElementsByTagName('image')[0].setAttribute('src', 'chrome://nzbdstatus/skin/'+this.serverDetails[i].icon);
-			if (!this.getPreference('servers.'+i+'.enable'))
+			newWidget.getElementsByTagName('image')[0].setAttribute('src', 'chrome://nzbdstatus/skin/'+nzbdStatus.servers[i].icon);
+			if (!nzbdStatus.servers[i].enable)
 			{
 				newWidget.setAttribute('hidden', 'true');
 			}
-			if (!this.getPreference('servers.'+i+'.showInStatusBar'))
+			if (!nzbdStatus.servers[i].showInStatusBar)
 			{
 				newWidget.setAttribute('hidden', 'true');
 			}
-			mainWidget.parentNode.insertBefore(newWidget, mainWidget);
+			templateWidget.parentNode.insertBefore(newWidget, templateWidget);
 		}
-
-		mainWidget.setAttribute('hidden', 'true');
-		document.getElementById('nzbdstatus-panel-'+this.favServer).setAttribute('hidden', 'false');
 	},
 
 	// Stick each server into the context menu
@@ -1306,47 +1301,29 @@ return;
 	},
 
 	// Read the server details into the cache
-	fillServerCache: function()
+	loadServers: function()
 	{
-		var serverOrder = this.getPreference('servers.order').split(',');
-		for each (var i in serverOrder)
+		for each (var i in nzbdStatus.serverOrder)
 		{
-			this.cacheDetailsOf(i);
+			this.loadDetailsOf(i);
 		}
 	},
 
 	// Loads the details for a single server into the cache
-	cacheDetailsOf: function(serverId)
+	loadDetailsOf: function(serverId)
 	{
-		var rootUrl, notFound, logins, username = null, password = null;
-		var passwordManager = Components.classes["@mozilla.org/login-manager;1"]
-		 .getService(Components.interfaces.nsILoginManager);
-		var serverType = this.getPreference('servers.'+serverId+'.type');
-		var fullUrl = this.getPreference('servers.'+serverId+'.url');
-		var apikey = this.getPreference('servers.'+serverId+'.apikey');
-
-		if (apikey == '')
+		var serverType = nzbdStatus.getPreference('servers.'+serverId+'.type');
+		switch (serverType)
 		{
-			// There's no apikey stored so we'll check if there's a password saved
-			rootUrl = fullUrl.match(/(https?:\/\/([^\/]+))/)[1];
-			var logins = passwordManager.findLogins({}, rootUrl, rootUrl, null);
-			if (logins.length > 0)
-			{
-				username = logins[0].username;
-				password = logins[0].password;
-			}
+			case 'sabnzbd':
+				var serverObject = new sabnzbdServerObject(serverId);
+				if (serverObject.enabled)
+				{
+					serverObject.connect();
+				}
+				break;
 		}
-
-		this.serverDetails[serverId] = {
-		 id: serverId,
-		 url: fullUrl,
-		 type: serverType,
-		 label: this.getPreference('servers.'+serverId+'.label'),
-		 icon: this.getPreference('servers.'+serverId+'.icon'),
-		 apikey: apikey,
-		 username: username,
-		 password: password
-		};
+		nzbdStatus.servers[serverId] = serverObject;
 	},
 
 	// Do the oldest thing in the event queue
@@ -2076,7 +2053,7 @@ return;
 			return;
 		}
 		var msg = fName + ' threw error `' + error.message + '` on line: ' + error.lineNumber + '\n';
-		switch (SABnzbdStatus.getPreference('errorMode'))
+		switch (nzbdStatus.getPreference('errorMode'))
 		{
 			case 0: // alert
 				alert(msg);
@@ -2090,7 +2067,6 @@ return;
 		}
 	}
 
-	// Don't forget to add a comma
 }
 
 nzbdStatus = new nzbdStatusObject();
