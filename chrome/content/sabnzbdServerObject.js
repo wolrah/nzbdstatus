@@ -25,15 +25,16 @@ function sabnzbdServerObject(serverId)
 	 .getService(Components.interfaces.nsIPrefService)
 	 .getBranch('extensions.nzbdstatus.servers.'+serverId+'.');
 
+	this.enabled = this.getPreference('enable');
 	this.showNotifications = this.getPreference('showNotifications');
 	this.showStatusBar = this.getPreference('showInStatusBar');
+	this.label = this.getPreference('label');
 	this.url = this.getPreference('url');
 	this.apikey = this.getPreference('apikey');
 	this.username = this.getPreference('username');
 	this.password = this.getPreference('password');
-	this.label = this.getPreference('label');
+	this.type = this.getPreference('type');
 	this.icon = this.getPreference('icon');
-	this.enabled = this.getPreference('enable');
 
 	} catch(e) { this.errorLogger('connect',e); }
 }
