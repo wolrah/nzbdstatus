@@ -2,11 +2,16 @@
 <!DOCTYPE overlay SYSTEM "chrome://nzbdstatus/locale/nzbdstatus.dtd">
 <?xml-stylesheet href="chrome://nzbdstatus/content/nzbdstatus.css" type="text/css"?>
 <overlay id='nzbdstatus-overlay' xmlns='http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul'>
+	<script type='application/x-javascript' src='chrome://nzbdstatus/content/sabnzbdServerObject.js' />
 	<script type='application/x-javascript' src='chrome://nzbdstatus/content/nzbdstatus.js' />
+	<stringbundleset id="stringbundleset">
+		<stringbundle id="nzb-string-bundle" src="chrome://nzbdstatus/locale/nzbdstatus.properties"/>
+	</stringbundleset>
 	<statusbar id='status-bar'>
 		<statusbarpanel id='nzbdstatus-panel-template' class='nzbdstatus-panel' context='nzbdstatus-context-template'
 		 tooltip='nzbdstatus-tooltip-template' onclick='nzbdStatus.clickedOn(event)'
-		 insertafter='statusbar-updates,statusbarpanel-progress,security-button,privacy-button,download-monitor,statusbar-display'>
+		 insertafter='statusbar-updates,statusbarpanel-progress,security-button,privacy-button,download-monitor,statusbar-display'
+		 hidden='true'>
 			<image />
 			<label class='nzbdstatus-hidden' />
 			<tooltip id='nzbdstatus-tooltip-template' noautohide='true'>
@@ -50,7 +55,7 @@
 	<popup id='contentAreaContextMenu'>
 		<menu id='nzbdstatus-context-sendlink' label='Send link to server' hidden='true'>
 			<menupopup>
-				<menuitem id='nzbdstatus-context-server-template' oncommand='nzbdStatus.queueUrl(event)' />
+				<menuitem id='nzbdstatus-context-server-template' oncommand='nzbdStatus.queueUrl(event)' hidden='true' />
 			</menupopup>
 		</menu>
 	</popup>
