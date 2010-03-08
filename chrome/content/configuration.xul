@@ -245,6 +245,10 @@
 			<hbox>
 				<html:a href='https://addons.mozilla.org/addon/7617?src=external-about' target='_blank' style='color:#00b'>--donate--</html:a>
 			</hbox>
+			<separator class="thin" />
+			<text value='--License--' style='font-weight: bold;' />
+			<text value='GPL3.0' />
+			<text value='Nuvuo LGPL3.0' />
 		</vbox>
 	</groupbox>
 </prefpane>
