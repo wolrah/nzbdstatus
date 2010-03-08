@@ -55,7 +55,7 @@
 	<popup id='contentAreaContextMenu'>
 		<menu id='nzbdstatus-context-sendlink' label='Send link to server' hidden='true'>
 			<menupopup>
-				<menuitem id='nzbdstatus-context-server-template' oncommand='nzbdStatus.queueUrl(event)' hidden='true' />
+				<menuitem id='nzbdstatus-context-server-template' oncommand='nzbdStatus.queueUrl(event)' class='menuitem-iconic' hidden='true' />
 			</menupopup>
 		</menu>
 	</popup>
