@@ -630,25 +630,20 @@ return;
 		serverList.addEventListener('mouseout', function(e){var doc = e.target.ownerDocument;doc.getElementById('nzbdserverList').style.display='none';}, false);
 
 		var serverItem, serverIcon, serverLink, serverDetails;
-		var serverOrder = this.getPreference('servers.order').split(',');
-		for each (var i in serverOrder)
+		for each (var i in nzbdStatus.serverOrder)
 		{
 			serverItem = doc.createElement('li');
-			if (i == this.favServer)
-			{
-				serverItem.className = 'selected'
-			}
 			serverLink = doc.createElement('a');
-			serverName = this.serverDetails[i].label;
+			serverName = nzbdStatus.servers[i].label;
 			serverIcon = doc.createElement('img');
-			serverIcon.setAttribute('src', 'chrome://nzbdstatus/skin/'+this.serverDetails[i].icon);
-			serverIcon.setAttribute('alt', this.serverDetails[i].label);
+			serverIcon.setAttribute('src', 'chrome://nzbdstatus/skin/'+nzbdStatus.servers[i].icon);
+			serverIcon.setAttribute('alt', nzbdStatus.servers[i].label);
 			serverLink.appendChild(serverIcon);
-			serverLink.appendChild(doc.createTextNode(this.serverDetails[i].label));
+			serverLink.appendChild(doc.createTextNode(nzbdStatus.servers[i].label));
 			serverItem.appendChild(serverLink);
 			serverItem.className += ' nzbServer'+i;
 			serverItem.addEventListener('click', nzbdStatus.queueNewzbinId, false);
-			if (!this.getPreference('servers.'+i+'.enable'))
+			if (!nzbdStatus.servers[i].enabled)
 			{
 				serverItem.style.display = 'none';
 			}
@@ -657,70 +652,91 @@ return;
 		return serverList;
 	},
 
+	makeSendAllButton: function(doc)
+	{
+		var allButton = doc.createElement('input');
+		allButton.setAttribute('type', 'button');
+		allButton.setAttribute('value', nzbdStatus.stringsBundle.getString('sendAllReports'));
+		//allButton.addEventListener('click', nzbdStatus.sendAllToServer, false);
+		return allButton;
+	},
+
+	sendAllToSAB: function(event)
+	{
+		var doc = event.originalTarget.ownerDocument;
+		var siteSrc = nzbdStatus.getSiteSrc(doc);
+		var results;
+		switch (siteSrc)
+		{
+			case 'newzbin':
+				results = nzbdStatus.selectNodes(doc, doc, '//tbody[contains(@class,"select")]/tr/td/img[@class="sabsend"]');
+				break;
+			case 'nzbsorg':
+				results = nzbdStatus.selectNodes(doc, doc, '//tr[contains(@class,"selected")]/td/b/img[@class="sabsend"]');
+				break;
+			case 'tvnzb':
+				results = nzbdStatus.selectNodes(doc, doc, '//input[@name="marked_nzb[]"]');
+				break;
+			case 'nzbindex':
+				results = nzbdStatus.selectNodes(doc, doc, '//input[@name="r[]"]');
+				break;
+			default:
+				return;
+		}
+
+		if (results != null && results.length > 0)
+		{
+			var rowcount = results.length;
+			for (i = 0; i < rowcount; i++)
+			{
+				if ((siteSrc == 'newzbin') || (siteSrc == 'nzbsorg'))
+				{
+					results[i].click(event);
+				}
+				if (((siteSrc == 'tvnzb') || (siteSrc == 'nzbindex')) && results[i].checked)
+				{
+					results[i].parentNode.parentNode.getElementsByClassName('sabsend')[0].click(event);
+				}
+			}
+		}
+	},
+
 	// This happens every page load
 	onPageLoad: function(e)
 	{
 		try {
-
+dump('inpageload\n');
 		var doc = e.originalTarget;
 		if (!doc.location)
 		{
 			return;
 		}
-		// Make sure we are on a supported version of Newzbin
-		if ((doc.location.href.search('newzbin') == -1) && (doc.location.href.search('newzxxx') == -1))
+		// Are we at newzbin.com?
+		if (((doc.location.href.search('newzbin') > -1) || (doc.location.href.search('newzxxx') > -1))
+		 && (doc.location.href.search('v2.newzbin') == -1))
 		{
+			nzbdStatus.onNewzbinPageLoad(doc);
 			return;
 		}
-		// v2 of newsbin isn't supported
-		if ((doc.location.href.search('v2.newzbin') != -1))
+		// Are we at one of the other sites?
+		if (doc.location.href.search('nzbmatrix.com') > -1)
 		{
+			nzbdStatus.onNzbmatrixPageLoad(doc);
 			return;
 		}
-		if (!nzbdStatus.getPreference('enableInNewzbin'))
+		if (doc.location.href.search('tvnzb.com') > -1)
 		{
-			// They'ved turned off the NewzBin features
+			nzbdStatus.onTvnzbLoad(doc);
 			return;
 		}
-		var loggedIn = nzbdStatus.selectSingleNode(doc, doc, '//a[contains(@href,"/account/logout/")]');
-		if (!loggedIn)
+		if (doc.location.href.search('nzbs.org') > -1)
 		{
-			// Not logged in so drop out because they probably don't have a NewzBin account
+			nzbdStatus.onNzbsOrgLoad(doc);
 			return;
 		}
-		// Check if there's an add to bookmarks button so we can add our send all reports button
-		var results = SABnzbdStatus.selectNodes(doc, doc, '//input[@name="add_to_bookmarks"]');
-		if (results != null && results.length > 0)
+		if (doc.location.href.search('nzbindex.nl') > -1)
 		{
-			SABnzbdStatus.addSendAllButton(doc);
-		}
-		// Insert the CSS needed to style our menu
-		var newzbinCSS = doc.createElement('link');
-		newzbinCSS.rel = 'stylesheet';
-		newzbinCSS.type = 'text/css';
-		newzbinCSS.href = 'chrome://nzbdstatus/content/newzbin.css';
-		doc.getElementsByTagName('head')[0].appendChild(newzbinCSS);
-		doc.getElementsByTagName('body')[0].appendChild(nzbdStatus.getServerUL(doc));
-
-		// Report detail mode
-		var results = nzbdStatus.selectNodes(doc, doc, '//form[@id="PostEdit"][contains(@action,"/browse/post/")]');
-		if (results != null && results.length > 0)
-		{
-			nzbdStatus.reportSummaryPage(doc);
-			return;
-		}
-		// Report browser mode
-		results = nzbdStatus.selectNodes(doc, doc, '//a[contains(@href, "/nzb")][@title="Download report NZB"]');
-		if (results != null && results.length > 0)
-		{
-			nzbdStatus.listingsPage(doc);
-			return;
-		}
-		// File browser mode
-		results = nzbdStatus.selectNodes(doc, doc, '//form[contains(@action,"/database/fileactions/")]');
-		if (results != null && results.length > 0)
-		{
-			nzbdStatus.filesPage(doc);
+			nzbdStatus.onNzbIndexLoad(doc);
 			return;
 		}
 
@@ -728,15 +744,206 @@ return;
 
 	},
 
+	onNewzbinPageLoad: function(doc)
+	{
+dump('in newzbin\n');try{
+		if (!nzbdStatus.getPreference('enableInNewzbin'))
+		{
+			// They'ved turned off the NewzBin features
+			return;
+		}
+dump('1\n');
+		var loggedIn = nzbdStatus.selectSingleNode(doc, doc, '//a[contains(@href,"/account/logout/")]');
+		if (!loggedIn)
+		{
+			// Not logged in so drop out because they probably don't have a NewzBin account
+			return;
+		}
+dump('2\n');
+		// Insert the CSS needed to style our menu
+		var newzbinCSS = doc.createElement('link');
+		newzbinCSS.rel = 'stylesheet';
+		newzbinCSS.type = 'text/css';
+		newzbinCSS.href = 'chrome://nzbdstatus/content/newzbin.css';
+		doc.getElementsByTagName('head')[0].appendChild(newzbinCSS);
+		doc.getElementsByTagName('body')[0].appendChild(nzbdStatus.getServerUL(doc));
+dump('3\n');
+
+		// Check if there's an add to bookmarks button so we can add our send all reports button
+		var results = nzbdStatus.selectSingleNode(doc, doc, '//input[@name="add_to_bookmarks"]');
+		if (results != null)
+		{
+			results.parentNode.insertBefore(nzbdStatus.makeSendAllButton(doc), results);
+		}
+dump('4\n');
+		// Report detail mode
+		results = nzbdStatus.selectNodes(doc, doc, '//form[@id="PostEdit"][contains(@action,"/browse/post/")]');
+		if (results != null && results.length > 0)
+		{
+			nzbdStatus.reportSummaryPage(doc);
+			return;
+		}
+dump('5\n');
+		// Report browser mode
+		results = nzbdStatus.selectNodes(doc, doc, '//a[contains(@href, "/nzb")][@title="Download report NZB"]');
+		if (results != null && results.length > 0)
+		{
+			nzbdStatus.listingsPage(doc);
+			return;
+		}
+dump('6\n');
+		// File browser mode
+		results = nzbdStatus.selectNodes(doc, doc, '//form[contains(@action,"/database/fileactions/")]');
+		if (results != null && results.length > 0)
+		{
+			nzbdStatus.filesPage(doc);
+			return;
+		}
+		} catch(e) { nzbdStatus.errorLogger('newzbin',e); }
+	},
+
+	onNzbmatrixPageLoad: function(doc)
+	{
+		// nzbmatrix support wasn't added until sabnzbd v5
+		if (nzbdStatus.serverVersion.split('.')[1] < 5)
+		{
+			return;
+		}
+		var results = nzbdStatus.selectNodes(doc, doc, '//a[contains(@href,"/nzb-download.php?id=")]');
+		if (results.length == 0)
+		{
+			return;
+		}
+		var oldIcon, postId, newIcon, rowcount = results.length;
+		for (i = 0; i < rowcount; i++)
+		{
+			oldIcon = results[i];
+			postId = oldIcon.href.match(/nzb-download\.php\?id=(\d+)/i);
+			if (postId == null)
+			{
+				continue;
+			}
+			if (oldIcon.href.match(/&nozip=1/i) != null)
+			{
+				continue;
+			}
+			postId = postId[1];
+			newIcon = nzbdStatus.makeSendIcon(doc, postId);
+			oldIcon.parentNode.insertBefore(newIcon, oldIcon);
+		}
+	},
+
+	onTvnzbLoad: function(doc)
+	{
+		var results = nzbdStatus.selectNodes(doc, doc, '//a[contains(@href,"tvnzb.com/nzb/")]');
+		if (results.length == 0)
+		{
+			return;
+		}
+		var sendAllButton = nzbdStatus.selectSingleNode(doc, doc, '//input[@type="submit"][@value="Download Selected NZBs"]');
+		if (sendAllButton)
+		{
+			var allButton = nzbdStatus.makeSendAllButton(doc);
+			allButton.className = sendAllButton.className;
+			sendAllButton.parentNode.insertBefore(allButton, sendAllButton);
+		}
+		var oldIcon, postId, newIcon, rowcount = results.length;
+		for (i = 0; i < rowcount; i++)
+		{
+			oldIcon = results[i];
+			postId = oldIcon.href.match(/tvnzb\.com\/nzb\/(\d+)/i);
+			if (postId == null)
+			{
+				continue;
+			}
+			postId = postId[1];
+			newIcon = nzbdStatus.makeSendIcon(doc, postId);
+			newIcon.style.marginRight = '.5em';
+			oldIcon.parentNode.insertBefore(newIcon, oldIcon);
+		}
+	},
+
+	onNzbsOrgLoad: function(doc)
+	{
+		var results = nzbdStatus.selectNodes(doc, doc, '//a[contains(@href,"index.php?action=view&nzbid=")]');
+		if (results.length == 0)
+		{
+			return;
+		}
+		var sendAllButton = doc.getElementById('addtomynzbs');
+		if (sendAllButton)
+		{
+			var allButton = nzbdStatus.makeSendAllButton(doc);
+			allButton.className = sendAllButton.className;
+			sendAllButton.parentNode.insertBefore(allButton, sendAllButton);
+		}
+		var oldIcon, postId, newIcon, rowcount = results.length;
+		for (i = 0; i < rowcount; i++)
+		{
+			oldIcon = results[i];
+			postId = oldIcon.href.match(/index\.php\?action=view&nzbid=(\d+)$/i);
+			if (postId == null)
+			{
+				continue;
+			}
+			postId = postId[1];
+			newIcon = nzbdStatus.makeSendIcon(doc, postId);
+			newIcon.style.marginRight = '.5em';
+			oldIcon.parentNode.insertBefore(newIcon, oldIcon);
+		}
+	},
+
+	onNzbIndexLoad: function(doc)
+	{
+		var results = nzbdStatus.selectNodes(doc, doc, '//a[contains(@href,"/download/")]');
+		if (results.length == 0)
+		{
+			return;
+		}
+		var sendAllButton = nzbdStatus.selectSingleNode(doc, doc, '//input[@type="submit"][@value="Create NZB"]');
+		if (sendAllButton)
+		{
+			sendAllButton.parentNode.insertBefore(nzbdStatus.makeSendAllButton(doc), sendAllButton);
+		}
+		var oldIcon, postId, newIcon, rowcount = results.length;
+		for (i = 0; i < rowcount; i++)
+		{
+			oldIcon = results[i];
+			postId = oldIcon.href.match(/nzbindex\.nl\/download\/(\d+)-(\d+)/i);
+			if (postId == null)
+			{
+				continue;
+			}
+			postId = postId[1]+'-'+postId[2];
+			newIcon = nzbdStatus.makeSendIcon(doc, postId);
+			newIcon.style.marginRight = '.5em';
+			dlLink = oldIcon.parentNode.parentNode.parentNode;
+			dlLink.insertBefore(newIcon, dlLink.getElementsByTagName('label')[0]);
+		}
+	},
+
 	reportSummaryPage: function(doc)
 	{
-		var isFinished = nzbdStatus.selectSingleNode(doc, doc, '//img[@title="Report is complete"]');
+		var isFinished = SABnzbdStatus.selectSingleNode(doc, doc, '//img[@title="Report is complete"]');
 		if (isFinished == null)
 		{
 			return;
 		}
 		var postId = doc.location.pathname.match(/(\d+)/)[1];
-		isFinished.parentNode.insertBefore(makeSendIcon(doc, postId), isFinished);
+/*		sendTo = doc.createElement('img');
+		sendTo.src = SABnzbdStatus.getPreference('iconDownload');
+		sendTo.alt = postId;
+		sendTo.className = 'sabsend';
+		sendTo.title = 'Send to SABnzbd';
+		sendTo.style.cursor = 'pointer';
+		sendTo.style.marginRight = '.5em';
+		sendTo.addEventListener('click', SABnzbdStatus.sendToSAB, false);
+		isFinished.parentNode.insertBefore(sendTo, isFinished);
+*/
+		sendTo = nzbdStatus.makeSendIcon(doc, postId);
+		isFinished.parentNode.insertBefore(sendTo, isFinished);
+
+//		isFinished.parentNode.insertBefore(makeSendIcon(doc, postId), isFinished);
 	},
 
 	listingsPage: function(doc)
@@ -806,11 +1013,10 @@ return;
 
 	makeSendIcon: function(doc, postId)
 	{
-
 		var sendIcon = doc.createElement('img');
-		sendIcon.setAttribute('src', 'chrome://nzbdstatus/skin/'+this.serverDetails[this.favServer].icon);
+		sendIcon.setAttribute('src', 'chrome://nzbdstatus/skin/'+this.servers[0].icon);
 		sendIcon.setAttribute('alt', 'nzbId'+postId);
-		sendIcon.className = 'nzbsend nzbServer'+this.favServer;
+		sendIcon.className = 'nzbsend nzbServer0';
 		sendIcon.title = 'Send to SABnzbd';
 		sendIcon.addEventListener('click', nzbdStatus.queueNewzbinId, false);
 		if (nzbdStatus.getPreference('servers.count') > 1)
@@ -819,12 +1025,10 @@ return;
 			sendIcon.addEventListener('mouseout', nzbdStatus.hideServerList, false);
 		}
 		return sendIcon;
-
 	},
 
 	showServerList: function(e)
 	{
-
 		var doc = e.target.ownerDocument, targ = e.target;
 		var sList = doc.getElementById('nzbdserverList');
 		sList.className = sList.className.replace(/nzbId[0-9]+/g, '');
@@ -833,17 +1037,14 @@ return;
 		sList.style.left = (e.originalTarget.x + targ.offsetWidth) + 'px';
 		sList.style.top = (e.originalTarget.y - Math.floor((sList.offsetHeight - targ.offsetHeight) / 2)) + 'px';
 		return;
-
 	},
 
 	hideServerList: function(e)
 	{
-
 		var doc = e.target.ownerDocument;
 		var sList = doc.getElementById('nzbdserverList');
 		sList.style.display = 'none';
 		return;
-
 	},
 
 	checkForNZB: function()
@@ -902,7 +1103,6 @@ return;
 
 		// Create the additional widgets for the status bar (if needed)
 		nzbdStatus.createAllWidgets();
-return;
 		// Add the servers to the context menu
 		nzbdStatus.fillContextMenu();
 
@@ -927,9 +1127,9 @@ return;
 		nzbdStatus.preferences.QueryInterface(Components.interfaces.nsIPrefBranch2);
 		nzbdStatus.preferences.addObserver('', nzbdStatus, false);
 
-		// Start the monitors
-		nzbdStatus.refreshAll();
-		nzbdStatus.refreshId = window.setInterval(nzbdStatus.refreshAll, nzbdStatus.refreshRate*60*1000);
+		// Add a listener to the context menu
+		var menu = document.getElementById('contentAreaContextMenu');
+		menu.addEventListener('popupshowing', nzbdStatus.contextPopupShowing, false);
 
 		// Add the onload handler
 		var appcontent = document.getElementById('appcontent');   // browser
@@ -937,10 +1137,10 @@ return;
 		{
 			appcontent.addEventListener('load', nzbdStatus.onPageLoad, true);
 		}
-
-		// Add a listener to the context menu
-		var menu = document.getElementById('contentAreaContextMenu');
-		menu.addEventListener('popupshowing', nzbdStatus.contextPopupShowing, false);
+return;
+		// Start the monitors
+		nzbdStatus.refreshAll();
+		nzbdStatus.refreshId = window.setInterval(nzbdStatus.refreshAll, nzbdStatus.refreshRate*60*1000);
 
 
 		} catch(e) { nzbdStatus.errorLogger('startup',e); }
@@ -1100,14 +1300,15 @@ return;
 
 		for each (var i in nzbdStatus.serverOrder)
 		{
-			newWidget = mainWidget.cloneNode(true);
+			newWidget = templateWidget.cloneNode(true);
 			newWidget.setAttribute('id', 'nzbdstatus-panel-'+i);
 			newWidget.setAttribute('context', 'nzbdstatus-context-'+i);
 			newWidget.setAttribute('tooltip', 'nzbdstatus-tooltip-'+i);
 			newWidget.getElementsByTagName('tooltip')[0].setAttribute('id', 'nzbdstatus-tooltip-'+i);
 			newWidget.getElementsByTagName('menupopup')[0].setAttribute('id', 'nzbdstatus-context-'+i);
 			newWidget.getElementsByTagName('image')[0].setAttribute('src', 'chrome://nzbdstatus/skin/'+nzbdStatus.servers[i].icon);
-			if (!nzbdStatus.servers[i].enable)
+			newWidget.setAttribute('hidden', 'false');
+			if (!nzbdStatus.servers[i].enabled)
 			{
 				newWidget.setAttribute('hidden', 'true');
 			}
@@ -1122,29 +1323,27 @@ return;
 	// Stick each server into the context menu
 	fillContextMenu: function()
 	{
-		var template = document.getElementById('nzbdstatus-context-server-template');
-		var root = template.parentNode;
-		var serverOrder = this.getPreference('servers.order').split(',');
+		var newWidget, templateWidget = document.getElementById('nzbdstatus-context-server-template');
 
-		for each (var i in serverOrder)
+		for each (var i in nzbdStatus.serverOrder)
 		{
-			var newContext = template.cloneNode(true);
-			newContext.setAttribute('id', 'nzbdstatus-context-server-'+i);
-			newContext.setAttribute('label', this.serverDetails[i].label);
-			newContext.setAttribute('image', 'chrome://nzbdstatus/skin/'+this.serverDetails[i].icon);
-			if (!this.getPreference('servers.'+i+'.enable'))
+			newWidget = templateWidget.cloneNode(true);
+			newWidget.setAttribute('id', 'nzbdstatus-context-server-'+i);
+			newWidget.setAttribute('label', nzbdStatus.servers[i].label);
+			newWidget.setAttribute('image', 'chrome://nzbdstatus/skin/'+nzbdStatus.servers[i].icon);
+			newWidget.setAttribute('hidden', 'false');
+			if (!nzbdStatus.servers[i].enabled)
 			{
-				newContext.setAttribute('hidden', 'true');
+				newWidget.setAttribute('hidden', 'true');
 			}
-			root.appendChild(newContext);
+			templateWidget.parentNode.appendChild(newWidget);
 		}
-		template.setAttribute('hidden', 'true');
+		templateWidget.setAttribute('hidden', 'true');
 	},
 
 	// Queue a refresh request for each widget
 	refreshAll: function()
 	{
-
 		var serverOrder = nzbdStatus.getPreference('servers.order').split(',');
 		for each (var i in serverOrder)
 		{
@@ -1153,7 +1352,6 @@ return;
 				nzbdStatus.queueRefresh(i);
 			}
 		}
-
 	},
 
 	// Count down a second
