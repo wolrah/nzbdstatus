@@ -36,3 +36,56 @@
 <!ENTITY sabstatus.pref_sabproclevel.value1 "Verify">
 <!ENTITY sabstatus.pref_sabproclevel.value0 "Do Nothing">
 <!ENTITY sabstatus.pref_sabproclevel.valued "Default">
+
+<!ENTITY sabstatus.window_config.title "nzbdStatus Configuration">
+<!ENTITY sabstatus.gen_prefpane.label "Config">
+<!ENTITY sabstatus.gen_caption.label "General Settings">
+<!ENTITY sabstatus.pref_refreshrate.value "Refresh Rate:">
+<!ENTITY sabstatus.pref_refreshrate_units.value "minutes">
+
+<!ENTITY sabstatus.sbar_caption.label "Statusbar Settings">
+<!ENTITY sabstatus.pref_onlyshow.value "Hide timer">
+<!ENTITY sabstatus.pref_alwaysshow.value "Always show icon in statusbar">
+<!ENTITY sabstatus.pref_leftclick.label "Left Click:">
+<!ENTITY sabstatus.pref_middleclick.label "Middle Click:">
+<!ENTITY sabstatus.pref_sbarclick_refresh.value "Refresh information">
+<!ENTITY sabstatus.pref_sbarclick_newtabfocus.value "Open in new tab">
+<!ENTITY sabstatus.pref_sbarclick_newtabbackground.value "Open in new tab in background">
+<!ENTITY sabstatus.pref_sbarclick_sametab.value "Open in same tab">
+<!ENTITY sabstatus.pref_sbarclick_newwindow.value "Open in new window">
+<!ENTITY sabstatus.pref_sbarclick_qnewtabfocus.value "Open queue page in new tab">
+<!ENTITY sabstatus.pref_sbarclick_qnewtabbackground.value "Open queue page in new tab in background">
+<!ENTITY sabstatus.pref_sbarclick_qsametab.value "Open queue page in same tab">
+<!ENTITY sabstatus.pref_sbarclick_qnewwindow.value "Open queue page in new window">
+<!ENTITY sabstatus.downopts_caption.label "File Download Settings">
+<!ENTITY sabstatus.pref_downopts_sendfile.value "Send NZB downloads to SABnzbd">
+<!ENTITY sabstatus.pref_downopts_prompt.value "Prompt before sending">
+
+<!ENTITY sabstatus.login_caption.label "Login Infomation">
+<!ENTITY sabstatus.pref_sabuser.value "Username:">
+<!ENTITY sabstatus.pref_sabpass.value "Password:">
+<!ENTITY sabstatus.api_key_caption.label "API Key (SABnzbd v0.4.9+ only)">
+
+<!ENTITY sabstatus.pref_sendfiles.label "Send NZB files to this daemon">
+<!ENTITY sabstatus.pref_filesintosab.label "After Download:">
+<!ENTITY sabstatus.nzbd_caption.label "Settings">
+<!ENTITY sabstatus.pref_saburl.value "URL:">
+<!ENTITY sabstatus.button_testconnect.label "Test connection">
+
+<!ENTITY sabstatus.newzbin_caption.label "General Settings">
+<!ENTITY sabstatus.pref_enableinnewzbin.value "Enable Newzbin features">
+<!ENTITY sabstatus.pref_newzbintosab.label "After Download:">
+<!ENTITY sabstatus.pref_sabproclevel.value6 "Verify, Extract, Delete, Script">
+<!ENTITY sabstatus.pref_sabproclevel.value5 "Verify, Extract, Script">
+<!ENTITY sabstatus.pref_sabproclevel.value4 "Verify, Script">
+<!ENTITY sabstatus.pref_sabproclevel.value3 "Verify, Extract, Delete">
+<!ENTITY sabstatus.pref_sabproclevel.value2 "Verify, Extract">
+<!ENTITY sabstatus.pref_sabproclevel.value1 "Verify">
+<!ENTITY sabstatus.pref_sabproclevel.value0 "Do Nothing">
+<!ENTITY sabstatus.pref_sabproclevel.valued "Default">
+
+<!ENTITY sabstatus.about_prefpane.label "About">
+<!ENTITY sabstatus.pref_createdby.value "Created by">
+<!ENTITY sabstatus.pref_translatedby.value "Translations by">
+<!ENTITY sabstatus.about_support.label "Support">
+<!ENTITY sabstatus.about_donate.label "Donate">
