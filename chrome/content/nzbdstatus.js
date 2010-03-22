@@ -375,11 +375,11 @@ nzbdStatusObject.prototype = {
 
 		if (this.getPreference('onlyShowIcon'))
 		{
-			this.statuslabel.style.visibility = 'collapse';
+			document.getElementById('nzbdstatus-panel-'+this.serverId).getElementsByClassName('nzbdstatus-label')[0].style.visibility = 'collapse';
 		}
 		else
 		{
-			this.statuslabel.style.visibility = 'visible';
+			document.getElementById('nzbdstatus-panel-'+this.serverId).getElementsByClassName('nzbdstatus-label')[0].style.visibility = 'visible';
 		}
 		if (this.countdownId == null)
 		{
@@ -705,61 +705,37 @@ return;
 	onPageLoad: function(e)
 	{
 		try {
-dump('inpageload\n');
+
 		var doc = e.originalTarget;
 		if (!doc.location)
 		{
 			return;
 		}
+
 		// Are we at newzbin.com?
 		if (((doc.location.href.search('newzbin') > -1) || (doc.location.href.search('newzxxx') > -1))
 		 && (doc.location.href.search('v2.newzbin') == -1))
 		{
 			nzbdStatus.onNewzbinPageLoad(doc);
-			return;
 		}
 		// Are we at one of the other sites?
 		if (doc.location.href.search('nzbmatrix.com') > -1)
 		{
 			nzbdStatus.onNzbmatrixPageLoad(doc);
-			return;
 		}
 		if (doc.location.href.search('tvnzb.com') > -1)
 		{
 			nzbdStatus.onTvnzbLoad(doc);
-			return;
 		}
 		if (doc.location.href.search('nzbs.org') > -1)
 		{
 			nzbdStatus.onNzbsOrgLoad(doc);
-			return;
 		}
 		if (doc.location.href.search('nzbindex.nl') > -1)
 		{
 			nzbdStatus.onNzbIndexLoad(doc);
-			return;
 		}
 
-		} catch(e) { nzbdStatus.errorLogger('onPageLoad',e); }
-
-	},
-
-	onNewzbinPageLoad: function(doc)
-	{
-dump('in newzbin\n');try{
-		if (!nzbdStatus.getPreference('enableInNewzbin'))
-		{
-			// They'ved turned off the NewzBin features
-			return;
-		}
-dump('1\n');
-		var loggedIn = nzbdStatus.selectSingleNode(doc, doc, '//a[contains(@href,"/account/logout/")]');
-		if (!loggedIn)
-		{
-			// Not logged in so drop out because they probably don't have a NewzBin account
-			return;
-		}
-dump('2\n');
 		// Insert the CSS needed to style our menu
 		var newzbinCSS = doc.createElement('link');
 		newzbinCSS.rel = 'stylesheet';
@@ -767,7 +743,26 @@ dump('2\n');
 		newzbinCSS.href = 'chrome://nzbdstatus/content/newzbin.css';
 		doc.getElementsByTagName('head')[0].appendChild(newzbinCSS);
 		doc.getElementsByTagName('body')[0].appendChild(nzbdStatus.getServerUL(doc));
-dump('3\n');
+
+		} catch(e) { nzbdStatus.errorLogger('onPageLoad',e); }
+
+	},
+
+	onNewzbinPageLoad: function(doc)
+	{
+try{
+		if (!nzbdStatus.getPreference('enableInNewzbin'))
+		{
+			// They'ved turned off the NewzBin features
+			return;
+		}
+
+		var loggedIn = nzbdStatus.selectSingleNode(doc, doc, '//a[contains(@href,"/account/logout/")]');
+		if (!loggedIn)
+		{
+			// Not logged in so drop out because they probably don't have a NewzBin account
+			return;
+		}
 
 		// Check if there's an add to bookmarks button so we can add our send all reports button
 		var results = nzbdStatus.selectSingleNode(doc, doc, '//input[@name="add_to_bookmarks"]');
@@ -775,7 +770,7 @@ dump('3\n');
 		{
 			results.parentNode.insertBefore(nzbdStatus.makeSendAllButton(doc), results);
 		}
-dump('4\n');
+
 		// Report detail mode
 		results = nzbdStatus.selectNodes(doc, doc, '//form[@id="PostEdit"][contains(@action,"/browse/post/")]');
 		if (results != null && results.length > 0)
@@ -783,7 +778,7 @@ dump('4\n');
 			nzbdStatus.reportSummaryPage(doc);
 			return;
 		}
-dump('5\n');
+
 		// Report browser mode
 		results = nzbdStatus.selectNodes(doc, doc, '//a[contains(@href, "/nzb")][@title="Download report NZB"]');
 		if (results != null && results.length > 0)
@@ -791,7 +786,7 @@ dump('5\n');
 			nzbdStatus.listingsPage(doc);
 			return;
 		}
-dump('6\n');
+
 		// File browser mode
 		results = nzbdStatus.selectNodes(doc, doc, '//form[contains(@action,"/database/fileactions/")]');
 		if (results != null && results.length > 0)
@@ -1095,7 +1090,7 @@ dump('6\n');
 
 		// Load up some preferences into the object
 //		this.favServer = this.getPreference('servers.favorite');
-//		this.refreshRate = this.getPreference('refreshRate');
+		nzbdStatus.refreshRate = this.getPreference('refreshRate');
 		nzbdStatus.serverOrder = nzbdStatus.getPreference('servers.order').split(',');
 
 		// Load up the server details into the cache
@@ -1137,11 +1132,10 @@ dump('6\n');
 		{
 			appcontent.addEventListener('load', nzbdStatus.onPageLoad, true);
 		}
-return;
+
 		// Start the monitors
 		nzbdStatus.refreshAll();
 		nzbdStatus.refreshId = window.setInterval(nzbdStatus.refreshAll, nzbdStatus.refreshRate*60*1000);
-
 
 		} catch(e) { nzbdStatus.errorLogger('startup',e); }
 	},
@@ -1344,14 +1338,17 @@ return;
 	// Queue a refresh request for each widget
 	refreshAll: function()
 	{
-		var serverOrder = nzbdStatus.getPreference('servers.order').split(',');
-		for each (var i in serverOrder)
+		try {
+
+		for each (var i in nzbdStatus.serverOrder)
 		{
-			if (nzbdStatus.getPreference('servers.'+i+'.enable'))
+			if (nzbdStatus.servers[i].enabled)
 			{
-				nzbdStatus.queueRefresh(i);
+				nzbdStatus.servers[i].refresh();
 			}
 		}
+
+		} catch(e) { nzbdStatus.errorLogger('refreshAll',e); }
 	},
 
 	// Count down a second
