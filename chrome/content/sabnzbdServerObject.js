@@ -25,9 +25,10 @@ function sabnzbdServerObject(serverId)
 	 .getService(Components.interfaces.nsIPrefService)
 	 .getBranch('extensions.nzbdstatus.servers.'+serverId+'.');
 
+	this.serverId = serverId;
 	this.enabled = this.getPreference('enable');
 	this.showNotifications = this.getPreference('showNotifications');
-	this.showStatusBar = this.getPreference('showInStatusBar');
+	this.showInStatusBar = this.getPreference('showInStatusBar');
 	this.label = this.getPreference('label');
 	this.url = this.getPreference('url');
 	this.apikey = this.getPreference('apikey');
@@ -250,6 +251,119 @@ sabnzbdServerObject.prototype = {
 				}
 			}
 		}
+	},
+
+	refresh: function()
+	{
+		var fullUrl = this.url + 'api?mode=qstatus&output=json';
+		if (this.apikeyNeeded)
+		{
+			fullUrl += '&apikey='+this.apikey;
+		}
+		if (this.loginNeeded)
+		{
+			fullUrl += '&ma_username='+this.username+'&ma_password='+this.password;
+		}
+		var xmldoc = this.xmlHttp;
+		var thisServer = this;
+		xmldoc.open('GET', fullUrl, true);
+		xmldoc.onload = function() { thisServer.queueReceived(this); };
+		//this.timeout = setTimeout(function() { thisServer.abortTest(xmldoc); }, 10000);
+		xmldoc.send(null);
+	},
+
+	queueReceived: function(that)
+	{
+		try {
+
+		if (that.status != 200)
+		{
+			dump('queueReceived status: '+that.status+'\n');
+			return;
+		}
+		var output = that.responseText;
+		if (output == '')
+		{
+			dump('queueReceived empty output\n');
+			return;
+		}
+		if ((output.search('<title>Login</title>') > -1) || (output.search('Missing authentication') > -1) || (nzbdStatus.connectionTest == false))
+		{
+			dump('queueReceived Not logged in\n');
+			return;
+		}
+
+		var status, speed, totalTimeRemain, totalMb, totalMbRemain, totalPer, curDL, curTime, curMbRemain, finSpace, queue;
+
+		if (!JSON)
+		{
+			// Firefox 3.0 didn't have the JSON object out like in 3.5+
+			var nativeJSON = Components.classes["@mozilla.org/dom/json;1"].createInstance(Components.interfaces.nsIJSON);
+			queueData = nativeJSON.decode(output);
+		}
+		else
+		{
+			queueData = JSON.parse(output);
+		}
+
+		speed = queueData.kbpersec;
+		totalMbRemain = queueData.mbleft;
+		totalMb = queueData.mb;
+dump('1\n');
+		if (queueData.jobs.length > 0)
+		{
+			curDL = queueData.jobs[0].filename;
+			curMbRemain = queueData.jobs[0].mbleft;
+		}
+		finSpace = queueData.diskspace1;
+		if (queueData.paused == true || queueData.paused == 'true')
+		{
+			status = 'pause';
+		}
+dump('2\n');
+
+		if (status == 'pause')
+		{
+			//nzbdStatus.goPaused();
+			return;
+		}
+		if ((Math.floor(totalMbRemain) == 0) || speed == 0)
+		{
+			//nzbdStatus.goIdle();
+			return;
+		}
+
+		totalPer = Math.floor((1 - (totalMbRemain / totalMb)) * 100)+'%';
+		totalTimeRemain = (totalMbRemain * 1024) / speed;
+		totalTimeRemain = nzbdStatus.convertSecondsToTime(totalTimeRemain);
+		curTime = (curMbRemain * 1024) / speed;
+		curTime = nzbdStatus.convertSecondsToTime(curTime);
+
+		document.getElementById('nzbdstatus-panel-'+this.serverId).getElementsByClassName('nzbdstatus-label')[0].value = totalTimeRemain;
+		if (Math.floor(speed) > 1100)
+		{
+			var kbpersec = Math.floor(speed / 100) / 10 + ' MB/s';
+		}
+		else
+		{
+			var kbpersec = Math.floor(speed) + ' KB/s';
+		}
+		document.getElementById('nzbdstatus-panel-'+this.serverId).getElementsByClassName('nzbdstatus-kbpersec')[0].value = kbpersec;
+		document.getElementById('nzbdstatus-panel-'+this.serverId).getElementsByClassName('nzbdstatus-mbleft')[0].setAttribute('value', totalPer);
+		document.getElementById('nzbdstatus-panel-'+this.serverId).getElementsByClassName('nzbdstatus-diskspace1')[0].value = (Math.floor(finSpace * 100) / 100) + ' GB';
+		document.getElementById('nzbdstatus-panel-'+this.serverId).getElementsByClassName('nzbdstatus-jobs0')[0].value = curDL;
+		document.getElementById('nzbdstatus-panel-'+this.serverId).getElementsByClassName('nzbdstatus-jobs0-time')[0].value = curTime;
+dump('kbpersec: '+kbpersec+'\n')
+dump('totalPer: '+totalPer+'\n')
+dump('finSpace: '+finSpace+'\n')
+dump('curDL: '+curDL+'\n')
+dump('curTime: '+curTime+'\n')
+
+
+		nzbdStatus.goActive(this.serverId);
+
+
+		} catch(error) {dump('queue threw error `' + error.message + '` on line: ' + error.lineNumber + '\n'); }
 	},
 
 	errorLogger: function(fName, error)
