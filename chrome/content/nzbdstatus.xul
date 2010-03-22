@@ -13,7 +13,7 @@
 		 insertafter='statusbar-updates,statusbarpanel-progress,security-button,privacy-button,download-monitor,statusbar-display'
 		 hidden='true'>
 			<image />
-			<label class='nzbdstatus-hidden' />
+			<label class='nzbdstatus-hidden nzbdstatus-label nzbdstatus-time' />
 			<tooltip id='nzbdstatus-tooltip-template' noautohide='true'>
 				<description value='&nzbdstatus.tooltip_idle.value;' class='nzbdstatus-tooltip-text' />
 				<grid class='nzbdstatus-tooltip-data nzbdstatus-hidden'>
@@ -32,7 +32,7 @@
 						</row>
 						<row>
 							<description value='&nzbdstatus.tooltip_jobs0_time.value;' />
-							<description class='nzbdstatus-jobs0-time' />
+							<description class='nzbdstatus-jobs0-time nzbdstatus-time' />
 						</row>
 						<row>
 							<description value='&nzbdstatus.tooltip_mbleft.value;' />
