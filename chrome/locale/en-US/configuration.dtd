@@ -84,6 +84,10 @@
 <!ENTITY sabstatus.pref_sabproclevel.value0 "Do Nothing">
 <!ENTITY sabstatus.pref_sabproclevel.valued "Default">
 
+<!ENTITY sabstatus.category_prefpane.label "Categories">
+<!ENTITY sabstatus.pref_webcategory.label "Website Category">
+<!ENTITY sabstatus.pref_sabcategory.label "Server Category">
+
 <!ENTITY sabstatus.about_prefpane.label "About">
 <!ENTITY sabstatus.pref_createdby.value "Created by">
 <!ENTITY sabstatus.pref_translatedby.value "Translations by">
