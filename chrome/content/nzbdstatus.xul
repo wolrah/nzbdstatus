@@ -5,7 +5,7 @@
 	<script type='application/x-javascript' src='chrome://nzbdstatus/content/sabnzbdServerObject.js' />
 	<script type='application/x-javascript' src='chrome://nzbdstatus/content/nzbdstatus.js' />
 	<stringbundleset id="stringbundleset">
-		<stringbundle id="nzb-string-bundle" src="chrome://nzbdstatus/locale/nzbdstatus.properties"/>
+		<stringbundle id="nzbstatus-string-bundle" src="chrome://nzbdstatus/locale/nzbdstatus.properties"/>
 	</stringbundleset>
 	<statusbar id='status-bar'>
 		<statusbarpanel id='nzbdstatus-panel-template' class='nzbdstatus-panel' context='nzbdstatus-context-template'
