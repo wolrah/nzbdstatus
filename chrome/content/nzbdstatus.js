@@ -22,7 +22,7 @@ function nzbdStatusObject()
 // Now extend it
 nzbdStatusObject.prototype = {
 
-	// Public variables
+	// Variables
 	refreshId: null, // setInterval container
 	countdownId: null, // setInterval container
 	refreshRate: null, // Controlled by a preference
@@ -33,18 +33,15 @@ nzbdStatusObject.prototype = {
 	servers: Array(), // Cache for the server details
 	processingQueue: Array(), // Where what needs to be done is put
 	processingQueueActive: false,  // So we don't try to do things twice
+	handleDownloads: true,
 
 
-	// Private variables
+	// Private variables (don't touch these except thru a getter/putter)
 	_preferences: Components.classes['@mozilla.org/preferences;1']
 	 .getService(Components.interfaces.nsIPrefService)
 	 .getBranch('extensions.nzbdstatus.'),
 	_observerService: Components.classes['@mozilla.org/observer-service;1']
 	 .getService(Components.interfaces.nsIObserverService),
-	_JSON: Components.classes["@mozilla.org/dom/json;1"]
-	 .createInstance(Components.interfaces.nsIJSON),
-	_askForPass: false,
-	_handleDownloads: true,
 	_processingHttp: new XMLHttpRequest(), // One httpRequest object for the processing queue
 	_queueHttp: new XMLHttpRequest(), // One httpRequest object for the queue tracking
 	_historyHttp: new XMLHttpRequest(), // One httpRequest object for the history monitoring
@@ -88,7 +85,7 @@ nzbdStatusObject.prototype = {
 	},
 
 
-	// Functions
+	// Utility functions
 
 	// Returns the value at the given preference from the branch in the preference property
 	// @param: (string) Preference name
@@ -181,6 +178,41 @@ nzbdStatusObject.prototype = {
 		this.setPreference('addFeedHandler', false);
 	},
 
+	convertSecondsToTime: function(seconds)
+	{
+		var d = new Date();
+		d.setTime(seconds * 1000);
+		var h = d.getUTCHours() + ((d.getUTCDate()-1) * 24);
+		var m = d.getUTCMinutes();
+		var s = d.getUTCSeconds();
+		if (m < 10)
+		{
+			m = '0' + m;
+		}
+		if (s < 10)
+		{
+			s = '0' + s;
+		}
+		return h + ':' + m + ':' + s;
+	},
+
+	convertTimeToSeconds: function(timeString)
+	{
+		var timeArray = timeString.match(/(\d+)/g);
+		var d = new Date();
+		d.setTime(0);
+		d.setUTCHours(timeArray[0]);
+		d.setUTCMinutes(timeArray[1]);
+		d.setUTCSeconds(timeArray[2]);
+		return Math.floor(d.getTime() / 1000);
+	},
+
+
+
+	// Methods
+
+
+/*
 	sendAlert: function(icon, title, message)
 	{
 		var alertsService = Components.classes["@mozilla.org/alerts-service;1"]
@@ -203,7 +235,7 @@ nzbdStatusObject.prototype = {
 			this.sendAlert('chrome://global/skin/icons/Error.png', title, message);
 		}
 	},
-/*
+*//*
 	sendPause: function()
 	{
 		var sabUrl = nzbdStatus.getPreference('servers.'+this.favServer+'.url') + nzbdStatus.getPreference('pauseUrl');
@@ -224,7 +256,7 @@ nzbdStatusObject.prototype = {
 
 		} catch(e) { dump('sendResume error:'+e); }
 	},
-*/
+*//*
 	loginToSAB: function()
 	{
 
@@ -250,7 +282,7 @@ nzbdStatusObject.prototype = {
 		xmlHttp.send(postVars);
 
 	},
-
+*//*
 	processLogin: function()
 	{
 		var output = nzbdStatus.queueHttp.responseText;
@@ -308,7 +340,7 @@ nzbdStatusObject.prototype = {
 		}
 		nzbdStatus.refreshStatus();
 	},
-
+*/
 /*
 	goIdle: function(serverId)
 	{
@@ -394,34 +426,6 @@ nzbdStatusObject.prototype = {
 		window.setTimeout(this.goActive, 5000);
 	},
 
-	convertSecondsToTime: function(seconds)
-	{
-		var d = new Date();
-		d.setTime(seconds * 1000);
-		var h = d.getUTCHours() + ((d.getUTCDate()-1) * 24);
-		var m = d.getUTCMinutes();
-		var s = d.getUTCSeconds();
-		if (m < 10)
-		{
-			m = '0' + m;
-		}
-		if (s < 10)
-		{
-			s = '0' + s;
-		}
-		return h + ':' + m + ':' + s;
-	},
-
-	convertTimeToSeconds: function(timeString)
-	{
-		var timeArray = timeString.match(/(\d+)/g);
-		var d = new Date();
-		d.setTime(0);
-		d.setUTCHours(timeArray[0]);
-		d.setUTCMinutes(timeArray[1]);
-		d.setUTCSeconds(timeArray[2]);
-		return Math.floor(d.getTime() / 1000);
-	},
 
 	historyReceived: function()
 	{
@@ -471,7 +475,7 @@ return;
 		}
 
 	},
-
+/*
 	queueReceived: function()
 	{
 
@@ -599,7 +603,7 @@ return;
 		nzbdStatus.goActive();
 
 	},
-
+*//*
 	refreshStatus: function(server)
 	{
 
@@ -620,38 +624,7 @@ return;
 		nzbdStatus.historyHttp.send(null);
 
 	},
-
-	getServerUL: function(doc)
-	{
-		var serverList = doc.createElement('ul');
-		serverList.id = 'nzbdserverList';
-		serverList.className ='nzbdservers tabMenu nzbsend';
-		serverList.addEventListener('mouseover', function(e){var doc = e.target.ownerDocument;doc.getElementById('nzbdserverList').style.display='block';}, false);
-		serverList.addEventListener('mouseout', function(e){var doc = e.target.ownerDocument;doc.getElementById('nzbdserverList').style.display='none';}, false);
-
-		var serverItem, serverIcon, serverLink, serverDetails;
-		for each (var i in nzbdStatus.serverOrder)
-		{
-			serverItem = doc.createElement('li');
-			serverLink = doc.createElement('a');
-			serverName = nzbdStatus.servers[i].label;
-			serverIcon = doc.createElement('img');
-			serverIcon.setAttribute('src', 'chrome://nzbdstatus/skin/'+nzbdStatus.servers[i].icon);
-			serverIcon.setAttribute('alt', nzbdStatus.servers[i].label);
-			serverLink.appendChild(serverIcon);
-			serverLink.appendChild(doc.createTextNode(nzbdStatus.servers[i].label));
-			serverItem.appendChild(serverLink);
-			serverItem.className += ' nzbServer'+i;
-			serverItem.addEventListener('click', nzbdStatus.queueNewzbinId, false);
-			if (!nzbdStatus.servers[i].enabled)
-			{
-				serverItem.style.display = 'none';
-			}
-			serverList.appendChild(serverItem);
-		}
-		return serverList;
-	},
-
+*/
 	makeSendAllButton: function(doc)
 	{
 		var allButton = doc.createElement('input');
@@ -699,53 +672,6 @@ return;
 				}
 			}
 		}
-	},
-
-	// This happens every page load
-	onPageLoad: function(e)
-	{
-		try {
-
-		var doc = e.originalTarget;
-		if (!doc.location)
-		{
-			return;
-		}
-
-		// Are we at newzbin.com?
-		if (((doc.location.href.search('newzbin') > -1) || (doc.location.href.search('newzxxx') > -1))
-		 && (doc.location.href.search('v2.newzbin') == -1))
-		{
-			nzbdStatus.onNewzbinPageLoad(doc);
-		}
-		// Are we at one of the other sites?
-		if (doc.location.href.search('nzbmatrix.com') > -1)
-		{
-			nzbdStatus.onNzbmatrixPageLoad(doc);
-		}
-		if (doc.location.href.search('tvnzb.com') > -1)
-		{
-			nzbdStatus.onTvnzbLoad(doc);
-		}
-		if (doc.location.href.search('nzbs.org') > -1)
-		{
-			nzbdStatus.onNzbsOrgLoad(doc);
-		}
-		if (doc.location.href.search('nzbindex.nl') > -1)
-		{
-			nzbdStatus.onNzbIndexLoad(doc);
-		}
-
-		// Insert the CSS needed to style our menu
-		var newzbinCSS = doc.createElement('link');
-		newzbinCSS.rel = 'stylesheet';
-		newzbinCSS.type = 'text/css';
-		newzbinCSS.href = 'chrome://nzbdstatus/content/newzbin.css';
-		doc.getElementsByTagName('head')[0].appendChild(newzbinCSS);
-		doc.getElementsByTagName('body')[0].appendChild(nzbdStatus.getServerUL(doc));
-
-		} catch(e) { nzbdStatus.errorLogger('onPageLoad',e); }
-
 	},
 
 	onNewzbinPageLoad: function(doc)
@@ -1074,92 +1000,6 @@ try{
 		} catch(e) { nzbdStatus.errorLogger('checkForNZB',e); }
 	},
 
-	// Initialization and starting of timers are done here
-	startup: function()
-	{
-		try {
-
-		// Localization hook
-		nzbdStatus.stringsBundle = document.getElementById("nzb-string-bundle");
-
-		// Add in our RSS feed handler
-		if (nzbdStatus.getPreference('addFeedHandler'))
-		{
-			nzbdStatus.addFeedHandler();
-		}
-
-		// Load up some preferences into the object
-//		this.favServer = this.getPreference('servers.favorite');
-		nzbdStatus.refreshRate = this.getPreference('refreshRate');
-		nzbdStatus.serverOrder = nzbdStatus.getPreference('servers.order').split(',');
-
-		// Load up the server details into the cache
-		nzbdStatus.loadServers();
-
-		// Create the additional widgets for the status bar (if needed)
-		nzbdStatus.createAllWidgets();
-		// Add the servers to the context menu
-		nzbdStatus.fillContextMenu();
-
-		// Check to see if we need to put an observer on the download manager
-		var dlObs = nzbdStatus.observerService.enumerateObservers('nzbdStatus');
-		if (!dlObs.hasMoreElements())
-		{
-			// It's just us, so toss on an observer
-			if (nzbdStatus.getPreference('enableFilesToServer'))
-			{
-				nzbdStatus.observerService.addObserver(nzbdStatus, 'dl-done', false);
-			}
-		}
-		else
-		{
-			// There's someone else out there, we'll let them handle it
-			nzbdStatus._handleDownloads = false;
-		}
-		nzbdStatus.observerService.addObserver(nzbdStatus, 'nzbdStatus', false);
-
-		// Put an observer on the preferences
-		nzbdStatus.preferences.QueryInterface(Components.interfaces.nsIPrefBranch2);
-		nzbdStatus.preferences.addObserver('', nzbdStatus, false);
-
-		// Add a listener to the context menu
-		var menu = document.getElementById('contentAreaContextMenu');
-		menu.addEventListener('popupshowing', nzbdStatus.contextPopupShowing, false);
-
-		// Add the onload handler
-		var appcontent = document.getElementById('appcontent');   // browser
-		if (appcontent)
-		{
-			appcontent.addEventListener('load', nzbdStatus.onPageLoad, true);
-		}
-
-		// Start the monitors
-		nzbdStatus.refreshAll();
-		nzbdStatus.refreshId = window.setInterval(nzbdStatus.refreshAll, nzbdStatus.refreshRate*60*1000);
-
-		} catch(e) { nzbdStatus.errorLogger('startup',e); }
-	},
-
-	// Shutdown stuff done here
-	shutdown: function()
-	{
-		this.preferences.removeObserver('', this);
-		this.observerService.removeObserver(this, 'nzbdStatus');
-		if (this._handleDownloads)
-		{
-			var dlObs = observerService.enumerateObservers('nzbdStatus')
-			if (dlObs.hasMoreElements())
-			{
-				var otherWindow = dlObs.getNext().QueryInterface(Components.interfaces.nsIObserver);
-				otherWindow.notify(null, 'nzbdStatus', 'startHandleDownload');
-			}
-			if (this.getPreference('enableFilesToServer'))
-			{
-				this.observerService.removeObserver(this, 'dl-done');
-			}
-		}
-	},
-
 	// This gets fired every time one of our observers gets tripped
 	observe: function(subject, topic, data)
 	{
@@ -1169,17 +1009,17 @@ try{
 				nzbdStatus.observePreferences(subject, topic, data);
 				break;
 			case 'dl-done':
-				nzbdStatus.queueFile(subject, topic, data);
+				if (nzbdStatus.getPreference('enableFilesToServer'))
+				{
+					nzbdStatus.queueFile(subject, topic, data);
+				}
 				break;
 			case 'nzbdStatus':
 				if (data == 'startHandleDownload')
 				{
 					// We've been told to handle file downloads now
-					nzbdStatus._handleDownloads = true;
-					if (nzbdStatus.getPreference('enableFilesToServer'))
-					{
-						nzbdStatus.observerService.addObserver(nzbdStatus, 'dl-done', false);
-					}
+					nzbdStatus.handleDownloads = true;
+					nzbdStatus.observerService.addObserver(nzbdStatus, 'dl-done', false);
 				}
 				break;
 		}
@@ -1226,7 +1066,9 @@ try{
 				}
 				break;
 			case 'enableFilesToServer':
-				if (this._handleDownloads)
+				// This block obsolete in v2?
+				break;
+				if (this.handleDownloads)
 				{
 					if (this.getPreference('enableFilesToServer'))
 					{
@@ -1271,9 +1113,6 @@ try{
 
 
 
-// Below here has been rewritten || is brand new for v2
-
-
 	// Runs when the context menu popup opens
 	contextPopupShowing: function()
 	{
@@ -1285,54 +1124,6 @@ try{
 		{
 			document.getElementById('nzbdstatus-context-sendlink').hidden = true;
 		}
-	},
-
-	// This creates a widget for each server then sticks it into the status bar
-	createAllWidgets: function()
-	{
-		var newWidget, templateWidget = document.getElementById('nzbdstatus-panel-template');
-
-		for each (var i in nzbdStatus.serverOrder)
-		{
-			newWidget = templateWidget.cloneNode(true);
-			newWidget.setAttribute('id', 'nzbdstatus-panel-'+i);
-			newWidget.setAttribute('context', 'nzbdstatus-context-'+i);
-			newWidget.setAttribute('tooltip', 'nzbdstatus-tooltip-'+i);
-			newWidget.getElementsByTagName('tooltip')[0].setAttribute('id', 'nzbdstatus-tooltip-'+i);
-			newWidget.getElementsByTagName('menupopup')[0].setAttribute('id', 'nzbdstatus-context-'+i);
-			newWidget.getElementsByTagName('image')[0].setAttribute('src', 'chrome://nzbdstatus/skin/'+nzbdStatus.servers[i].icon);
-			newWidget.setAttribute('hidden', 'false');
-			if (!nzbdStatus.servers[i].enabled)
-			{
-				newWidget.setAttribute('hidden', 'true');
-			}
-			if (!nzbdStatus.servers[i].showInStatusBar)
-			{
-				newWidget.setAttribute('hidden', 'true');
-			}
-			templateWidget.parentNode.insertBefore(newWidget, templateWidget);
-		}
-	},
-
-	// Stick each server into the context menu
-	fillContextMenu: function()
-	{
-		var newWidget, templateWidget = document.getElementById('nzbdstatus-context-server-template');
-
-		for each (var i in nzbdStatus.serverOrder)
-		{
-			newWidget = templateWidget.cloneNode(true);
-			newWidget.setAttribute('id', 'nzbdstatus-context-server-'+i);
-			newWidget.setAttribute('label', nzbdStatus.servers[i].label);
-			newWidget.setAttribute('image', 'chrome://nzbdstatus/skin/'+nzbdStatus.servers[i].icon);
-			newWidget.setAttribute('hidden', 'false');
-			if (!nzbdStatus.servers[i].enabled)
-			{
-				newWidget.setAttribute('hidden', 'true');
-			}
-			templateWidget.parentNode.appendChild(newWidget);
-		}
-		templateWidget.setAttribute('hidden', 'true');
 	},
 
 	// Queue a refresh request for each widget
@@ -1493,32 +1284,6 @@ try{
 			this.countdownId = window.setInterval(this.countdown, 1000);
 		}
 
-	},
-
-	// Read the server details into the cache
-	loadServers: function()
-	{
-		for each (var i in nzbdStatus.serverOrder)
-		{
-			this.loadDetailsOf(i);
-		}
-	},
-
-	// Loads the details for a single server into the cache
-	loadDetailsOf: function(serverId)
-	{
-		var serverType = nzbdStatus.getPreference('servers.'+serverId+'.type');
-		switch (serverType)
-		{
-			case 'sabnzbd':
-				var serverObject = new sabnzbdServerObject(serverId);
-				if (serverObject.enabled)
-				{
-					serverObject.connect();
-				}
-				break;
-		}
-		nzbdStatus.servers[serverId] = serverObject;
 	},
 
 	// Do the oldest thing in the event queue
@@ -2241,6 +2006,284 @@ try{
 
 	},
 
+
+
+
+
+
+
+	// Read the server details into the cache
+	loadServers: function()
+	{
+		for each (var i in nzbdStatus.serverOrder)
+		{
+			this.loadDetailsOf(i);
+		}
+	},
+
+	// Loads the details for a single server into the cache
+	loadDetailsOf: function(serverId)
+	{
+		var serverType = nzbdStatus.getPreference('servers.'+serverId+'.type');
+		switch (serverType)
+		{
+			case 'sabnzbd':
+				var serverObject = new sabnzbdServerObject(serverId);
+				if (serverObject.enabled)
+				{
+					serverObject.connect();
+				}
+				break;
+		}
+		nzbdStatus.servers[serverId] = serverObject;
+	},
+
+	// This creates a widget for each server then sticks it into the status bar
+	createAllWidgets: function()
+	{
+		var newWidget, templateWidget = document.getElementById('nzbdstatus-panel-template');
+
+		for each (var i in nzbdStatus.serverOrder)
+		{
+			newWidget = templateWidget.cloneNode(true);
+			newWidget.setAttribute('id', 'nzbdstatus-panel-'+i);
+			newWidget.setAttribute('context', 'nzbdstatus-context-'+i);
+			newWidget.setAttribute('tooltip', 'nzbdstatus-tooltip-'+i);
+			newWidget.getElementsByTagName('tooltip')[0].setAttribute('id', 'nzbdstatus-tooltip-'+i);
+			newWidget.getElementsByTagName('menupopup')[0].setAttribute('id', 'nzbdstatus-context-'+i);
+			newWidget.getElementsByTagName('image')[0].setAttribute('src', 'chrome://nzbdstatus/skin/'+nzbdStatus.servers[i].icon);
+			newWidget.setAttribute('hidden', 'false');
+			if (!nzbdStatus.servers[i].enabled)
+			{
+				newWidget.setAttribute('hidden', 'true');
+			}
+			if (!nzbdStatus.servers[i].showInStatusBar)
+			{
+				newWidget.setAttribute('hidden', 'true');
+			}
+			templateWidget.parentNode.insertBefore(newWidget, templateWidget);
+		}
+	},
+
+	// Stick each server into the context menu
+	fillContextMenu: function()
+	{
+		var newWidget, templateWidget = document.getElementById('nzbdstatus-context-server-template');
+
+		for each (var i in nzbdStatus.serverOrder)
+		{
+			newWidget = templateWidget.cloneNode(true);
+			newWidget.setAttribute('id', 'nzbdstatus-context-server-'+i);
+			newWidget.setAttribute('label', nzbdStatus.servers[i].label);
+			newWidget.setAttribute('image', 'chrome://nzbdstatus/skin/'+nzbdStatus.servers[i].icon);
+			newWidget.setAttribute('hidden', 'false');
+			if (!nzbdStatus.servers[i].enabled)
+			{
+				newWidget.setAttribute('hidden', 'true');
+			}
+			templateWidget.parentNode.appendChild(newWidget);
+		}
+		templateWidget.setAttribute('hidden', 'true');
+	},
+
+	// This happens every page load
+	onPageLoad: function(event)
+	{
+		try {
+
+		var doc = event.originalTarget;
+		if (!doc.location)
+		{
+			return;
+		}
+
+		// Quickly try to get out of doing anything
+		var siteAt = nzbdStatus.supportedSite(doc);
+		if (!siteAt)
+		{
+			return;
+		}
+
+		// Insert the CSS needed to style our menu
+		var newzbinCSS = doc.createElement('link');
+		newzbinCSS.rel = 'stylesheet';
+		newzbinCSS.type = 'text/css';
+		newzbinCSS.href = 'chrome://nzbdstatus/content/newzbin.css';
+		doc.getElementsByTagName('head')[0].appendChild(newzbinCSS);
+		doc.getElementsByTagName('body')[0].appendChild(nzbdStatus.getServerUL(doc));
+
+		switch (siteAt)
+		{
+			case 'newzbin':
+				nzbdStatus.onNewzbinPageLoad(doc);
+				break;
+			case 'nzbmatrix':
+				nzbdStatus.onNzbmatrixPageLoad(doc);
+				break;
+			case 'tvnzb':
+				nzbdStatus.onTvnzbLoad(doc);
+				break;
+			case 'nzbsorg':
+				nzbdStatus.onNzbsOrgLoad(doc);
+				break;
+			case 'nzbindex':
+				nzbdStatus.onNzbIndexLoad(doc);
+				break;
+			case 'animeusenet':
+				nzbdStatus.onAnimeUsenetLoad(doc);
+				break;
+		}
+
+		} catch(e) { nzbdStatus.errorLogger('onPageLoad',e); }
+
+	},
+
+	// A string representing the site if supported, false otherwise
+	supportedSite: function(doc)
+	{
+		loc = doc.location.href;
+
+		if (((doc.location.href.search('newzbin.com') > -1) || (doc.location.href.search('newzxxx.com') > -1))
+		 && (doc.location.href.search('v2.newzbin.com') == -1))
+		{
+			return 'newzbin';
+		}
+		if (doc.location.href.search('nzbmatrix.com') > -1)
+		{
+			return 'nzbmatrix';
+		}
+		if (doc.location.href.search('tvnzb.com') > -1)
+		{
+			return 'tvnzb';
+		}
+		if (doc.location.href.search('nzbs.org') > -1)
+		{
+			return 'nzbsorg';
+		}
+		if (doc.location.href.search('nzbindex.nl') > -1)
+		{
+			return 'nzbindex';
+		}
+		if (doc.location.href.search('animeusenet.org') > -1)
+		{
+			return 'animeusenet';
+		}
+		return false;
+	},
+
+	// A UL with the list of servers
+	getServerUL: function(doc)
+	{
+		var serverList = doc.createElement('ul');
+		serverList.id = 'nzbdserverList';
+		serverList.className ='nzbdservers tabMenu nzbsend';  // TODO: This is newzbin specific, change it
+		serverList.addEventListener('mouseover', function(e){var doc = e.target.ownerDocument;doc.getElementById('nzbdserverList').style.display='block';}, false);
+		serverList.addEventListener('mouseout', function(e){var doc = e.target.ownerDocument;doc.getElementById('nzbdserverList').style.display='none';}, false);
+
+		var serverItem, serverIcon, serverLink, serverDetails;
+		for each (var i in nzbdStatus.serverOrder)
+		{
+			serverItem = doc.createElement('li');
+			serverLink = doc.createElement('a');
+			serverName = nzbdStatus.servers[i].label;
+			serverIcon = doc.createElement('img');
+			serverIcon.setAttribute('src', 'chrome://nzbdstatus/skin/'+nzbdStatus.servers[i].icon);
+			serverIcon.setAttribute('alt', nzbdStatus.servers[i].label);
+			serverLink.appendChild(serverIcon);
+			serverLink.appendChild(doc.createTextNode(nzbdStatus.servers[i].label));
+			serverItem.appendChild(serverLink);
+			serverItem.className += ' nzbServer'+i;
+			serverItem.addEventListener('click', nzbdStatus.queueNewzbinId, false);
+			if (!nzbdStatus.servers[i].enabled)
+			{
+				serverItem.style.display = 'none';
+			}
+			serverList.appendChild(serverItem);
+		}
+		return serverList;
+	},
+
+	// Shutdown stuff done here like removing observers
+	shutdown: function()
+	{
+		this.preferences.removeObserver('', this);
+		this.observerService.removeObserver(this, 'nzbdStatus');
+		if (this.handleDownloads)
+		{
+			var dlObs = observerService.enumerateObservers('nzbdStatus')
+			if (dlObs.hasMoreElements())
+			{
+				var otherWindow = dlObs.getNext().QueryInterface(Components.interfaces.nsIObserver);
+				otherWindow.notify(null, 'nzbdStatus', 'startHandleDownload');
+			}
+			this.observerService.removeObserver(this, 'dl-done');
+		}
+	},
+
+	// Statup stuff here like initialization and starting of timers
+	startup: function()
+	{
+		try {
+
+		// Localization hook
+		nzbdStatus.stringsBundle = document.getElementById("nzbstatus-string-bundle");
+
+		// Add in our RSS feed handler
+		if (nzbdStatus.getPreference('addFeedHandler'))
+		{
+			nzbdStatus.addFeedHandler();
+		}
+
+		// Load up some preferences into the object
+		nzbdStatus.refreshRate = nzbdStatus.getPreference('refreshRate');
+		nzbdStatus.serverOrder = nzbdStatus.getPreference('servers.order').split(',');
+
+		// Load up the server details into the cache
+		nzbdStatus.loadServers();
+
+		// Create the additional widgets for the status bar (if needed)
+		nzbdStatus.createAllWidgets();
+		// Add the servers to the context menu
+		nzbdStatus.fillContextMenu();
+
+		// Check to see if we need to put an observer on the download manager
+		var dlObs = nzbdStatus.observerService.enumerateObservers('nzbdStatus');
+		if (!dlObs.hasMoreElements())
+		{
+			// It's just us, so toss on an observer for downloads
+			nzbdStatus.observerService.addObserver(nzbdStatus, 'dl-done', false);
+		}
+		else
+		{
+			// There's someone else out there, we'll let them handle it
+			nzbdStatus.handleDownloads = false;
+		}
+		// We observe our channel for other instances
+		nzbdStatus.observerService.addObserver(nzbdStatus, 'nzbdStatus', false);
+
+		// Put an observer on the preferences
+		nzbdStatus.preferences.QueryInterface(Components.interfaces.nsIPrefBranch2);
+		nzbdStatus.preferences.addObserver('', nzbdStatus, false);
+
+		// Add a listener to the context menu
+		var menu = document.getElementById('contentAreaContextMenu');
+		menu.addEventListener('popupshowing', nzbdStatus.contextPopupShowing, false);
+
+		// Add the onload handler
+		var appcontent = document.getElementById('appcontent');   // browser
+		if (appcontent)
+		{
+			appcontent.addEventListener('load', nzbdStatus.onPageLoad, true);
+		}
+
+		// Start the monitors
+		nzbdStatus.refreshAll();
+		nzbdStatus.refreshId = window.setInterval(nzbdStatus.refreshAll, nzbdStatus.refreshRate*60*1000);
+
+		} catch(e) { nzbdStatus.errorLogger('startup',e); }
+	},
+
+	// Outputting of errors happens here
 	errorLogger: function(fName, error)
 	{
 		if (!nzbdStatus.getPreference('showErrors'))
