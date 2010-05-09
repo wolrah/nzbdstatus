@@ -2100,10 +2100,11 @@ return;
 		try {
 
 		var doc = e.target.ownerDocument, targ = e.target;
-		var url = null, postid = null, serverid = null, icon;
+		var url = null, postid = null, serverid = null, category = null;
 		if (targ.className.match(/nzboneclick/))
 		{
 			postid = targ.getAttribute('data-postid');
+			category = targ.getAttribute('data-category');
 			serverid = targ.className.match(/nzbServer([0-9]+)/)[1];
 		}
 		else
@@ -2120,6 +2121,7 @@ return;
 			if (datarow.className.match(/nzblistentry/))
 			{
 				postid = doc.getElementById('nzbdserverList').getAttribute('data-postid');
+				category = doc.getElementById('nzbdserverList').getAttribute('data-category');
 				if (datarow.className.match(/nzbServer([0-9]+)/))
 				{
 					serverid = datarow.className.match(/nzbServer([0-9]+)/)[1];
@@ -2165,7 +2167,8 @@ return;
 
 		var newEvent = {
 		 action: 'sendUrl',
-		 serverId: serverid,
+		 serverid: serverid,
+		 category: category,
 		 url: url,
 		 icon: nzbdStatus.selectSingleNode(doc, doc, '//img[@data-postid="'+postId+'"]'),
 		 tries: 0
@@ -2233,9 +2236,10 @@ return;
 	// Process a Send URL event
 	sendUrl: function(eventDetails)
 	{
-
 		var serverDetails = this.serverDetails[eventDetails.serverId];
 		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
+
+
 
 		switch (serverDetails.type)
 		{
@@ -2249,13 +2253,14 @@ return;
 				{
 					fullUrl += '&apikey='+serverDetails.apikey;
 				}
+
+
+
 				// Optional: &cat=<category>&pp=<job-option>&script=<script>
 				break;
-			case 'hellanzb':
-			case 'nzbget':
 			default:
 				// Something that's not been implemented yet
-				dump('Unsupported server type `'+serverDetails.type+'` requested\n');
+				nzbdStatus.logger('Unsupported server type `'+serverDetails.type+'` requested\n');
 				break;
 		}
 
@@ -2264,23 +2269,6 @@ return;
 		processingHttp.onload = function() { nzbdStatus.processingResponse(this.responseText, eventDetails, serverDetails) };
 		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout*1000);
 		processingHttp.send(null);
-/*
-		if (gContextMenu && gContextMenu.getLinkURL)
-		{
-			var href = gContextMenu.getLinkURL();
-		}
-		else if (gContextMenu && gContextMenu.linkURL)
-		{
-			var href = gContextMenu.linkURL();
-		}
-		if (!href)
-		{
-			return false;
-		}
-
-		gContextMenu.target.style.opacity = '.25';
-*/
-
 	},
 
 
