@@ -786,30 +786,6 @@ return;
 		}
 	},
 
-	reportSummaryPage: function(doc)
-	{
-		var isFinished = SABnzbdStatus.selectSingleNode(doc, doc, '//img[@title="Report is complete"]');
-		if (isFinished == null)
-		{
-			return;
-		}
-		var postId = doc.location.pathname.match(/(\d+)/)[1];
-/*		sendTo = doc.createElement('img');
-		sendTo.src = SABnzbdStatus.getPreference('iconDownload');
-		sendTo.alt = postId;
-		sendTo.className = 'sabsend';
-		sendTo.title = 'Send to SABnzbd';
-		sendTo.style.cursor = 'pointer';
-		sendTo.style.marginRight = '.5em';
-		sendTo.addEventListener('click', SABnzbdStatus.sendToSAB, false);
-		isFinished.parentNode.insertBefore(sendTo, isFinished);
-*/
-		sendTo = nzbdStatus.makeSendIcon(doc, postId);
-		isFinished.parentNode.insertBefore(sendTo, isFinished);
-
-//		isFinished.parentNode.insertBefore(makeSendIcon(doc, postId), isFinished);
-	},
-
 
 	checkForNZB: function()
 	{
@@ -1129,58 +1105,6 @@ return;
 
 	},
 
-	// Do the oldest thing in the event queue
-	processQueue: function()
-	{
-
-		if (nzbdStatus.processingQueue.length > 0)
-		{
-			var currentEvent = nzbdStatus.processingQueue.shift();
-			switch (currentEvent.action)
-			{
-				case 'sendUrl':
-					nzbdStatus.sendUrl(currentEvent);
-					break;
-				case 'sendFile':
-					nzbdStatus.sendFile(currentEvent);
-					break;
-				case 'sendNewzbinId':
-					nzbdStatus.sendNewzbinId(currentEvent);
-					break;
-				case 'sendRefresh':
-					nzbdStatus.sendRefresh(currentEvent);
-					break;
-				case 'sendPause':
-					nzbdStatus.sendPause(currentEvent);
-					break;
-				case 'sendResume':
-					nzbdStatus.sendResume(currentEvent);
-					break;
-				default:
-					// Something that's not been implemented yet
-					dump('Unsupported action `'+currentEvent.action+'` requested\n');
-					break;
-			}
-		}
-		else
-		{
-			nzbdStatus.processingQueueActive = false;
-		}
-
-	},
-
-	// Add an event to the end of the event queue
-	queueEvent: function(newEvent)
-	{
-
-		this.processingQueue.push(newEvent);
-		if (!this.processingQueueActive)
-		{
-			this.processingQueueActive = true;
-			setTimeout(this.processQueue, 1); // Send this off so we can go about our day
-		}
-
-	},
 
 	queueUrl: function(e)
 	{
@@ -1307,59 +1231,6 @@ return;
 		 tries: 0
 		 };
 		nzbdStatus.queueEvent(newEvent);
-
-	},
-
-	// Process a Send URL event
-	sendUrl: function(eventDetails)
-	{
-
-		var serverDetails = this.serverDetails[eventDetails.serverId];
-		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
-
-		switch (serverDetails.type)
-		{
-			case 'sabnzbd+':
-				fullUrl += 'api?mode=addurl&name='+encodeURIComponent(eventDetails.url);
-				if (serverDetails.username != null || serverDetails.password != null)
-				{
-					fullUrl += '&ma_username='+serverDetails.username+'&ma_password='+serverDetails.password;
-				}
-				if (serverDetails.apikey != '')
-				{
-					fullUrl += '&apikey='+serverDetails.apikey;
-				}
-				// Optional: &cat=<category>&pp=<job-option>&script=<script>
-				break;
-			case 'hellanzb':
-			case 'nzbget':
-			default:
-				// Something that's not been implemented yet
-				dump('Unsupported server type `'+serverDetails.type+'` requested\n');
-				break;
-		}
-
-		var processingHttp = nzbdStatus.processingHttp;
-		processingHttp.open('GET', fullUrl, true);
-		processingHttp.onload = function() { nzbdStatus.processingResponse(this.responseText, eventDetails, serverDetails) };
-		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout*1000);
-		processingHttp.send(null);
-/*
-		if (gContextMenu && gContextMenu.getLinkURL)
-		{
-			var href = gContextMenu.getLinkURL();
-		}
-		else if (gContextMenu && gContextMenu.linkURL)
-		{
-			var href = gContextMenu.linkURL();
-		}
-		if (!href)
-		{
-			return false;
-		}
-
-		gContextMenu.target.style.opacity = '.25';
-*/
 
 	},
 
@@ -2033,6 +1904,20 @@ return;
 		} catch(e) { nzbdStatus.errorLogger('onNewzbinPageLoad',e); }
 	},
 
+	// Newzbin's individual report view
+	onNewzbinReportDetailMode: function(doc)
+	{
+		var isFinished = nzbdStatus.selectSingleNode(doc, doc, '//img[@title="Report is complete"]');
+		if (isFinished == null)
+		{
+			return;
+		}
+		var postId = doc.location.pathname.match(/(\d+)/)[1];
+		var newIcon = nzbdStatus.makeSendIcon(doc, postId);
+		isFinished.parentNode.insertBefore(newIcon, isFinished);
+		isFinished.parentNode.insertBefore(doc.createTextNode('\t'), isFinished);
+	},
+
 	// Newzbin's report mode
 	onNewzbinReportMode: function(doc)
 	{
@@ -2152,7 +2037,7 @@ return;
 	// When clicking anywhere on the row, check the box so the row is selected
 	newzbinRowClick: function(e)
 	{
-		if ((e.target.nodeName.toLowerCase() == 'input') || (e.target.nodeName.toLowerCase() == 'img'))
+		if ((e.target.nodeName.toLowerCase() == 'input') || (e.target.nodeName.toLowerCase() == 'img') || (e.target.nodeName.toLowerCase() == 'a'))
 		{
 			return;
 		}
@@ -2204,35 +2089,40 @@ return;
 		return;
 	},
 
+
+	///
+	/// Methods for adding to the queue
+	///
+
 	// Queue up a one click request based on a post id
 	queuePostId: function(e)
 	{
 		try {
 
 		var doc = e.target.ownerDocument, targ = e.target;
-		var postId = null, serverId = null, icon;
+		var url = null, postid = null, serverid = null, icon;
 		if (targ.className.match(/nzboneclick/))
 		{
-			postId = targ.getAttribute('data-postid');
-			serverId = targ.className.match(/nzbServer([0-9]+)/)[1];
+			postid = targ.getAttribute('data-postid');
+			serverid = targ.className.match(/nzbServer([0-9]+)/)[1];
 		}
 		else
 		{
 			var datarow = targ;
-			if (targ.tagName.toUpperCase() == 'A')
+			if (targ.nodeName.toUpperCase() == 'A')
 			{
 				datarow = targ.parentNode;
 			}
-			else if (targ.tagName.toUpperCase() == 'IMG')
+			else if (targ.nodeName.toUpperCase() == 'IMG')
 			{
 				datarow = targ.parentNode.parentNode;
 			}
 			if (datarow.className.match(/nzblistentry/))
 			{
-				postId = doc.getElementById('nzbdserverList').getAttribute('data-postid');
+				postid = doc.getElementById('nzbdserverList').getAttribute('data-postid');
 				if (datarow.className.match(/nzbServer([0-9]+)/))
 				{
-					serverId = datarow.className.match(/nzbServer([0-9]+)/)[1];
+					serverid = datarow.className.match(/nzbServer([0-9]+)/)[1];
 				}
 			}
 			else
@@ -2241,15 +2131,42 @@ return;
 			}
 		}
 
-		if (postId == null || serverId == null)
+		if (postid == null || serverid == null)
 		{
 			return false;
 		}
 
+		switch (nzbdStatus.supportedSite(doc))
+		{
+			case 'newzbin':
+				url = 'http://www.newzbin.com/browse/post/' + postid + '/';
+				break;
+			case 'nzbmatrix':
+				url = 'http://nzbmatrix.com/nzb-details.php?id=' + postid;
+				break;
+			case 'tvnzb':
+				url = 'http://tvnzb.com/nzb/'+postid;
+				break;
+			case 'nzbsorg':
+				var rssLink = nzbdStatus.selectSingleNode(doc, doc, '//link[@type="application/rss+xml"]');
+				var details = rssLink.href.match(/rss\.php\?.*&i=(\d+)&h=(\w+)/);
+				if (details)
+				{
+					url = 'http://nzbs.org/index.php?action=getnzb&nzbid='+postid+'&i='+details[1]+'&h='+details[2];
+				}
+				break;
+			case 'nzbindex':
+				url = 'http://nzbindex.nl/download/'+postid;
+				break;
+			case 'animeusenet':
+				url = 'http://www.animeusenet.org/nzb/'+postid+'/download/';
+				break;
+		}
+
 		var newEvent = {
 		 action: 'sendUrl',
-		 serverId: serverId,
-		 url: href,
+		 serverId: serverid,
+		 url: url,
 		 icon: nzbdStatus.selectSingleNode(doc, doc, '//img[@data-postid="'+postId+'"]'),
 		 tries: 0
 		 };
@@ -2258,24 +2175,118 @@ return;
 		} catch(e) { nzbdStatus.errorLogger('queuePostId',e); }
 	},
 
-
-
-	// Shutdown stuff done here like removing observers
-	shutdown: function()
+	// Add an event to the end of the event queue
+	queueEvent: function(newEvent)
 	{
-		this.preferences.removeObserver('', this);
-		this.observerService.removeObserver(this, 'nzbdStatus');
-		if (this.handleDownloads)
+		nzbdStatus.processingQueue.push(newEvent);
+		if (!nzbdStatus.processingQueueActive)
 		{
-			var dlObs = observerService.enumerateObservers('nzbdStatus')
-			if (dlObs.hasMoreElements())
-			{
-				var otherWindow = dlObs.getNext().QueryInterface(Components.interfaces.nsIObserver);
-				otherWindow.notify(null, 'nzbdStatus', 'startHandleDownload');
-			}
-			this.observerService.removeObserver(this, 'dl-done');
+			nzbdStatus.processingQueueActive = true;
+			setTimeout(nzbdStatus.processQueue, 1); // Send this off so we can go about our day
 		}
 	},
+
+
+	///
+	/// Methods for processing the queue
+	///
+
+	// Do the oldest thing in the event queue
+	processQueue: function()
+	{
+		try {
+
+		if (nzbdStatus.processingQueue.length > 0)
+		{
+			var currentEvent = nzbdStatus.processingQueue.shift();
+			switch (currentEvent.action)
+			{
+				case 'sendUrl':
+					nzbdStatus.sendUrl(currentEvent);
+					break;
+				case 'sendFile':
+					nzbdStatus.sendFile(currentEvent);
+					break;
+				case 'sendRefresh':
+					nzbdStatus.sendRefresh(currentEvent);
+					break;
+				case 'sendPause':
+					nzbdStatus.sendPause(currentEvent);
+					break;
+				case 'sendResume':
+					nzbdStatus.sendResume(currentEvent);
+					break;
+				default:
+					// Something that's not been implemented yet
+					nzbdStatus.logger('Unsupported action `'+currentEvent.action+'` requested\n');
+					break;
+			}
+		}
+		else
+		{
+			nzbdStatus.processingQueueActive = false;
+		}
+
+		} catch(e) { nzbdStatus.errorLogger('processQueue',e); }
+	},
+
+	// Process a Send URL event
+	sendUrl: function(eventDetails)
+	{
+
+		var serverDetails = this.serverDetails[eventDetails.serverId];
+		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
+
+		switch (serverDetails.type)
+		{
+			case 'sabnzbd+':
+				fullUrl += 'api?mode=addurl&name='+encodeURIComponent(eventDetails.url);
+				if (serverDetails.username != null || serverDetails.password != null)
+				{
+					fullUrl += '&ma_username='+serverDetails.username+'&ma_password='+serverDetails.password;
+				}
+				if (serverDetails.apikey != '')
+				{
+					fullUrl += '&apikey='+serverDetails.apikey;
+				}
+				// Optional: &cat=<category>&pp=<job-option>&script=<script>
+				break;
+			case 'hellanzb':
+			case 'nzbget':
+			default:
+				// Something that's not been implemented yet
+				dump('Unsupported server type `'+serverDetails.type+'` requested\n');
+				break;
+		}
+
+		var processingHttp = nzbdStatus.processingHttp;
+		processingHttp.open('GET', fullUrl, true);
+		processingHttp.onload = function() { nzbdStatus.processingResponse(this.responseText, eventDetails, serverDetails) };
+		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout*1000);
+		processingHttp.send(null);
+/*
+		if (gContextMenu && gContextMenu.getLinkURL)
+		{
+			var href = gContextMenu.getLinkURL();
+		}
+		else if (gContextMenu && gContextMenu.linkURL)
+		{
+			var href = gContextMenu.linkURL();
+		}
+		if (!href)
+		{
+			return false;
+		}
+
+		gContextMenu.target.style.opacity = '.25';
+*/
+
+	},
+
+
+	///
+	/// Startup and Shutdown methods
+	///
 
 	// Statup stuff here like initialization and starting of timers
 	startup: function()
@@ -2340,6 +2351,28 @@ return;
 		} catch(e) { nzbdStatus.errorLogger('startup',e); }
 	},
 
+	// Shutdown stuff done here like removing observers
+	shutdown: function()
+	{
+		this.preferences.removeObserver('', this);
+		this.observerService.removeObserver(this, 'nzbdStatus');
+		if (this.handleDownloads)
+		{
+			var dlObs = observerService.enumerateObservers('nzbdStatus')
+			if (dlObs.hasMoreElements())
+			{
+				var otherWindow = dlObs.getNext().QueryInterface(Components.interfaces.nsIObserver);
+				otherWindow.notify(null, 'nzbdStatus', 'startHandleDownload');
+			}
+			this.observerService.removeObserver(this, 'dl-done');
+		}
+	},
+
+
+	///
+	/// Logger functions
+	///
+
 	// Outputting of errors happens here
 	errorLogger: function(fName, error)
 	{
@@ -2349,6 +2382,27 @@ return;
 		}
 		var msg = fName + ' threw error `' + error.message + '` on line: ' + error.lineNumber + '\n';
 		switch (nzbdStatus.getPreference('errorMode'))
+		{
+			case 0: // alert
+				alert(msg);
+				break;
+			case 1: // dump
+				dump(msg);
+				break;
+			case 2: // console.log
+				console.log(msg);
+				break;
+		}
+	},
+
+	// Outputting of log messages happens here
+	logger: function(msg)
+	{
+		if (!nzbdStatus.getPreference('showLogger'))
+		{
+			return;
+		}
+		switch (nzbdStatus.getPreference('loggerMode'))
 		{
 			case 0: // alert
 				alert(msg);
