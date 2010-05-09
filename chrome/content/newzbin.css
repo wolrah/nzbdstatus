@@ -1,4 +1,4 @@
-img.nzbsend {
+img.nzboneclick {
 cursor:pointer;
 }
 
@@ -14,6 +14,7 @@ top:0;
 left:0;
 width:auto;
 visibility:visible;
+cursor:pointer;
 }
 ul.nzbdservers li {
 display:block;
