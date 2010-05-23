@@ -1422,7 +1422,7 @@ return;
 	{
 nzbdStatus.logger('in processingResponse');
 		var alertMessage, alertTitle, responseStatus, retryLimit = nzbdStatus.getPreference('servers.retryLimit');
-		//clearTimeout(serverDetails.timeout);
+		clearTimeout(nzbdStatus.queueTimeout);
 
 		// Process based on server type
 		switch (serverDetails.type)
@@ -1570,13 +1570,6 @@ nzbdStatus.logger('in processingResponse');
 		// Go do the next thing in the queue
 		setTimeout(nzbdStatus.processQueue, 1);
 
-	},
-
-	abortRequestProcessing: function(eventDetails)
-	{
-		var server = nzbdStatus.servers[eventDetails.serverid];
-		server.abortLastSend();
-		nzbdStatus.processingResponse(false, eventDetails)
 	},
 
 	processRefresh: function(serverDetails, refreshObject)
@@ -2252,6 +2245,14 @@ nzbdStatus.logger('in processingResponse');
 		requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs'); // TODO: server.timeout
 		nzbdStatus.queueTimeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(eventDetails) }, requestTimeout*1000);
 		server.sendUrl(eventDetails);
+	},
+
+	// Abort the last item to be done
+	abortRequestProcessing: function(eventDetails)
+	{
+		var server = nzbdStatus.servers[eventDetails.serverid];
+		server.abortLastSend();
+		nzbdStatus.processingResponse(false, eventDetails)
 	},
 
 
