@@ -15,16 +15,26 @@ left:0;
 width:auto;
 visibility:visible;
 cursor:pointer;
+background:#aaa;
+color:#000;
+font-size:12px;
 }
 ul.nzbdservers li {
 display:block;
 cursor:pointer;
+line-height:2em;
+}
+ul.nzbdservers li:hover {
+background:#666;
 }
 ul.nzbdservers li img {
 margin-right:.5em;
+vertical-align:middle;
 }
 ul.nzbdservers li a {
 padding:0 1em;
+color:#000;
+text-decoration:none;
 }
 .hideme {
 display:none;
