@@ -301,12 +301,26 @@ nzbdStatus.logger(fullUrl);
 		queueHttp.onload = function() { processingResponse(this.responseText, eventDetails) };
 		queueHttp.send(null);
 
-		} catch(e) { this.errorLogger('sendUrl',e); }
+		} catch(e) { this.errorLogger('sab.sendUrl',e); }
 	},
 
 	processingResponse: function(responseText, eventDetails)
 	{
-		//
+		try {
+nzbdStatus.logger('in processingResponse');
+		if (responseText.search(/ok\n/) > -1)
+		{
+			// Success
+			var responseStatus = true;
+		}
+		else
+		{
+			// Failure or unknown response
+			var responseStatus = false;
+		}
+		eventDetails.callback(responseStatus, eventDetails);
+
+		} catch(e) { this.errorLogger('sab.processingResponse',e); }
 	},
 
 	abortLastSend: function()
