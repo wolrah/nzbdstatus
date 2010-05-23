@@ -1420,7 +1420,7 @@ return;
 
 	processingResponse: function(responseText, eventDetails)
 	{
-
+nzbdStatus.logger('in processingResponse');
 		var alertMessage, alertTitle, responseStatus, retryLimit = nzbdStatus.getPreference('servers.retryLimit');
 		//clearTimeout(serverDetails.timeout);
 
@@ -1572,12 +1572,11 @@ return;
 
 	},
 
-	abortRequestProcessing: function(processingHttp, eventDetails, serverDetails)
+	abortRequestProcessing: function(eventDetails)
 	{
-
-		processingHttp.abort();
-		nzbdStatus.processingResponse('', eventDetails, serverDetails)
-
+		var server = nzbdStatus.servers[eventDetails.serverid];
+		server.abortLastSend();
+		nzbdStatus.processingResponse(false, eventDetails)
 	},
 
 	processRefresh: function(serverDetails, refreshObject)
@@ -1720,63 +1719,6 @@ return;
 		templateWidget.setAttribute('hidden', 'true');
 	},
 
-	// This happens every page load
-	onPageLoad: function(event)
-	{
-		try {
-
-		var doc = event.originalTarget;
-		if (!doc.location)
-		{
-			return;
-		}
-
-		// Quickly try to get out of doing anything
-		var siteAt = nzbdStatus.supportedSite(doc);
-		if (!siteAt)
-		{
-			return;
-		}
-
-		if (nzbdStatus.numServerEnabled > 1)
-		{
-			// Insert the CSS needed to style our menu
-			var oneclickCSS = doc.createElement('link');
-			oneclickCSS.rel = 'stylesheet';
-			oneclickCSS.type = 'text/css';
-			oneclickCSS.href = 'chrome://nzbdstatus/content/oneclick.css';
-			doc.getElementsByTagName('head')[0].appendChild(oneclickCSS);
-			doc.getElementsByTagName('body')[0].appendChild(nzbdStatus.getServerUL(doc));
-		}
-
-		switch (siteAt)
-		{
-			case 'newzbin':
-				nzbdStatus.onNewzbinPageLoad(doc);
-				break;
-			case 'nzbmatrix':
-				nzbdStatus.onNzbmatrixPageLoad(doc);
-				break;
-			case 'tvnzb':
-				nzbdStatus.onTvnzbLoad(doc);
-				break;
-			case 'nzbsorg':
-				nzbdStatus.onNzbsOrgLoad(doc);
-				break;
-			case 'nzbindex':
-				nzbdStatus.onNzbIndexLoad(doc);
-				break;
-			case 'binsearch':
-				nzbdStatus.onBinSearchLoad(doc);
-				break;
-			case 'animeusenet':
-				nzbdStatus.onAnimeUsenetLoad(doc);
-				break;
-		}
-
-		} catch(e) { nzbdStatus.errorLogger('onPageLoad',e); }
-	},
-
 	// A string representing the site if supported, false otherwise
 	supportedSite: function(doc)
 	{
@@ -1843,6 +1785,68 @@ return;
 			serverList.appendChild(serverItem);
 		}
 		return serverList;
+	},
+
+
+	///
+	/// Page load functions
+	///
+
+	// This happens every page load
+	onPageLoad: function(event)
+	{
+		try {
+
+		var doc = event.originalTarget;
+		if (!doc.location)
+		{
+			return;
+		}
+
+		// Quickly try to get out of doing anything
+		var siteAt = nzbdStatus.supportedSite(doc);
+		if (!siteAt)
+		{
+			return;
+		}
+
+		if (nzbdStatus.numServerEnabled > 1)
+		{
+			// Insert the CSS needed to style our menu
+			var oneclickCSS = doc.createElement('link');
+			oneclickCSS.rel = 'stylesheet';
+			oneclickCSS.type = 'text/css';
+			oneclickCSS.href = 'chrome://nzbdstatus/content/oneclick.css';
+			doc.getElementsByTagName('head')[0].appendChild(oneclickCSS);
+			doc.getElementsByTagName('body')[0].appendChild(nzbdStatus.getServerUL(doc));
+		}
+
+		switch (siteAt)
+		{
+			case 'newzbin':
+				nzbdStatus.onNewzbinPageLoad(doc);
+				break;
+			case 'nzbmatrix':
+				nzbdStatus.onNzbmatrixPageLoad(doc);
+				break;
+			case 'tvnzb':
+				nzbdStatus.onTvnzbLoad(doc);
+				break;
+			case 'nzbsorg':
+				nzbdStatus.onNzbsOrgLoad(doc);
+				break;
+			case 'nzbindex':
+				nzbdStatus.onNzbIndexLoad(doc);
+				break;
+			case 'binsearch':
+				nzbdStatus.onBinSearchLoad(doc);
+				break;
+			case 'animeusenet':
+				nzbdStatus.onAnimeUsenetLoad(doc);
+				break;
+		}
+
+		} catch(e) { nzbdStatus.errorLogger('onPageLoad',e); }
 	},
 
 	// newzbin.com and newzxxx.com
@@ -2174,7 +2178,8 @@ return;
 		 category: category,
 		 url: url,
 		 icon: nzbdStatus.selectSingleNode(doc, doc, '//img[@data-postid="'+postid+'"]'),
-		 tries: 0
+		 tries: 0,
+		 callback: nzbdStatus.processingResponse
 		 };
 		nzbdStatus.queueEvent(newEvent);
 
@@ -2244,8 +2249,9 @@ return;
 	{
 		nzbdStatus.logger('in sendUrl');
 		var server = nzbdStatus.servers[eventDetails.serverid];
-		requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs')
-		server.sendUrl(eventDetails, nzbdStatus.processingResponse, nzbdStatus.abortRequestProcessing, requestTimeout);
+		requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs'); // TODO: server.timeout
+		nzbdStatus.queueTimeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(eventDetails) }, requestTimeout*1000);
+		server.sendUrl(eventDetails);
 	},
 
 
