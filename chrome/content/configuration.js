@@ -141,8 +141,6 @@ nzbdStatusConfigObject.prototype = {
 		{
 			this.addServerDeck(i);
 		}
-		var favDeck = document.getElementById('nzbdserver-deck-'+fav);
-		favDeck.getElementsByTagName('radio')[0].setAttribute('selected', 'true');
 	},
 
 	addServerDeck: function(serverId, iAfter)
@@ -153,10 +151,7 @@ nzbdStatusConfigObject.prototype = {
 		var nAtt;
 		newDeck.getElementsByTagName('caption')[0].setAttribute('label', this.getPreference('servers.'+serverId+'.label'));
 		newDeck.setAttribute('id', newDeck.id.replace(/template/, serverId));
-		var elems = newDeck.getElementsByTagName('radio');
-		elems[0].setAttribute('value', serverId);
-		elems[0].setAttribute('selected', 'false');
-		elems = newDeck.getElementsByClassName('nzbd-updatepref');
+		var elems = newDeck.getElementsByClassName('nzbd-updatepref');
 		for (j = 0; j < elems.length; j++)
 		{
 			nAtt = elems[j].getAttribute('preference');
@@ -239,19 +234,19 @@ nzbdStatusConfigObject.prototype = {
 	inactivateMovement: function()
 	{
 		var serverOrder = this.getPreference('servers.order').split(',');
-		var firstS = serverOrder[0];
-		var lastS = serverOrder[serverOrder.length-1];
-		document.getElementById('nzbdserver-deck-'+firstS).getElementsByClassName('goback')[0].setAttribute('disabled', 'true');
-		document.getElementById('nzbdserver-deck-'+lastS).getElementsByClassName('goforward')[0].setAttribute('disabled', 'true');
+		//var firstS = serverOrder[0];
+		//var lastS = serverOrder[serverOrder.length-1];
+		//document.getElementById('nzbdserver-deck-'+firstS).getElementsByClassName('goback')[0].setAttribute('disabled', 'true');
+		//document.getElementById('nzbdserver-deck-'+lastS).getElementsByClassName('goforward')[0].setAttribute('disabled', 'true');
 	},
 
 	activateMovement: function()
 	{
 		var serverOrder = this.getPreference('servers.order').split(',');
-		var firstS = serverOrder[0];
-		var lastS = serverOrder[serverOrder.length-1];
-		document.getElementById('nzbdserver-deck-'+firstS).getElementsByClassName('goback')[0].setAttribute('disabled', 'false');
-		document.getElementById('nzbdserver-deck-'+lastS).getElementsByClassName('goforward')[0].setAttribute('disabled', 'false');
+		//var firstS = serverOrder[0];
+		//var lastS = serverOrder[serverOrder.length-1];
+		//document.getElementById('nzbdserver-deck-'+firstS).getElementsByClassName('goback')[0].setAttribute('disabled', 'false');
+		//document.getElementById('nzbdserver-deck-'+lastS).getElementsByClassName('goforward')[0].setAttribute('disabled', 'false');
 	},
 
 	addServer: function()
