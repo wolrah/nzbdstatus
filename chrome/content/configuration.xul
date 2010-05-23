@@ -13,6 +13,9 @@
 		<preference id='onlyshow' name='extensions.nzbdstatus.onlyShowIcon' type='bool' />
 		<preference id='leftclick' name='extensions.nzbdstatus.leftClick' type='string' />
 		<preference id='middleclick' name='extensions.nzbdstatus.middleClick' type='string' />
+		<preference id='sendfiles' name='extensions.nzbdstatus.enableFilesToSAB' type='bool' />
+		<preference id='filestosab' name='extensions.nzbdstatus.filesToSAB' type='int' />
+		<preference id='askenable' name='extensions.sabnzbdstatus.askAboutEnable' type='bool' />
 	</preferences>
 
 	<groupbox>
@@ -74,7 +77,6 @@
 		<preference id='nzbdshownotif-template' name='extensions.nzbdstatus.servers.0.showNotifications' type='bool' />
 		<preference id='nzbdenable-template' name='extensions.nzbdstatus.servers.0.enable' type='bool' />
 		<preference id='nzbdshowstatus-template' name='extensions.nzbdstatus.servers.0.showInStatusBar' type='bool' />
-		<preference id='nzbdfav' name='extensions.nzbdstatus.servers.favorite' type='int' />
 	</preferences>
 
 	<groupbox flex='1'>
@@ -88,7 +90,6 @@
 			<button label='Add' icon='add' oncommand='nzbdStatusConfig.addServer();'  />
 			<button label='Remove' icon='remove' oncommand='nzbdStatusConfig.removeServer();' />
 		</vbox>
-		<radiogroup preference='nzbdfav'>
 		<deck id='nzbdserver-deck' selectedindex='1'>
 			<vbox id='nzbdserver-deck-template'>
 				<caption label='Template' />
@@ -105,8 +106,7 @@
 							<hbox align='center'>
 								<menulist class='nzbd-updatepref' preference='nzbdserver-template'>
 									<menupopup>
-										<menuitem label='SABnzbd+' value='sabnzbd+' />
-										<menuitem label='HellaNZB' value='hellanzb' />
+										<menuitem label='SABnzbd' value='sabnzbd' />
 									</menupopup>
 								</menulist>
 								<label value='Icon' />
@@ -156,7 +156,6 @@
 				<label value='Test connection results' />
 			</vbox>
 		</deck>
-		</radiogroup>
 	</hbox>
 	</groupbox>
 </prefpane>
