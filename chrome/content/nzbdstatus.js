@@ -757,35 +757,6 @@ return;
 		}
 	},
 
-	onNzbIndexLoad: function(doc)
-	{
-		var results = nzbdStatus.selectNodes(doc, doc, '//a[contains(@href,"/download/")]');
-		if (results.length == 0)
-		{
-			return;
-		}
-		var sendAllButton = nzbdStatus.selectSingleNode(doc, doc, '//input[@type="submit"][@value="Create NZB"]');
-		if (sendAllButton)
-		{
-			sendAllButton.parentNode.insertBefore(nzbdStatus.makeSendAllButton(doc), sendAllButton);
-		}
-		var oldIcon, postId, newIcon, rowcount = results.length;
-		for (i = 0; i < rowcount; i++)
-		{
-			oldIcon = results[i];
-			postId = oldIcon.href.match(/nzbindex\.(nl|com)\/download\/(\d+)\//i);
-			if (postId == null)
-			{
-				continue;
-			}
-			postId = postId[2];
-			newIcon = nzbdStatus.makeSendIcon(doc, postId);
-			newIcon.style.marginRight = '.5em';
-			dlLink = oldIcon.parentNode.parentNode.parentNode;
-			dlLink.insertBefore(newIcon, dlLink.getElementsByTagName('label')[0]);
-		}
-	},
-
 
 	checkForNZB: function()
 	{
@@ -1671,7 +1642,7 @@ return;
 
 
 
-
+/// Rewritten
 
 
 	// Read the server details into the cache
@@ -1874,6 +1845,7 @@ return;
 		return serverList;
 	},
 
+	// newzbin.com and newzxxx.com
 	onNewzbinPageLoad: function(doc)
 	{
 		try {
@@ -1902,6 +1874,36 @@ return;
 			return;
 		}
 		} catch(e) { nzbdStatus.errorLogger('onNewzbinPageLoad',e); }
+	},
+
+	// nzbindex.nl and nzbindex.com
+	onNzbIndexLoad: function(doc)
+	{
+		var results = nzbdStatus.selectNodes(doc, doc, '//a[contains(@href,"/download/")]');
+		if (results.length == 0)
+		{
+			return;
+		}
+		var sendAllButton = nzbdStatus.selectSingleNode(doc, doc, '//input[@type="submit"][@value="Create NZB"]');
+		if (sendAllButton)
+		{
+			sendAllButton.parentNode.insertBefore(nzbdStatus.makeSendAllButton(doc), sendAllButton);
+		}
+		var oldIcon, postId, newIcon, rowcount = results.length;
+		for (i = 0; i < rowcount; i++)
+		{
+			oldIcon = results[i];
+			postId = oldIcon.href.match(/nzbindex\.(nl|com)\/download\/(.*)$/i); // Have to be greedy due to required filename
+			if (postId == null)
+			{
+				continue;
+			}
+			postId = postId[2];
+			newIcon = nzbdStatus.makeSendIcon(doc, postId);
+			newIcon.style.marginRight = '.5em';
+			dlLink = oldIcon.parentNode.parentNode.parentNode;
+			dlLink.insertBefore(newIcon, dlLink.getElementsByTagName('label')[0]);
+		}
 	},
 
 	// Newzbin's individual report view
