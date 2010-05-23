@@ -773,12 +773,12 @@ return;
 		for (i = 0; i < rowcount; i++)
 		{
 			oldIcon = results[i];
-			postId = oldIcon.href.match(/nzbindex\.nl\/download\/(\d+)-(\d+)/i);
+			postId = oldIcon.href.match(/nzbindex\.(nl|com)\/download\/(\d+)\//i);
 			if (postId == null)
 			{
 				continue;
 			}
-			postId = postId[1]+'-'+postId[2];
+			postId = postId[2];
 			newIcon = nzbdStatus.makeSendIcon(doc, postId);
 			newIcon.style.marginRight = '.5em';
 			dlLink = oldIcon.parentNode.parentNode.parentNode;
@@ -1447,16 +1447,16 @@ return;
 
 	},
 
-	processingResponse: function(responseText, eventDetails, serverDetails)
+	processingResponse: function(responseText, eventDetails)
 	{
 
 		var alertMessage, alertTitle, responseStatus, retryLimit = nzbdStatus.getPreference('servers.retryLimit');
-		clearTimeout(serverDetails.timeout);
+		//clearTimeout(serverDetails.timeout);
 
 		// Process based on server type
 		switch (serverDetails.type)
 		{
-			case 'sabnzbd+':
+			case 'sabnzbd':
 				if (responseText.search(/ok\n/) > -1)
 				{
 					// Success
@@ -1770,11 +1770,11 @@ return;
 		if (nzbdStatus.numServerEnabled > 1)
 		{
 			// Insert the CSS needed to style our menu
-			var newzbinCSS = doc.createElement('link');
-			newzbinCSS.rel = 'stylesheet';
-			newzbinCSS.type = 'text/css';
-			newzbinCSS.href = 'chrome://nzbdstatus/content/newzbin.css';
-			doc.getElementsByTagName('head')[0].appendChild(newzbinCSS);
+			var oneclickCSS = doc.createElement('link');
+			oneclickCSS.rel = 'stylesheet';
+			oneclickCSS.type = 'text/css';
+			oneclickCSS.href = 'chrome://nzbdstatus/content/oneclick.css';
+			doc.getElementsByTagName('head')[0].appendChild(oneclickCSS);
 			doc.getElementsByTagName('body')[0].appendChild(nzbdStatus.getServerUL(doc));
 		}
 
@@ -1796,7 +1796,7 @@ return;
 				nzbdStatus.onNzbIndexLoad(doc);
 				break;
 			case 'binsearch':
-				SABnzbdStatus.onBinSearchLoad(doc);
+				nzbdStatus.onBinSearchLoad(doc);
 				break;
 			case 'animeusenet':
 				nzbdStatus.onAnimeUsenetLoad(doc);
@@ -1827,7 +1827,7 @@ return;
 		{
 			return 'nzbsorg';
 		}
-		if (host.search('nzbindex.nl') > -1)
+		if ((host.search('nzbindex.nl') > -1) || (host.search('nzbindex.com') > -1))
 		{
 			return 'nzbindex';
 		}
@@ -2138,7 +2138,8 @@ return;
 			return false;
 		}
 
-		switch (nzbdStatus.supportedSite(doc))
+		var siteSrc = nzbdStatus.supportedSite(doc);
+		switch (siteSrc)
 		{
 			case 'newzbin':
 				url = 'http://www.newzbin.com/browse/post/' + postid + '/';
@@ -2170,7 +2171,7 @@ return;
 		 serverid: serverid,
 		 category: category,
 		 url: url,
-		 icon: nzbdStatus.selectSingleNode(doc, doc, '//img[@data-postid="'+postId+'"]'),
+		 icon: nzbdStatus.selectSingleNode(doc, doc, '//img[@data-postid="'+postid+'"]'),
 		 tries: 0
 		 };
 		nzbdStatus.queueEvent(newEvent);
@@ -2181,6 +2182,7 @@ return;
 	// Add an event to the end of the event queue
 	queueEvent: function(newEvent)
 	{
+		nzbdStatus.logger('in queueEvent');
 		nzbdStatus.processingQueue.push(newEvent);
 		if (!nzbdStatus.processingQueueActive)
 		{
@@ -2202,6 +2204,7 @@ return;
 		if (nzbdStatus.processingQueue.length > 0)
 		{
 			var currentEvent = nzbdStatus.processingQueue.shift();
+			nzbdStatus.logger('action: '+currentEvent.action);
 			switch (currentEvent.action)
 			{
 				case 'sendUrl':
@@ -2227,6 +2230,7 @@ return;
 		}
 		else
 		{
+			nzbdStatus.logger('nothing in queue; '+nzbdStatus.processingQueue.length);
 			nzbdStatus.processingQueueActive = false;
 		}
 
@@ -2236,39 +2240,10 @@ return;
 	// Process a Send URL event
 	sendUrl: function(eventDetails)
 	{
-		var serverDetails = this.serverDetails[eventDetails.serverId];
-		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
-
-
-
-		switch (serverDetails.type)
-		{
-			case 'sabnzbd+':
-				fullUrl += 'api?mode=addurl&name='+encodeURIComponent(eventDetails.url);
-				if (serverDetails.username != null || serverDetails.password != null)
-				{
-					fullUrl += '&ma_username='+serverDetails.username+'&ma_password='+serverDetails.password;
-				}
-				if (serverDetails.apikey != '')
-				{
-					fullUrl += '&apikey='+serverDetails.apikey;
-				}
-
-
-
-				// Optional: &cat=<category>&pp=<job-option>&script=<script>
-				break;
-			default:
-				// Something that's not been implemented yet
-				nzbdStatus.logger('Unsupported server type `'+serverDetails.type+'` requested\n');
-				break;
-		}
-
-		var processingHttp = nzbdStatus.processingHttp;
-		processingHttp.open('GET', fullUrl, true);
-		processingHttp.onload = function() { nzbdStatus.processingResponse(this.responseText, eventDetails, serverDetails) };
-		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout*1000);
-		processingHttp.send(null);
+		nzbdStatus.logger('in sendUrl');
+		var server = nzbdStatus.servers[eventDetails.serverid];
+		requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs')
+		server.sendUrl(eventDetails, nzbdStatus.processingResponse, nzbdStatus.abortRequestProcessing, requestTimeout);
 	},
 
 
@@ -2396,7 +2371,7 @@ return;
 				alert(msg);
 				break;
 			case 1: // dump
-				dump(msg);
+				dump(msg+'\n');
 				break;
 			case 2: // console.log
 				console.log(msg);
