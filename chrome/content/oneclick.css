@@ -18,6 +18,7 @@ cursor:pointer;
 background:#aaa;
 color:#000;
 font-size:12px;
+text-align:left;
 }
 ul.nzbdservers li {
 display:block;
