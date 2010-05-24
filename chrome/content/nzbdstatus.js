@@ -213,7 +213,7 @@ nzbdStatusObject.prototype = {
 	// Methods
 
 
-/*
+
 	sendAlert: function(icon, title, message)
 	{
 		var alertsService = Components.classes["@mozilla.org/alerts-service;1"]
@@ -236,7 +236,7 @@ nzbdStatusObject.prototype = {
 			this.sendAlert('chrome://global/skin/icons/Error.png', title, message);
 		}
 	},
-*//*
+/*
 	sendPause: function()
 	{
 		var sabUrl = nzbdStatus.getPreference('servers.'+this.favServer+'.url') + nzbdStatus.getPreference('pauseUrl');
@@ -1418,14 +1418,18 @@ return;
 
 	},
 
-	processingResponse: function(responseText, eventDetails)
+	processingResponse: function(responseStatus, eventDetails)
 	{
+		try {
 nzbdStatus.logger('in processingResponse');
-		var alertMessage, alertTitle, responseStatus, retryLimit = nzbdStatus.getPreference('servers.retryLimit');
+
+		var alertMessage, alertTitle, retryLimit = nzbdStatus.getPreference('servers.retryLimit');
+		var serverDetails = nzbdStatus.servers[eventDetails.serverid];
 		clearTimeout(nzbdStatus.queueTimeout);
 
+/*
 		// Process based on server type
-		switch (serverDetails.type)
+		switch (false)
 		{
 			case 'sabnzbd':
 				if (responseText.search(/ok\n/) > -1)
@@ -1460,6 +1464,7 @@ nzbdStatus.logger('in processingResponse');
 				responseStatus = false;
 				break;
 		}
+*/
 
 		eventDetails.tries++;
 		if (!responseStatus && (eventDetails.tries < retryLimit))
@@ -1475,12 +1480,12 @@ nzbdStatus.logger('in processingResponse');
 				case 'sendUrl':
 					if (responseStatus)
 					{
-						alertMessage = serverDetails.label+' has received URL '+eventDetails.url;
+						alertMessage = serverDetails.label+' has received the URL';
 						alertTitle = 'URL Received';
 					}
 					else
 					{
-						alertMessage = serverDetails.label+' failed to receive URL '+eventDetails.url;
+						alertMessage = serverDetails.label+' failed to receive the URL';
 						alertTitle = serverDetails.label+' Failure Detected';
 					}
 					break;
@@ -1570,6 +1575,7 @@ nzbdStatus.logger('in processingResponse');
 		// Go do the next thing in the queue
 		setTimeout(nzbdStatus.processQueue, 1);
 
+		} catch(e) { nzbdStatus.errorLogger('processingResponse',e); }
 	},
 
 	processRefresh: function(serverDetails, refreshObject)
