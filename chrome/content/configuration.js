@@ -261,7 +261,9 @@ nzbdStatusConfigObject.prototype = {
 	{
 		try {
 
-		nzbdStatusConfig.activateMovement();
+		var serverOrder = nzbdStatusConfig.getPreference('servers.order').split(',');
+		var serverid = serverOrder[document.getElementById('nzbdserver-list').currentIndex];
+
 		var sList = document.getElementById('nzbdserver-list');
 		var curSID = sList.currentIndex;
 		var maxSID = nzbdStatusConfig.getPreference('servers.count');
@@ -276,16 +278,22 @@ nzbdStatusConfigObject.prototype = {
 		nzbdStatusConfig.setPreference('servers.order', serverOrder.join(','));
 		nzbdStatusConfig.setPreference('servers.count', maxSID + 1);
 
-		nzbdStatusConfig.inactivateMovement();
 		sList.moveByOffset(1, true, false);
 
-		} catch(e) { dump('error addServer:'+e+'\n'); }
+		} catch(e) { dump('testConnection threw error `' + e.message + '` on line: ' + e.lineNumber + '\n');}
 	},
 
 	removeServer: function()
 	{
-		//
-		nzbdStatusConfig.inactivateMovement();
+		var serverOrder = nzbdStatusConfig.getPreference('servers.order').split(',');
+		var curSel = document.getElementById('nzbdserver-list').currentIndex;
+		var serverid = serverOrder[curSel];
+		serverOrder.splice(curSel, 1);
+		nzbdStatusConfig.setPreference('servers.order', serverOrder.join(','));
+		var sList = document.getElementById('nzbdserver-list');
+		sList.removeItemAt(curSel);
+		var deck = document.getElementById('nzbdserver-deck-'+serverid);
+		deck.parentNode.removeChild(deck);
 	},
 
 	changeServerDeck: function()
