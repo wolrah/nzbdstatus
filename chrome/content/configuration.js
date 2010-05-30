@@ -20,6 +20,9 @@ function nzbdStatusConfigObject()
 // Now extend it
 nzbdStatusConfigObject.prototype = {
 
+	// Public variables
+	stringsBundle: document.getElementById('nzb-config-string-bundle'),
+
 	// Private variables
 	_preferences: Components.classes['@mozilla.org/preferences;1']
 	 .getService(Components.interfaces.nsIPrefService)
@@ -326,24 +329,41 @@ nzbdStatusConfigObject.prototype = {
 
 	testConnection: function(withpass)
 	{
-		dump('in test\n')
+		try {
+
 		var serverOrder = nzbdStatusConfig.getPreference('servers.order').split(',');
 		var serverid = serverOrder[document.getElementById('nzbdserver-list').currentIndex];
-		dump(serverid);
-		var connectionText = document.getElementById('connectionText-'+serverid);
-		var connectionIcon = document.getElementById('connectionIcon-'+serverid);
+		var connectionText = document.getElementById('nzbdconnectionText-'+serverid);
+		var connectionIcon = document.getElementById('nzbdconnectionIcon-'+serverid);
 		connectionIcon.src = 'chrome://nzbdstatus/skin/throbber.gif';
 		connectionText.value = this.stringsBundle.getString('testActive');
-		var fullUrl = nzbdStatusConfig.getPreference('sabUrl') + 'api?mode=version&output=xml';
-		if (withpass)
+
+		var serverType = this.getPreference('servers.'+serverid+'.type');
+		switch (serverType)
 		{
-			fullUrl += '&ma_username='+nzbdStatusConfig.getPreference('sabusername')+'&ma_password='+nzbdStatusConfig.getPreference('sabpassword');
+			case 'sabnzbd':
+				var serverObject = new sabnzbdServerObject(serverId);
+				serverObject.testConnection(this.successResult, this.failureResult);
+				break;
 		}
-		var xmldoc = nzbdStatusConfig.xmlHttp;
-		xmldoc.open('GET', fullUrl, true);
-		xmldoc.onload = function() { nzbdStatusConfig.testConnectionResponse(this, withpass); };
-		nzbdStatusConfig.timeout = setTimeout(function() { nzbdStatusConfig.abortTest(xmldoc) }, 10000);
-		xmldoc.send(null);
+
+		} catch(e) { dump('testConnection threw error `' + e.message + '` on line: ' + e.lineNumber + '\n');}
+	},
+
+	successResult: function(serverid, message)
+	{
+		var connectionText = document.getElementById('nzbdconnectionText-'+serverid);
+		var connectionIcon = document.getElementById('nzbdconnectionIcon-'+serverid);
+		connectionIcon.src = 'chrome://nzbdstatus/skin/pass.png';
+		connectionText.value = message;
+	},
+
+	failureResult: function(serverid, message)
+	{
+		var connectionText = document.getElementById('nzbdconnectionText-'+serverid);
+		var connectionIcon = document.getElementById('nzbdconnectionIcon-'+serverid);
+		connectionIcon.src = 'chrome://nzbdstatus/skin/fail.png';
+		connectionText.value = message;
 	},
 
 	testConnectionResponse: function(that, withpass)
