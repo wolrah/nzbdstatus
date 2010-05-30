@@ -1,26 +1,40 @@
 <!ENTITY sabstatus.window_config.title "nzbdStatus Configuration">
-<!ENTITY sabstatus.gen_prefpane.label "Config">
-<!ENTITY sabstatus.gen_caption.label "General Settings">
-<!ENTITY sabstatus.pref_refreshrate.value "Refresh Rate:">
-<!ENTITY sabstatus.pref_refreshrate_units.value "minutes">
 
-<!ENTITY sabstatus.sbar_caption.label "Statusbar Settings">
-<!ENTITY sabstatus.pref_onlyshow.value "Remove Timer">
-<!ENTITY sabstatus.pref_alwaysshow.value "Always Show SAB Icon">
+<!ENTITY sabstatus.gen_prefpane.label "Config">
+<!ENTITY sabstatus.mouse_caption.label "Mouse Settings">
 <!ENTITY sabstatus.pref_leftclick.label "Left Click:">
 <!ENTITY sabstatus.pref_middleclick.label "Middle Click:">
-<!ENTITY sabstatus.pref_sbarclick_refresh.value "Refresh Information">
-<!ENTITY sabstatus.pref_sbarclick_newtab.value "Open SABnzbd In New Tab">
-<!ENTITY sabstatus.pref_sbarclick_sametab.value "Open SABnzbd In Same Tab">
-<!ENTITY sabstatus.pref_sbarclick_newwindow.value "Open SABnzbd In New Window">
+<!ENTITY sabstatus.pref_sbarclick_refresh.value "Refresh information">
+<!ENTITY sabstatus.pref_sbarclick_newtabfocus.value "Open in new tab">
+<!ENTITY sabstatus.pref_sbarclick_newtabbackground.value "Open in new tab in background">
+<!ENTITY sabstatus.pref_sbarclick_sametab.value "Open in same tab">
+<!ENTITY sabstatus.pref_sbarclick_newwindow.value "Open in new window">
+<!ENTITY sabstatus.pref_sbarclick_qnewtabfocus.value "Open queue page in new tab">
+<!ENTITY sabstatus.pref_sbarclick_qnewtabbackground.value "Open queue page in new tab in background">
+<!ENTITY sabstatus.pref_sbarclick_qsametab.value "Open queue page in same tab">
+<!ENTITY sabstatus.pref_sbarclick_qnewwindow.value "Open queue page in new window">
+<!ENTITY sabstatus.downopts_caption.label "File Download Settings">
+<!ENTITY sabstatus.pref_downopts_sendfile.value "Send NZB downloads to SABnzbd">
+<!ENTITY sabstatus.pref_downopts_prompt.value "Prompt before sending">
 
-<!ENTITY sabstatus.login_caption.label "Login Infomation">
-<!ENTITY sabstatus.pref_sabuser.value "Username:">
-<!ENTITY sabstatus.pref_sabpass.value "Password:">
 
-<!ENTITY sabstatus.pref_sendfiles.label "Send NZB files to this daemon">
-<!ENTITY sabstatus.pref_filesintosab.label "After Download:">
-<!ENTITY sabstatus.pref_legacy.label "Enable Legacy Mode">
+<!ENTITY sabstatus.server_prefpane.label "Servers">
+<!ENTITY sabstatus.svrlist_listheader.label "Server Name">
+<!ENTITY sabstatus.svradd_button.label "Add">
+<!ENTITY sabstatus.svrrem_button.label "Remove">
+<!ENTITY sabstatus.svrserver_label.value "Server">
+<!ENTITY sabstatus.svricon_label.value "Icon">
+<!ENTITY sabstatus.svrname_label.value "Name">
+<!ENTITY sabstatus.svrurl_label.value "URL">
+<!ENTITY sabstatus.svrapi_label.value "API key">
+<!ENTITY sabstatus.svrenable_check.label "Enable server">
+<!ENTITY sabstatus.svrshow_check.label "Show status bar icon">
+<!ENTITY sabstatus.svrpass_button.label "Set password">
+<!ENTITY sabstatus.svrtest_button.label "Test connection">
+
+
+
+
 <!ENTITY sabstatus.nzbd_caption.label "Settings">
 <!ENTITY sabstatus.pref_sabtheme.value "Theme:">
 <!ENTITY sabstatus.pref_saburl.value "URL:">
@@ -43,23 +57,6 @@
 <!ENTITY sabstatus.pref_refreshrate.value "Refresh Rate:">
 <!ENTITY sabstatus.pref_refreshrate_units.value "minutes">
 
-<!ENTITY sabstatus.sbar_caption.label "Statusbar Settings">
-<!ENTITY sabstatus.pref_onlyshow.value "Hide timer">
-<!ENTITY sabstatus.pref_alwaysshow.value "Always show icon in statusbar">
-<!ENTITY sabstatus.pref_leftclick.label "Left Click:">
-<!ENTITY sabstatus.pref_middleclick.label "Middle Click:">
-<!ENTITY sabstatus.pref_sbarclick_refresh.value "Refresh information">
-<!ENTITY sabstatus.pref_sbarclick_newtabfocus.value "Open in new tab">
-<!ENTITY sabstatus.pref_sbarclick_newtabbackground.value "Open in new tab in background">
-<!ENTITY sabstatus.pref_sbarclick_sametab.value "Open in same tab">
-<!ENTITY sabstatus.pref_sbarclick_newwindow.value "Open in new window">
-<!ENTITY sabstatus.pref_sbarclick_qnewtabfocus.value "Open queue page in new tab">
-<!ENTITY sabstatus.pref_sbarclick_qnewtabbackground.value "Open queue page in new tab in background">
-<!ENTITY sabstatus.pref_sbarclick_qsametab.value "Open queue page in same tab">
-<!ENTITY sabstatus.pref_sbarclick_qnewwindow.value "Open queue page in new window">
-<!ENTITY sabstatus.downopts_caption.label "File Download Settings">
-<!ENTITY sabstatus.pref_downopts_sendfile.value "Send NZB downloads to SABnzbd">
-<!ENTITY sabstatus.pref_downopts_prompt.value "Prompt before sending">
 
 <!ENTITY sabstatus.login_caption.label "Login Infomation">
 <!ENTITY sabstatus.pref_sabuser.value "Username:">
