@@ -135,7 +135,6 @@ nzbdStatusConfigObject.prototype = {
 
 	buildServerDeck: function()
 	{
-		var fav = this.getPreference('servers.favorite');
 		var serverOrder = this.getPreference('servers.order').split(',');
 		for each (var i in serverOrder)
 		{
@@ -156,6 +155,12 @@ nzbdStatusConfigObject.prototype = {
 		{
 			nAtt = elems[j].getAttribute('preference');
 			elems[j].setAttribute('preference', nAtt.replace(/template/, serverId));
+		}
+		var elems = newDeck.getElementsByClassName('nzbd-update');
+		for (j = 0; j < elems.length; j++)
+		{
+			nAtt = elems[j].getAttribute('id');
+			elems[j].setAttribute('id', nAtt.replace(/template/, serverId));
 		}
 		if (iAfter == undefined)
 		{
@@ -319,9 +324,152 @@ nzbdStatusConfigObject.prototype = {
 		} catch(e) { console.warn(e); }
 	},
 
-	testConnection: function()
+	testConnection: function(withpass)
 	{
-		//
+		dump('in test\n')
+		var serverOrder = nzbdStatusConfig.getPreference('servers.order').split(',');
+		var serverid = serverOrder[document.getElementById('nzbdserver-list').currentIndex];
+		dump(serverid);
+		var connectionText = document.getElementById('connectionText-'+serverid);
+		var connectionIcon = document.getElementById('connectionIcon-'+serverid);
+		connectionIcon.src = 'chrome://nzbdstatus/skin/throbber.gif';
+		connectionText.value = this.stringsBundle.getString('testActive');
+		var fullUrl = nzbdStatusConfig.getPreference('sabUrl') + 'api?mode=version&output=xml';
+		if (withpass)
+		{
+			fullUrl += '&ma_username='+nzbdStatusConfig.getPreference('sabusername')+'&ma_password='+nzbdStatusConfig.getPreference('sabpassword');
+		}
+		var xmldoc = nzbdStatusConfig.xmlHttp;
+		xmldoc.open('GET', fullUrl, true);
+		xmldoc.onload = function() { nzbdStatusConfig.testConnectionResponse(this, withpass); };
+		nzbdStatusConfig.timeout = setTimeout(function() { nzbdStatusConfig.abortTest(xmldoc) }, 10000);
+		xmldoc.send(null);
+	},
+
+	testConnectionResponse: function(that, withpass)
+	{
+		clearTimeout(nzbdStatusConfig.timeout);
+		var connectionText = document.getElementById('connectionText');
+		var connectionIcon = document.getElementById('connectionIcon');
+		if ((that.status == 200) || (that.status == 500))
+		{
+			if ((that.responseText.search('<title>Login</title>') > -1) || (that.responseText.search('Missing authentication') > -1))
+			{
+				if (withpass)
+				{
+					connectionIcon.src = 'chrome://nzbdstatus/skin/error.png';
+					connectionText.value = this.stringsBundle.getString('testPasswordFail');
+				}
+				else
+				{
+					nzbdStatusConfig.testConnection(true);
+				}
+			}
+			else
+			{
+				var version = that.responseXML.getElementsByTagName('version')[0].textContent;
+				if ((version.split('.')[1] < 4) || ((version.split('.')[1] == 4) && (version.split('.')[2] < 9)))
+				{
+					connectionIcon.src = 'chrome://nzbdstatus/skin/pass.png';
+					connectionText.value = this.stringsBundle.getString('testSuccess');
+				}
+				else
+				{
+					nzbdStatusConfig.apiKeyTest(withpass);
+				}
+			}
+		}
+		else
+		{
+			connectionIcon.src = 'chrome://nzbdstatus/skin/fail.png';
+			connectionText.value = this.stringsBundle.getString('testFail');
+		}
+	},
+
+	apiKeyTest: function(withpass)
+	{
+		var fullUrl = nzbdStatusConfig.getPreference('sabUrl')+'api?mode=get_scripts&output=xml&apikey='+nzbdStatusConfig.getPreference('apikey');
+		if (withpass)
+		{
+			fullUrl += '&ma_username='+nzbdStatusConfig.getPreference('sabusername')+'&ma_password='+nzbdStatusConfig.getPreference('sabpassword');
+		}
+		var xmldoc = nzbdStatusConfig.xmlHttp;
+		xmldoc.open('GET', fullUrl, true);
+		xmldoc.onload = function() { nzbdStatusConfig.apiKeyTestResponse(this, withpass); };
+		nzbdStatusConfig.timeout = setTimeout(function() { nzbdStatusConfig.abortTest(xmldoc) }, 10000);
+		xmldoc.send(null);
+	},
+
+	apiKeyTestResponse: function(that, withpass)
+	{
+		clearTimeout(nzbdStatusConfig.timeout);
+		var connectionText = document.getElementById('connectionText');
+		var connectionIcon = document.getElementById('connectionIcon');
+		if ((that.status == 200) || (that.status == 500))
+		{
+			if (that.responseText.search('Missing authentication') > -1)
+			{
+				if (withpass)
+				{
+					connectionIcon.src = 'chrome://nzbdstatus/skin/error.png';
+					connectionText.value = this.stringsBundle.getString('testPasswordFail');
+				}
+				else
+				{
+					nzbdStatusConfig.testConnection(true);
+				}
+			}
+			else
+			{
+				if (that.responseText.search('API Key Required') > -1)
+				{
+					connectionIcon.src = 'chrome://nzbdstatus/skin/error.png';
+					connectionText.value = this.stringsBundle.getString('testAPIKeyMissing');
+				}
+				else if (that.responseText.search('API Key Incorrect') > -1)
+				{
+					connectionIcon.src = 'chrome://nzbdstatus/skin/error.png';
+					connectionText.value = this.stringsBundle.getString('testAPIKeyWrong');
+				}
+				else
+				{
+					connectionIcon.src = 'chrome://nzbdstatus/skin/pass.png';
+					connectionText.value = this.stringsBundle.getString('testSuccess');
+				}
+			}
+		}
+		else
+		{
+			connectionIcon.src = 'chrome://nzbdstatus/skin/fail.png';
+			connectionText.value = this.stringsBundle.getString('testFail');
+		}
+	},
+
+	abortTest: function(xmldoc)
+	{
+		xmldoc.abort();
+		var connectionText = document.getElementById('connectionText');
+		var connectionIcon = document.getElementById('connectionIcon');
+		connectionIcon.src = 'chrome://nzbdstatus/skin/fail.png';
+		connectionText.value = this.stringsBundle.getString('testFail');
+	},
+
+	togglePrompt: function()
+	{
+		var askenable = document.getElementById('sabaskenable');
+		if (!nzbdStatusConfig.getPreference('enableFilesToSAB'))
+		{
+			if (askenable.getAttribute('disabled') == 'true')
+			{
+				askenable.setAttribute('disabled', 'false');
+				nzbdStatusConfig.setPreference('askAboutEnable', true);
+			}
+		}
+		else
+		{
+			askenable.setAttribute('disabled', 'true');
+			nzbdStatusConfig.setPreference('askAboutEnable', false);
+		}
 	},
 
 	updateName: function(e)
