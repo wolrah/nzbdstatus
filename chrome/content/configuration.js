@@ -262,15 +262,22 @@ nzbdStatusConfigObject.prototype = {
 		var serverOrder = nzbdStatusConfig.getPreference('servers.order').split(',');
 		var sList = document.getElementById('nzbdserver-list');
 		var curSel = sList.currentIndex;
-		var newServerid = parseInt(serverOrder[serverOrder.length-1]) + 1;
-		sList.insertItemAt(curSel + 1, 'New Server', newServerid);
+		var newServerName = this.stringsBundle.getString('newServer');
+		var newServerid = Math.max.apply(Math, serverOrder) + 1;
+		sList.insertItemAt(curSel + 1, newServerName, newServerid);
 		serverOrder.splice(curSel + 1, 0, newServerid);
 		nzbdStatusConfig.setPreference('servers.order', serverOrder.join(','));
 
 		nzbdStatusConfig.addServerPreferences(newServerid);
+
+		nzbdStatusConfig.preferences.setCharPref('servers.'+newServerid+'.label', newServerName);
+		nzbdStatusConfig.preferences.setCharPref('servers.'+newServerid+'.icon', 'flag_red.png');
+		nzbdStatusConfig.preferences.setCharPref('servers.'+newServerid+'.type', 'sabnzbd');
+
 		nzbdStatusConfig.addServerDeck(newServerid, serverOrder[curSel]);
-		nzbdStatusConfig.setPreference('servers.'+newServerid+'.icon', 'flag_yellow.png');
-		nzbdStatusConfig.setPreference('servers.'+newServerid+'.type', 'sabnzbd');
+		document.getElementById('nzbdiconid-'+newServerid).selectedIndex = 0;
+		document.getElementById('nzbdserverid-'+newServerid).selectedIndex = 0;
+		document.getElementById('nzbdserver-deck-'+newServerid).getElementsByTagName('caption')[0].setAttribute('label', newServerName);
 
 		sList.moveByOffset(1, true, false);
 	},
