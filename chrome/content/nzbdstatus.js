@@ -1428,42 +1428,12 @@ nzbdStatus.logger('in processingResponse');
 		clearTimeout(nzbdStatus.queueTimeout);
 
 /*
-		// Process based on server type
-		switch (false)
-		{
-			case 'sabnzbd':
-				if (responseText.search(/ok\n/) > -1)
-				{
-					// Success
-					responseStatus = true;
-				}
-				else
-				{
-					// Failure or unknown response
-					responseStatus = false;
-				}
 				if (eventDetails.action == 'sendRefresh')
 				{
 					try
 					{
 						var refreshObject = nzbdStatus._JSON.decode(responseText);
 						responseStatus = true;
-					}
-					catch (e)
-					{
-						dump('Could not dejson '+responseText+'\n');
-						responseStatus = false;
-					}
-				}
-				break;
-			case 'hellanzb':
-			case 'nzbget':
-			default:
-				// Something that's not been implemented yet
-				dump('Unsupported server type `'+serverDetails.type+'` requested\n');
-				responseStatus = false;
-				break;
-		}
 */
 
 		eventDetails.tries++;
@@ -2243,6 +2213,14 @@ nzbdStatus.logger('in processingResponse');
 		} catch(e) { nzbdStatus.errorLogger('processQueue',e); }
 	},
 
+	// Abort the last item to be done
+	abortRequestProcessing: function(eventDetails)
+	{
+		var server = nzbdStatus.servers[eventDetails.serverid];
+		server.abortLastSend();
+		nzbdStatus.processingResponse(false, eventDetails)
+	},
+
 	// Process a Send URL event
 	sendUrl: function(eventDetails)
 	{
@@ -2253,13 +2231,6 @@ nzbdStatus.logger('in processingResponse');
 		server.sendUrl(eventDetails);
 	},
 
-	// Abort the last item to be done
-	abortRequestProcessing: function(eventDetails)
-	{
-		var server = nzbdStatus.servers[eventDetails.serverid];
-		server.abortLastSend();
-		nzbdStatus.processingResponse(false, eventDetails)
-	},
 
 
 	///
