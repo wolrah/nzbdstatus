@@ -103,13 +103,13 @@
 								<label value='&sabstatus.svrserver_label.value;' />
 							</hbox>
 							<hbox align='center'>
-								<menulist class='nzbd-updatepref' preference='nzbdserver-template'>
+								<menulist class='nzbd-updatepref nzbd-update' preference='nzbdserver-template' id='nzbdserverid-template'>
 									<menupopup>
 										<menuitem label='SABnzbd' value='sabnzbd' />
 									</menupopup>
 								</menulist>
 								<label value='&sabstatus.svricon_label.value;' />
-								<menulist class='nzbd-updatepref' preference='nzbdicon-template'>
+								<menulist class='nzbd-updatepref nzbd-update' preference='nzbdicon-template' id='nzbdiconid-template'>
 									<menupopup>
 										<menuitem value='flag_red.png' image='chrome://nzbdstatus/skin/flag_red.png'>
 											<image src='chrome://nzbdstatus/skin/flag_red.png' />
