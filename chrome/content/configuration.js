@@ -259,28 +259,20 @@ nzbdStatusConfigObject.prototype = {
 
 	addServer: function()
 	{
-		try {
-
 		var serverOrder = nzbdStatusConfig.getPreference('servers.order').split(',');
-		var serverid = serverOrder[document.getElementById('nzbdserver-list').currentIndex];
-
 		var sList = document.getElementById('nzbdserver-list');
-		var curSID = sList.currentIndex;
-		var maxSID = nzbdStatusConfig.getPreference('servers.count');
-		var newSID = maxSID;
-		var serverOrder = nzbdStatusConfig.getPreference('servers.order').split(',');
-		sList.insertItemAt(curSID + 1, 'New Server', newSID);
-
-		nzbdStatusConfig.addServerPreferences(newSID);
-		nzbdStatusConfig.addServerDeck(newSID, sList.getItemAtIndex(curSID).value);
-
-		serverOrder.splice(curSID + 1, 0, newSID);
+		var curSel = sList.currentIndex;
+		var newServerid = parseInt(serverOrder[serverOrder.length-1]) + 1;
+		sList.insertItemAt(curSel + 1, 'New Server', newServerid);
+		serverOrder.splice(curSel + 1, 0, newServerid);
 		nzbdStatusConfig.setPreference('servers.order', serverOrder.join(','));
-		nzbdStatusConfig.setPreference('servers.count', maxSID + 1);
+
+		nzbdStatusConfig.addServerPreferences(newServerid);
+		nzbdStatusConfig.addServerDeck(newServerid, serverOrder[curSel]);
+		nzbdStatusConfig.setPreference('servers.'+newServerid+'.icon', 'flag_yellow.png');
+		nzbdStatusConfig.setPreference('servers.'+newServerid+'.type', 'sabnzbd');
 
 		sList.moveByOffset(1, true, false);
-
-		} catch(e) { dump('testConnection threw error `' + e.message + '` on line: ' + e.lineNumber + '\n');}
 	},
 
 	removeServer: function()
@@ -290,10 +282,12 @@ nzbdStatusConfigObject.prototype = {
 		var serverid = serverOrder[curSel];
 		serverOrder.splice(curSel, 1);
 		nzbdStatusConfig.setPreference('servers.order', serverOrder.join(','));
+
 		var sList = document.getElementById('nzbdserver-list');
 		sList.removeItemAt(curSel);
 		var deck = document.getElementById('nzbdserver-deck-'+serverid);
 		deck.parentNode.removeChild(deck);
+		sList.moveByOffset(0, true, false);
 	},
 
 	changeServerDeck: function()
