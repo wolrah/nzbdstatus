@@ -216,9 +216,18 @@ nzbdStatusObject.prototype = {
 
 	sendAlert: function(icon, title, message)
 	{
-		var alertsService = Components.classes["@mozilla.org/alerts-service;1"]
-		 .getService(Components.interfaces.nsIAlertsService);
-		alertsService.showAlertNotification(icon, title, message, false, "", null, "nzbdStatus");
+		if ("@mozilla.org/alerts-service;1" in Components.classes)
+		{
+			var alertsService = Components.classes["@mozilla.org/alerts-service;1"]
+			 .getService(Components.interfaces.nsIAlertsService);
+			alertsService.showAlertNotification(icon, title, message, false, '', null, 'nzbdStatus');
+		}
+		else if ("@growl.info/notifications;1" in Components.classes)
+		{
+			var growl = Components.classes["@growl.info/notifications;1"]
+			 .getService(Components.interfaces.grINotifications);
+			growl.sendNotification('', icon, title, message, 'nzbdStatus');
+		}
 	},
 
 	sendDownloadAlert: function(title, message)
@@ -954,35 +963,6 @@ return;
 
 	},
 
-	// Fired when a widget is clicked on
-	clickedOn: function(e)
-	{
-		var widgetClicked = e.currentTarget.id.match(/nzbdstatus-panel-(\d)+/)[1];
-		if (e.button == 0)
-		{
-			var action = nzbdStatus.getPreference('leftClick');
-		}
-		else if (e.button == 1)
-		{
-			var action = nzbdStatus.getPreference('middleClick');
-		}
-		switch (action)
-		{
-			case 'refresh':
-				nzbdStatus.queueRefresh(widgetClicked);
-				break;
-			case 'newtab':
-				getBrowser().addTab(nzbdStatus.serverDetails[widgetClicked].url);
-				break;
-			case 'sametab':
-				loadURI(nzbdStatus.serverDetails[widgetClicked].url);
-				break;
-			case 'newwindow':
-				window.open(nzbdStatus.serverDetails[widgetClicked].url);
-				break;
-		}
-	},
-
 	// Check to see if a pause or a resume should be sent
 	togglePause: function(e)
 	{
@@ -1713,13 +1693,21 @@ nzbdStatus.logger('in processingResponse');
 		{
 			return 'nzbindex';
 		}
-		if (host.search('binsearch.info') > -1)
+		if ((host.search('binsearch.info') > -1) || (host.search('binsearch.net') > -1))
 		{
 			return 'binsearch';
 		}
 		if (host.search('animeusenet.org') > -1)
 		{
 			return 'animeusenet';
+		}
+		if (host.search('newzleech.com') > -1)
+		{
+			return 'newzleech';
+		}
+		if (host.search('albumsindex.com') > -1)
+		{
+			return 'albumsindex';
 		}
 		return false;
 	},
@@ -1754,6 +1742,52 @@ nzbdStatus.logger('in processingResponse');
 			serverList.appendChild(serverItem);
 		}
 		return serverList;
+	},
+
+	// Fired when a widget is clicked on
+	clickedOn: function(e)
+	{
+		var widgetClicked = e.currentTarget.id.match(/nzbdstatus-panel-(\d)+/)[1];
+		if (e.button == 0)
+		{
+			var action = nzbdStatus.getPreference('leftClick');
+		}
+		else if (e.button == 1)
+		{
+			var action = nzbdStatus.getPreference('middleClick');
+		}
+		var url = nzbdStatus.servers[widgetClicked].url;
+		/// TODO: This is sabnzbd specific, it should be changed
+		switch (action)
+		{
+			case 'refresh':
+				nzbdStatus.queueRefresh(widgetClicked);
+				break;
+			case 'newtab':
+				getBrowser().addTab(url);
+				break;
+			case 'newtabfocus':
+				gBrowser.selectedTab = getBrowser().addTab(url);
+				break;
+			case 'sametab':
+				loadURI(url);
+				break;
+			case 'newwindow':
+				window.open(url);
+				break;
+			case 'qnewtab':
+				getBrowser().addTab(url+'queue/');
+				break;
+			case 'qnewtabfocus':
+				gBrowser.selectedTab = getBrowser().addTab(url+'queue/');
+				break;
+			case 'qsametab':
+				loadURI(url+'queue/');
+				break;
+			case 'qnewwindow':
+				window.open(url+'queue/');
+				break;
+		}
 	},
 
 
@@ -1813,6 +1847,12 @@ nzbdStatus.logger('in processingResponse');
 			case 'animeusenet':
 				nzbdStatus.onAnimeUsenetLoad(doc);
 				break;
+			case 'newzleech':
+				nzbdStatus.onNewzleechLoad(doc);
+				break;
+			case 'albumsindex':
+				nzbdStatus.onAlbumsindexLoad(doc);
+				break;
 		}
 
 		} catch(e) { nzbdStatus.errorLogger('onPageLoad',e); }
@@ -1821,7 +1861,6 @@ nzbdStatus.logger('in processingResponse');
 	// newzbin.com and newzxxx.com
 	onNewzbinPageLoad: function(doc)
 	{
-		try {
 		var loggedIn = nzbdStatus.selectSingleNode(doc, doc, '//a[contains(@href,"/account/logout/")]');
 		if (!loggedIn)
 		{
@@ -1846,7 +1885,6 @@ nzbdStatus.logger('in processingResponse');
 			nzbdStatus.onNewzbinRawMode(doc);
 			return;
 		}
-		} catch(e) { nzbdStatus.errorLogger('onNewzbinPageLoad',e); }
 	},
 
 	// nzbindex.nl and nzbindex.com
@@ -1860,7 +1898,10 @@ nzbdStatus.logger('in processingResponse');
 		var sendAllButton = nzbdStatus.selectSingleNode(doc, doc, '//input[@type="submit"][@value="Create NZB"]');
 		if (sendAllButton)
 		{
-			sendAllButton.parentNode.insertBefore(nzbdStatus.makeSendAllButton(doc), sendAllButton);
+			var allButton = nzbdStatus.makeSendAllButton(doc);
+			allButton.className = sendAllButton.className;
+			sendAllButton.parentNode.insertBefore(allButton, sendAllButton);
+			sendAllButton.parentNode.insertBefore(doc.createTextNode(' '), sendAllButton);
 		}
 		var oldIcon, postId, newIcon, rowcount = results.length;
 		for (i = 0; i < rowcount; i++)
@@ -1874,8 +1915,96 @@ nzbdStatus.logger('in processingResponse');
 			postId = postId[2];
 			newIcon = nzbdStatus.makeSendIcon(doc, postId);
 			newIcon.style.marginRight = '.5em';
-			dlLink = oldIcon.parentNode.parentNode.parentNode;
-			dlLink.insertBefore(newIcon, dlLink.getElementsByTagName('label')[0]);
+			dlLink = oldIcon.parentNode.parentNode.parentNode.parentNode.getElementsByClassName('firstcolumn')[0];
+			dlLink.appendChild(newIcon);
+		}
+	},
+
+	// binsearch.info and binsearch.net
+	onBinSearchLoad: function(doc)
+	{
+		var results = nzbdStatus.selectNodes(doc, doc, '//table[@id="r2"]//input[@type="checkbox"]');
+		if (results.length == 0)
+		{
+			return;
+		}
+		var sendAllButton = nzbdStatus.selectSingleNode(doc, doc, '//input[@name="watchlist"]');
+		if (sendAllButton)
+		{
+			var allButton = nzbdStatus.makeSendAllButton(doc);
+			allButton.className = sendAllButton.className;
+			sendAllButton.parentNode.insertBefore(allButton, sendAllButton);
+			sendAllButton.parentNode.insertBefore(doc.createTextNode(' '), sendAllButton);
+		}
+		var oldIcon, postId, newIcon, rowcount = results.length;
+		for (i = 0; i < rowcount; i++)
+		{
+			oldIcon = results[i];
+			postId = oldIcon.name.match(/(\d+)/);
+			if (postId == null)
+			{
+				continue;
+			}
+			postId = postId[1];
+			newIcon = nzbdStatus.makeSendIcon(doc, postId);
+			oldIcon.parentNode.style.whiteSpace = 'nowrap';
+			oldIcon.parentNode.appendChild(newIcon);
+		}
+	},
+
+	// newzleech.com
+	onNewzleechLoad: function(doc)
+	{
+		var results = nzbdStatus.selectNodes(doc, doc, '//td[@class="get"]/a[contains(@href,"?m=gen&dl=1&post=")]');
+		if (results.length == 0)
+		{
+			return;
+		}
+		var sendAllButton = nzbdStatus.selectSingleNode(doc, doc, '//input[@name="getnzb"]');
+		if (sendAllButton)
+		{
+			var allButton = nzbdStatus.makeSendAllButton(doc);
+			allButton.className = sendAllButton.className;
+			sendAllButton.parentNode.insertBefore(allButton, sendAllButton);
+			sendAllButton.parentNode.insertBefore(doc.createTextNode(' '), sendAllButton);
+		}
+		var oldIcon, postId, newIcon, rowcount = results.length;
+		for (i = 0; i < rowcount; i++)
+		{
+			oldIcon = results[i];
+			postId = oldIcon.href.match(/post=(\d+)/);
+			if (postId == null)
+			{
+				continue;
+			}
+			postId = postId[1];
+			newIcon = nzbdStatus.makeSendIcon(doc, postId);
+			oldIcon.parentNode.style.whiteSpace = 'nowrap';
+			oldIcon.parentNode.insertBefore(newIcon, oldIcon);
+		}
+	},
+
+	// albumsindex.com
+	onAlbumsindexLoad: function(doc)
+	{
+		var results = nzbdStatus.selectNodes(doc, doc, '//div[@class="res_wrap"]/div[@class="res_image"]/a');
+		if (results.length == 0)
+		{
+			return;
+		}
+		var oldIcon, postId, newIcon, rowcount = results.length;
+		for (i = 0; i < rowcount; i++)
+		{
+			oldIcon = results[i];
+			postId = oldIcon.href.match(/\/(\d+)_/);
+			if (postId == null)
+			{
+				continue;
+			}
+			postId = postId[1];
+			newIcon = nzbdStatus.makeSendIcon(doc, postId);
+			newIcon.style.marginRight = '.5em';
+			oldIcon.parentNode.insertBefore(newIcon, oldIcon);
 		}
 	},
 
@@ -1973,6 +2102,9 @@ nzbdStatus.logger('in processingResponse');
 	// Fired when a send all button is clicked on
 	sendAllToServer: function(event)
 	{
+		var params = {inn:{name:"foo", description:"bar", enabled:true}, out:null};
+		window.openDialog("chrome://nzbdstatus/content/multisend.xul", "", "chrome, dialog, modal, resizable=no", params).focus();
+
 		var doc = event.originalTarget.ownerDocument;
 		switch (nzbdStatus.supportedSite(doc))
 		{
@@ -2138,6 +2270,15 @@ nzbdStatus.logger('in processingResponse');
 				break;
 			case 'animeusenet':
 				url = 'http://www.animeusenet.org/nzb/'+postid+'/download/';
+				break;
+			case 'binsearch':
+				url = 'http://www.binsearch.info/?action=nzb&'+postid+'=1';
+				break;
+			case 'newzleech':
+				url = 'http://www.newzleech.com/?m=gen&dl=1&post='+postid;
+				break;
+			case 'albumsindex':
+				url = 'http://www.albumsindex.com/nzb/'+postid+'/music.nzb';
 				break;
 		}
 
