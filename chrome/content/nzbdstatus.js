@@ -767,37 +767,6 @@ return;
 	},
 
 
-	checkForNZB: function()
-	{
-		try {
-
-		if (!gContextMenu.onLink)
-		{
-			return false;
-		}
-		if (gContextMenu && gContextMenu.getLinkURL)
-		{
-			var href = gContextMenu.getLinkURL();
-		}
-		else if (gContextMenu && gContextMenu.linkURL)
-		{
-			var href = gContextMenu.linkURL();
-		}
-		if (!href)
-		{
-			return false;
-		}
-		if (href.match(/\.nzb$/i))
-		{
-			return true;
-		}
-		if (href.match(/newzbin\.com\/browse\/post\/(\d+)/i))
-		{
-			return true;
-		}
-
-		} catch(e) { nzbdStatus.errorLogger('checkForNZB',e); }
-	},
 
 	// This gets fired every time one of our observers gets tripped
 	observe: function(subject, topic, data)
@@ -912,18 +881,6 @@ return;
 
 
 
-	// Runs when the context menu popup opens
-	contextPopupShowing: function()
-	{
-		if (nzbdStatus.checkForNZB())
-		{
-			document.getElementById('nzbdstatus-context-sendlink').hidden = false;
-		}
-		else
-		{
-			document.getElementById('nzbdstatus-context-sendlink').hidden = true;
-		}
-	},
 
 	// Queue a refresh request for each widget
 	refreshAll: function()
@@ -1759,6 +1716,38 @@ nzbdStatus.logger('in processingResponse');
 		} catch(e) { nzbdStatus.errorLogger('makeSendIcon',e); }
 	},
 
+	contextSupported: function()
+	{
+		try {
+
+		if (!gContextMenu.onLink)
+		{
+			return false;
+		}
+		if (gContextMenu && gContextMenu.getLinkURL)
+		{
+			var href = gContextMenu.getLinkURL();
+		}
+		else if (gContextMenu && gContextMenu.linkURL)
+		{
+			var href = gContextMenu.linkURL();
+		}
+		if (!href)
+		{
+			return false;
+		}
+		if (href.match(/\.nzb$/i))
+		{
+			return true;
+		}
+		if (href.match(/newzbin\.com\/browse\/post\/(\d+)/i))
+		{
+			return true;
+		}
+
+		} catch(e) { nzbdStatus.errorLogger('contextSupported',e); }
+	},
+
 
 	///
 	/// Page load functions
@@ -2062,6 +2051,19 @@ nzbdStatus.logger('in processingResponse');
 	///
 	/// Events that get fired from the client
 	///
+
+	// Runs when the context menu popup opens
+	contextPopupShowing: function()
+	{
+		if (nzbdStatus.contextSupported())
+		{
+			document.getElementById('nzbdstatus-context-sendlink').hidden = false;
+		}
+		else
+		{
+			document.getElementById('nzbdstatus-context-sendlink').hidden = true;
+		}
+	},
 
 	// When clicking anywhere on the row, check the box so the row is selected
 	rowClick: function(e)
