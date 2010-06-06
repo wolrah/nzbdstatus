@@ -1730,6 +1730,35 @@ nzbdStatus.logger('in processingResponse');
 		}
 	},
 
+	// A send all button
+	makeSendAllButton: function(doc)
+	{
+		var allButton = doc.createElement('input');
+		allButton.setAttribute('type', 'button');
+		allButton.setAttribute('value', nzbdStatus.stringsBundle.getString('sendAllReports'));
+		allButton.addEventListener('click', nzbdStatus.sendAllToServer, false);
+		return allButton;
+	},
+
+	// Makes the one click icon
+	makeSendIcon: function(doc, postId)
+	{
+		try {
+		var sendIcon = doc.createElement('img');
+		sendIcon.setAttribute('src', 'chrome://nzbdstatus/skin/oneclick.png');
+		sendIcon.setAttribute('data-postid', postId);
+		sendIcon.className = 'nzboneclick nzbServer0';  // TODO: make this fav / first server?
+		sendIcon.title = 'Send to SABnzbd';
+		sendIcon.addEventListener('click', nzbdStatus.queuePostId, false);
+		if (nzbdStatus.numServerEnabled > 1)
+		{
+			sendIcon.addEventListener('mouseover', nzbdStatus.showServerList, false);
+			sendIcon.addEventListener('mouseout', nzbdStatus.hideServerList, false);
+		}
+		return sendIcon;
+		} catch(e) { nzbdStatus.errorLogger('makeSendIcon',e); }
+	},
+
 
 	///
 	/// Page load functions
@@ -1981,7 +2010,7 @@ nzbdStatus.logger('in processingResponse');
 		for (i = 0; i < rowcount; i++)
 		{
 			row = results[i];
-			row.addEventListener('click', nzbdStatus.newzbinRowClick, false);
+			row.addEventListener('click', nzbdStatus.rowClick, false);
 			oldTo = nzbdStatus.selectSingleNode(doc, row, 'tr/td/a[@title="Download report NZB"]');
 			if (oldTo == null)
 			{
@@ -2014,7 +2043,7 @@ nzbdStatus.logger('in processingResponse');
 		for (i = 0; i < rowcount; i++)
 		{
 			row = results[i];
-			row.addEventListener('click', nzbdStatus.newzbinRowClick, false);
+			row.addEventListener('click', nzbdStatus.rowClick, false);
 			oldTo = nzbdStatus.selectSingleNode(doc, row, 'tr/td/a[contains(@title,"Assigned")]');
 			if (oldTo != null)
 			{
@@ -2029,14 +2058,45 @@ nzbdStatus.logger('in processingResponse');
 		} catch(e) { nzbdStatus.errorLogger('onNewzbinRawMode',e); }
 	},
 
-	// A send all button
-	makeSendAllButton: function(doc)
+
+	///
+	/// Events that get fired from the client
+	///
+
+	// When clicking anywhere on the row, check the box so the row is selected
+	rowClick: function(e)
 	{
-		var allButton = doc.createElement('input');
-		allButton.setAttribute('type', 'button');
-		allButton.setAttribute('value', nzbdStatus.stringsBundle.getString('sendAllReports'));
-		allButton.addEventListener('click', nzbdStatus.sendAllToServer, false);
-		return allButton;
+		if ((e.target.nodeName.toLowerCase() == 'input') || (e.target.nodeName.toLowerCase() == 'img') || (e.target.nodeName.toLowerCase() == 'a'))
+		{
+			return;
+		}
+		if (nzbdStatus.getPreference('editorMode'))
+		{
+			return;
+		}
+		e.currentTarget.getElementsByTagName('input')[0].click();
+	},
+
+	// Show the server list just right of the one click icon
+	showServerList: function(e)
+	{
+		var doc = e.target.ownerDocument, targ = e.target;
+		var sList = doc.getElementById('nzbdserverList');
+		var postId = targ.getAttribute('data-postid');
+		sList.setAttribute('data-postid', postId);
+		sList.style.display = 'block';
+		sList.style.left = (e.originalTarget.x + targ.offsetWidth) + 'px';
+		sList.style.top = (e.originalTarget.y - Math.floor((sList.offsetHeight - targ.offsetHeight) / 2)) + 'px';
+		return;
+	},
+
+	// Hide the server list
+	hideServerList: function(e)
+	{
+		var doc = e.target.ownerDocument;
+		var sList = doc.getElementById('nzbdserverList');
+		sList.style.display = 'none';
+		return;
 	},
 
 	// Fired when a send all button is clicked on
@@ -2079,61 +2139,6 @@ nzbdStatus.logger('in processingResponse');
 				}
 			}
 		}
-	},
-
-	// When clicking anywhere on the row, check the box so the row is selected
-	newzbinRowClick: function(e)
-	{
-		if ((e.target.nodeName.toLowerCase() == 'input') || (e.target.nodeName.toLowerCase() == 'img') || (e.target.nodeName.toLowerCase() == 'a'))
-		{
-			return;
-		}
-		if (nzbdStatus.getPreference('editorMode'))
-		{
-			return;
-		}
-		e.currentTarget.getElementsByTagName('input')[0].click();
-	},
-
-	// Makes the one click icon
-	makeSendIcon: function(doc, postId)
-	{
-		try {
-		var sendIcon = doc.createElement('img');
-		sendIcon.setAttribute('src', 'chrome://nzbdstatus/skin/oneclick.png');
-		sendIcon.setAttribute('data-postid', postId);
-		sendIcon.className = 'nzboneclick nzbServer0';  // TODO: make this fav / first server?
-		sendIcon.title = 'Send to SABnzbd';
-		sendIcon.addEventListener('click', nzbdStatus.queuePostId, false);
-		if (nzbdStatus.numServerEnabled > 1)
-		{
-			sendIcon.addEventListener('mouseover', nzbdStatus.showServerList, false);
-			sendIcon.addEventListener('mouseout', nzbdStatus.hideServerList, false);
-		}
-		return sendIcon;
-		} catch(e) { nzbdStatus.errorLogger('makeSendIcon',e); }
-	},
-
-	// Show the server list just right of the one click icon
-	showServerList: function(e)
-	{
-		var doc = e.target.ownerDocument, targ = e.target;
-		var sList = doc.getElementById('nzbdserverList');
-		var postId = targ.getAttribute('data-postid');
-		sList.setAttribute('data-postid', postId);
-		sList.style.display = 'block';
-		sList.style.left = (e.originalTarget.x + targ.offsetWidth) + 'px';
-		sList.style.top = (e.originalTarget.y - Math.floor((sList.offsetHeight - targ.offsetHeight) / 2)) + 'px';
-		return;
-	},
-
-	// Hide the server list
-	hideServerList: function(e)
-	{
-		var doc = e.target.ownerDocument;
-		var sList = doc.getElementById('nzbdserverList');
-		sList.style.display = 'none';
-		return;
 	},
 
 
