@@ -1720,30 +1720,53 @@ nzbdStatus.logger('in processingResponse');
 	{
 		try {
 
-		if (!gContextMenu.onLink)
-		{
-			return false;
-		}
+		var href = false;
 		if (gContextMenu && gContextMenu.getLinkURL)
 		{
-			var href = gContextMenu.getLinkURL();
+			href = gContextMenu.getLinkURL();
 		}
 		else if (gContextMenu && gContextMenu.linkURL)
 		{
-			var href = gContextMenu.linkURL();
+			href = gContextMenu.linkURL();
 		}
 		if (!href)
 		{
+			// Couldn't obtain a link
 			return false;
 		}
-		if (href.match(/\.nzb$/i))
+		var siteAt = nzbdStatus.supportedSite(gContextMenu.target.ownerDocument);
+		switch (siteAt)
 		{
-			return true;
+			case 'newzbin':
+				return (href.search(/newz(bin|xxx)\.com\/browse\/post\/(\d+)/i) > -1);
+				break;
+			case 'nzbmatrix':
+				return (href.search(/nzbmatrix\.com\/nzb-d(ownload|etails).php\?id=(\d+)/i) > -1);
+				break;
+			case 'tvnzb':
+				return (href.search(/tvnzb\.com\/nzb\/(\d+)/i) > -1);
+				break;
+			case 'nzbsorg':
+				return (href.search(/nzbs\.org\/index\.php\?.*nzbid=(\d+)/i) > -1);
+				break;
+			case 'nzbindex':
+				return (href.search(/nzbindex\.(nl|com)\/download\/(\d+)/i) > -1);
+				break;
+			case 'binsearch':
+				return (href.search(/tvnzb\.com\/nzb\/(\d+)/i) > -1);
+				break;
+			case 'animeusenet':
+				return (href.search(/animeusenet\.org\/.*\/(\d+)/i) > -1);
+				break;
+			case 'newzleech':
+				return (href.search(/newzleech\.com\/\?m=gen&dl=1&post=(\d+)/i) > -1);
+				break;
+			case 'albumsindex':
+				return (href.search(/albumsindex\.com\/(nzb\/)?(\d+)/i) > -1);
+				break;
 		}
-		if (href.match(/newzbin\.com\/browse\/post\/(\d+)/i))
-		{
-			return true;
-		}
+
+		return (href.match(/\.nzb$/i) || href.match(/\.nzb\.zip$/i) || href.match(/\.nzb\.gz$/i) || href.match(/\.nzb\.rar$/i));
 
 		} catch(e) { nzbdStatus.errorLogger('contextSupported',e); }
 	},
@@ -2055,7 +2078,7 @@ nzbdStatus.logger('in processingResponse');
 	// Runs when the context menu popup opens
 	contextPopupShowing: function()
 	{
-		if (nzbdStatus.contextSupported())
+		if (gContextMenu && gContextMenu.onLink && nzbdStatus.contextSupported())
 		{
 			document.getElementById('nzbdstatus-context-sendlink').hidden = false;
 		}
