@@ -1056,66 +1056,6 @@ return;
 
 	},
 
-
-	queueUrl: function(e)
-	{
-		try {
-
-		// I stole this if/else block from somewhere, I don't know what it means
-		if (gContextMenu && gContextMenu.getLinkURL)
-		{
-			var href = gContextMenu.getLinkURL();
-		}
-		else if (gContextMenu && gContextMenu.linkURL)
-		{
-			var href = gContextMenu.linkURL();
-		}
-		// We wern't able to obtain a link that they clicked on, so give up
-		if (!href)
-		{
-			return false;
-		}
-		// Which server in the menu did they select
-		if (e.target.id.match(/nzbdstatus-context-server-(\d+)/))
-		{
-			var serverId = e.target.id.match(/nzbdstatus-context-server-(\d+)/)[1];
-		}
-		else
-		{
-			var serverId = nzbdStatus.favServer;
-		}
-
-
-		if (href.match(/newz(bin|xxx)\.com\/browse\/post\/(\d+)/i))
-		{
-			// If they clicked a link with a newzbin id, send the ID
-			var postId = href.match(/newz(bin|xxx)\.com\/browse\/post\/(\d+)/i)[2];
-			var newEvent = {
-			 action: 'sendNewzbinId',
-			 serverId: serverId,
-			 newzbinId: postId,
-			 newzbinIdName: '',
-			 icon: gContextMenu.target,
-			 tries: 0
-			 };
-		}
-		else
-		{
-			// Send the URL
-			var newEvent = {
-			 action: 'sendUrl',
-			 serverId: serverId,
-			 url: href,
-			 tries: 0
-			 };
-		}
-
-		nzbdStatus.queueEvent(newEvent);
-
-		} catch(e) { nzbdStatus.errorLogger('queueUrl',e); }
-
-	},
-
 	queueFile: function(subject, topic, data)
 	{
 
@@ -2294,6 +2234,46 @@ nzbdStatus.logger('in processingResponse');
 		nzbdStatus.queueEvent(newEvent);
 
 		} catch(e) { nzbdStatus.errorLogger('queuePostId',e); }
+	},
+
+	queueUrl: function(e)
+	{
+		try {
+
+		var serverid, category;
+		// I stole this if/else block from somewhere, I don't know what it means
+		if (gContextMenu && gContextMenu.getLinkURL)
+		{
+			var href = gContextMenu.getLinkURL();
+		}
+		else if (gContextMenu && gContextMenu.linkURL)
+		{
+			var href = gContextMenu.linkURL();
+		}
+		// We wern't able to obtain a link that they clicked on, so give up
+		if (!href)
+		{
+			return false;
+		}
+		// Which server in the menu did they select
+		if (e.target.id.match(/nzbdstatus-context-server-(\d+)/))
+		{
+			serverid = e.target.id.match(/nzbdstatus-context-server-(\d+)/)[1];
+		}
+
+		/// TODO: Some sort of thing to modify urls that need it
+
+		var newEvent = {
+		 action: 'sendUrl',
+		 serverid: serverid,
+		 url: href,
+		 icon: gContextMenu.target,
+		 tries: 0,
+		 callback: nzbdStatus.processingResponse
+		 };
+		nzbdStatus.queueEvent(newEvent);
+
+		} catch(e) { nzbdStatus.errorLogger('queueUrl',e); }
 	},
 
 	// Add an event to the end of the event queue
