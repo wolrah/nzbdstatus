@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+
+<dialog
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  id="myDialogId"
+  title="My Dialog"
+  persist="screenX screenY width height"
+  windowtype="myDialogWindowType">
+
+	<vbox>
+		<text value='Send to severs:' />
+      <checkbox id="enabled" label="Server One"/>
+      <checkbox id="enabled" label="Server Two"/>
+      <checkbox id="enabled" label="Server Three"/>
+      <checkbox id="enabled" label="Server Four"/>
+      <checkbox id="enabled" label="Server Five"/>
+			<separator class='thin' />
+      <checkbox id="enabled" label="Don't ask again"/>
+
+    </vbox>
+</dialog>
