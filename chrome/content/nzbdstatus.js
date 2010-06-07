@@ -677,11 +677,6 @@ return;
 
 	onNzbmatrixPageLoad: function(doc)
 	{
-		// nzbmatrix support wasn't added until sabnzbd v5
-		if (nzbdStatus.serverVersion.split('.')[1] < 5)
-		{
-			return;
-		}
 		var results = nzbdStatus.selectNodes(doc, doc, '//a[contains(@href,"/nzb-download.php?id=")]');
 		if (results.length == 0)
 		{
@@ -1566,9 +1561,8 @@ nzbdStatus.logger('in processingResponse');
 	},
 
 	// A string representing the site if supported, false otherwise
-	supportedSite: function(doc)
+	supportedSite: function(host)
 	{
-		var host = doc.location.host;
 		if (((host.search('newzbin.com') > -1) || (host.search('newzxxx.com') > -1))
 		 && (host.search('v2.newzbin.com') == -1))
 		{
@@ -1734,7 +1728,7 @@ nzbdStatus.logger('in processingResponse');
 			// Couldn't obtain a link
 			return false;
 		}
-		var siteAt = nzbdStatus.supportedSite(gContextMenu.target.ownerDocument);
+		var siteAt = nzbdStatus.supportedSite(href);
 		switch (siteAt)
 		{
 			case 'newzbin':
@@ -1788,7 +1782,7 @@ nzbdStatus.logger('in processingResponse');
 		}
 
 		// Quickly try to get out of doing anything
-		var siteAt = nzbdStatus.supportedSite(doc);
+		var siteAt = nzbdStatus.supportedSite(doc.location.host);
 		if (!siteAt)
 		{
 			return;
@@ -1930,6 +1924,31 @@ nzbdStatus.logger('in processingResponse');
 			newIcon = nzbdStatus.makeSendIcon(doc, postId);
 			oldIcon.parentNode.style.whiteSpace = 'nowrap';
 			oldIcon.parentNode.appendChild(newIcon);
+		}
+	},
+
+	// animeusenet.org
+	onAnimeUsenetLoad: function(doc)
+	{
+		var results = nzbdStatus.selectNodes(doc, doc, '//a[contains(@href,"/nzb/")]');
+		if (results.length == 0)
+		{
+			return;
+		}
+		var oldIcon, postId, newIcon, rowcount = results.length;
+		for (i = 0; i < rowcount; i++)
+		{
+			oldIcon = results[i];
+			postId = oldIcon.href.match(/animeusenet\.org\/nzb\/(\d+)/i);
+			if (postId == null)
+			{
+				continue;
+			}
+			postId = postId[1];
+			newIcon = nzbdStatus.makeSendIcon(doc, postId);
+			newIcon.style.marginRight = '.5em';
+			newIcon.setAttribute('data-category', 'anime');
+			oldIcon.parentNode.insertBefore(newIcon, oldIcon);
 		}
 	},
 
@@ -2127,11 +2146,22 @@ nzbdStatus.logger('in processingResponse');
 	// Fired when a send all button is clicked on
 	sendAllToServer: function(event)
 	{
-		var params = {inn:{name:"foo", description:"bar", enabled:true}, out:null};
+		try{
+		var params = {servers:[], out:null};
+		for each (var i in nzbdStatus.serverOrder)
+		{
+			if (nzbdStatus.servers[i].enabled)
+			{
+				params.servers[i] = {};
+				params.servers[i].label = nzbdStatus.servers[i].label;
+				params.servers[i].icon = nzbdStatus.servers[i].icon;
+			}
+		}
+
 		window.openDialog("chrome://nzbdstatus/content/multisend.xul", "", "chrome, dialog, modal, resizable=no", params).focus();
 
 		var doc = event.originalTarget.ownerDocument;
-		switch (nzbdStatus.supportedSite(doc))
+		switch (nzbdStatus.supportedSite(doc.location.host))
 		{
 			case 'newzbin':
 				results = nzbdStatus.selectNodes(doc, doc, '//tbody[contains(@class,"select")]/tr/td/img[@class="sabsend"]');
@@ -2164,6 +2194,8 @@ nzbdStatus.logger('in processingResponse');
 				}
 			}
 		}
+
+		} catch(e) { nzbdStatus.errorLogger('sendAllToServer',e); }
 	},
 
 
@@ -2215,7 +2247,7 @@ nzbdStatus.logger('in processingResponse');
 			return false;
 		}
 
-		var siteSrc = nzbdStatus.supportedSite(doc);
+		var siteSrc = nzbdStatus.supportedSite(doc.location.host);
 		switch (siteSrc)
 		{
 			case 'newzbin':
