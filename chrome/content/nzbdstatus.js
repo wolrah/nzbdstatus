@@ -1322,8 +1322,16 @@ nzbdStatus.logger('in processingResponse');
 				case 'sendUrl':
 					if (responseStatus)
 					{
-						alertMessage = serverDetails.label+' has received the URL';
+						alertMessage = serverDetails.label+' has received ';
 						alertTitle = 'URL Received';
+						if (eventDetails.reportname)
+						{
+							alertMessage += eventDetails.reportname;
+						}
+						else
+						{
+							alertMessage += 'the URL';
+						}
 					}
 					else
 					{
@@ -1692,14 +1700,14 @@ nzbdStatus.logger('in processingResponse');
 	},
 
 	// Makes the one click icon
-	makeSendIcon: function(doc, postId)
+	makeSendIcon: function(doc, url)
 	{
 		try {
 		var sendIcon = doc.createElement('img');
 		sendIcon.setAttribute('src', 'chrome://nzbdstatus/skin/oneclick.png');
-		sendIcon.setAttribute('data-postid', postId);
+		sendIcon.setAttribute('data-url', url);
 		sendIcon.className = 'nzboneclick nzbServer0';  // TODO: make this fav / first server?
-		sendIcon.title = 'Send to SABnzbd';
+		sendIcon.title = 'Send to Server';
 		sendIcon.addEventListener('click', nzbdStatus.queuePostId, false);
 		if (nzbdStatus.numServerEnabled > 1)
 		{
@@ -1776,7 +1784,7 @@ nzbdStatus.logger('in processingResponse');
 		try {
 
 		var doc = event.originalTarget;
-		if (!doc.location)
+		if (!doc.location || !doc.location.host)
 		{
 			return;
 		}
@@ -1878,7 +1886,7 @@ nzbdStatus.logger('in processingResponse');
 			sendAllButton.parentNode.insertBefore(allButton, sendAllButton);
 			sendAllButton.parentNode.insertBefore(doc.createTextNode(' '), sendAllButton);
 		}
-		var oldIcon, postId, newIcon, rowcount = results.length;
+		var url, oldIcon, postId, newIcon, rowcount = results.length;
 		for (i = 0; i < rowcount; i++)
 		{
 			oldIcon = results[i];
@@ -1887,9 +1895,10 @@ nzbdStatus.logger('in processingResponse');
 			{
 				continue;
 			}
-			postId = postId[2];
-			newIcon = nzbdStatus.makeSendIcon(doc, postId);
-			newIcon.style.marginRight = '.5em';
+			results[i].parentNode.parentNode.parentNode.parentNode.addEventListener('click', nzbdStatus.rowClick, false);
+			url = 'http://nzbindex.'+postId[1]+'/download/'+postId[2];
+
+			newIcon = nzbdStatus.makeSendIcon(doc, url);
 			dlLink = oldIcon.parentNode.parentNode.parentNode.parentNode.getElementsByClassName('firstcolumn')[0];
 			dlLink.appendChild(newIcon);
 		}
@@ -1911,7 +1920,7 @@ nzbdStatus.logger('in processingResponse');
 			sendAllButton.parentNode.insertBefore(allButton, sendAllButton);
 			sendAllButton.parentNode.insertBefore(doc.createTextNode(' '), sendAllButton);
 		}
-		var oldIcon, postId, newIcon, rowcount = results.length;
+		var url, oldIcon, postId, newIcon, rowcount = results.length, domain = doc.location.host.match(/binsearch\.(.*)/)[1];
 		for (i = 0; i < rowcount; i++)
 		{
 			oldIcon = results[i];
@@ -1920,8 +1929,10 @@ nzbdStatus.logger('in processingResponse');
 			{
 				continue;
 			}
-			postId = postId[1];
-			newIcon = nzbdStatus.makeSendIcon(doc, postId);
+			results[i].parentNode.parentNode.addEventListener('click', nzbdStatus.rowClick, false);
+			url = 'http://www.binsearch.'+domain+'/?action=nzb&'+postId[1]+'=1';
+
+			newIcon = nzbdStatus.makeSendIcon(doc, url);
 			oldIcon.parentNode.style.whiteSpace = 'nowrap';
 			oldIcon.parentNode.appendChild(newIcon);
 		}
@@ -1935,7 +1946,7 @@ nzbdStatus.logger('in processingResponse');
 		{
 			return;
 		}
-		var oldIcon, postId, newIcon, rowcount = results.length;
+		var url, oldIcon, postId, newIcon, rowcount = results.length;
 		for (i = 0; i < rowcount; i++)
 		{
 			oldIcon = results[i];
@@ -1944,9 +1955,8 @@ nzbdStatus.logger('in processingResponse');
 			{
 				continue;
 			}
-			postId = postId[1];
-			newIcon = nzbdStatus.makeSendIcon(doc, postId);
-			newIcon.style.marginRight = '.5em';
+			url = 'http://www.animeusenet.org/nzb/'+postId[1]+'/download/';
+			newIcon = nzbdStatus.makeSendIcon(doc, url);
 			newIcon.setAttribute('data-category', 'anime');
 			oldIcon.parentNode.insertBefore(newIcon, oldIcon);
 		}
@@ -1955,7 +1965,7 @@ nzbdStatus.logger('in processingResponse');
 	// newzleech.com
 	onNewzleechLoad: function(doc)
 	{
-		var results = nzbdStatus.selectNodes(doc, doc, '//td[@class="get"]/a[contains(@href,"?m=gen&dl=1&post=")]');
+		var results = nzbdStatus.selectNodes(doc, doc, '//td[@class="check"]/input[@name="binary[]"]');
 		if (results.length == 0)
 		{
 			return;
@@ -1968,41 +1978,59 @@ nzbdStatus.logger('in processingResponse');
 			sendAllButton.parentNode.insertBefore(allButton, sendAllButton);
 			sendAllButton.parentNode.insertBefore(doc.createTextNode(' '), sendAllButton);
 		}
-		var oldIcon, postId, newIcon, rowcount = results.length;
+		var url, oldIcon, postId, newIcon, rowcount = results.length;
 		for (i = 0; i < rowcount; i++)
 		{
 			oldIcon = results[i];
-			postId = oldIcon.href.match(/post=(\d+)/);
+			postId = oldIcon.value.match(/(\d+)/);
 			if (postId == null)
 			{
 				continue;
 			}
-			postId = postId[1];
-			newIcon = nzbdStatus.makeSendIcon(doc, postId);
+			url = 'http://www.newzleech.com/?m=gen&dl=1&post='+postId[1];
+			newIcon = nzbdStatus.makeSendIcon(doc, url);
 			oldIcon.parentNode.style.whiteSpace = 'nowrap';
-			oldIcon.parentNode.insertBefore(newIcon, oldIcon);
+			oldIcon.parentNode.appendChild(newIcon);
 		}
 	},
 
 	// albumsindex.com
 	onAlbumsindexLoad: function(doc)
 	{
-		var results = nzbdStatus.selectNodes(doc, doc, '//div[@class="res_wrap"]/div[@class="res_image"]/a');
+		var results = nzbdStatus.selectNodes(doc, doc, '//div[@id="content"]/div/*/a');
 		if (results.length == 0)
 		{
 			return;
 		}
-		var oldIcon, postId, newIcon, rowcount = results.length;
+		var filename, url, oldIcon, postId, newIcon, rowcount = results.length;
 		for (i = 0; i < rowcount; i++)
 		{
 			oldIcon = results[i];
-			postId = oldIcon.href.match(/\/(\d+)_/);
+			if (oldIcon.textContent.search(/download/i) == -1)
+			{
+				continue;
+			}
+			postId = oldIcon.href.match(/\/(\d+)/);
 			if (postId == null)
 			{
 				continue;
 			}
-			postId = postId[1];
-			newIcon = nzbdStatus.makeSendIcon(doc, postId);
+			if (oldIcon.parentNode.getElementsByClassName('res_album').length > 0)
+			{
+				filename = oldIcon.parentNode.getElementsByClassName('res_artist')[0].textContent + ' - ' + oldIcon.parentNode.getElementsByClassName('res_album')[0].textContent;
+			}
+			else if (doc.getElementsByTagName('h1').length > 1)
+			{
+				filename = doc.getElementsByTagName('h1')[1].textContent;
+			}
+			else
+			{
+				filename = 'albumsindex';
+			}
+			url = 'http://www.albumsindex.com/nzb/'+postId[1]+'/'+encodeURIComponent(filename)+'.nzb';
+			newIcon = nzbdStatus.makeSendIcon(doc, url);
+			newIcon.setAttribute('data-category', 'music');
+			newIcon.setAttribute('data-name', filename);
 			newIcon.style.marginRight = '.5em';
 			oldIcon.parentNode.insertBefore(newIcon, oldIcon);
 		}
@@ -2110,11 +2138,8 @@ nzbdStatus.logger('in processingResponse');
 	// When clicking anywhere on the row, check the box so the row is selected
 	rowClick: function(e)
 	{
-		if ((e.target.nodeName.toLowerCase() == 'input') || (e.target.nodeName.toLowerCase() == 'img') || (e.target.nodeName.toLowerCase() == 'a'))
-		{
-			return;
-		}
-		if (nzbdStatus.getPreference('editorMode'))
+		var nodeName = e.target.nodeName.toLowerCase();
+		if ((nodeName == 'input') || (nodeName == 'img') || (nodeName == 'a'))
 		{
 			return;
 		}
@@ -2126,8 +2151,9 @@ nzbdStatus.logger('in processingResponse');
 	{
 		var doc = e.target.ownerDocument, targ = e.target;
 		var sList = doc.getElementById('nzbdserverList');
-		var postId = targ.getAttribute('data-postid');
-		sList.setAttribute('data-postid', postId);
+		sList.setAttribute('data-url', targ.getAttribute('data-url'));
+		sList.setAttribute('data-category', targ.getAttribute('data-category'));
+		sList.setAttribute('data-name', targ.getAttribute('data-name'));
 		sList.style.display = 'block';
 		sList.style.left = (e.originalTarget.x + targ.offsetWidth) + 'px';
 		sList.style.top = (e.originalTarget.y - Math.floor((sList.offsetHeight - targ.offsetHeight) / 2)) + 'px';
@@ -2203,17 +2229,18 @@ nzbdStatus.logger('in processingResponse');
 	/// Methods for adding to the queue
 	///
 
-	// Queue up a one click request based on a post id
+	// Queue up a one click request
 	queuePostId: function(e)
 	{
 		try {
 
 		var doc = e.target.ownerDocument, targ = e.target;
-		var url = null, postid = null, serverid = null, category = null;
+		var url = null, postid = null, serverid = null, category = null, reportname = null;
 		if (targ.className.match(/nzboneclick/))
 		{
-			postid = targ.getAttribute('data-postid');
+			postid = targ.getAttribute('data-url');
 			category = targ.getAttribute('data-category');
+			reportname = targ.getAttribute('data-name');
 			serverid = targ.className.match(/nzbServer([0-9]+)/)[1];
 		}
 		else
@@ -2229,8 +2256,9 @@ nzbdStatus.logger('in processingResponse');
 			}
 			if (datarow.className.match(/nzblistentry/))
 			{
-				postid = doc.getElementById('nzbdserverList').getAttribute('data-postid');
+				postid = doc.getElementById('nzbdserverList').getAttribute('data-url');
 				category = doc.getElementById('nzbdserverList').getAttribute('data-category');
+				reportname = doc.getElementById('nzbdserverList').getAttribute('data-name');
 				if (datarow.className.match(/nzbServer([0-9]+)/))
 				{
 					serverid = datarow.className.match(/nzbServer([0-9]+)/)[1];
@@ -2267,21 +2295,6 @@ nzbdStatus.logger('in processingResponse');
 					url = 'http://nzbs.org/index.php?action=getnzb&nzbid='+postid+'&i='+details[1]+'&h='+details[2];
 				}
 				break;
-			case 'nzbindex':
-				url = 'http://nzbindex.nl/download/'+postid;
-				break;
-			case 'animeusenet':
-				url = 'http://www.animeusenet.org/nzb/'+postid+'/download/';
-				break;
-			case 'binsearch':
-				url = 'http://www.binsearch.info/?action=nzb&'+postid+'=1';
-				break;
-			case 'newzleech':
-				url = 'http://www.newzleech.com/?m=gen&dl=1&post='+postid;
-				break;
-			case 'albumsindex':
-				url = 'http://www.albumsindex.com/nzb/'+postid+'/music.nzb';
-				break;
 		}
 
 		var newEvent = {
@@ -2289,7 +2302,8 @@ nzbdStatus.logger('in processingResponse');
 		 serverid: serverid,
 		 category: category,
 		 url: url,
-		 icon: nzbdStatus.selectSingleNode(doc, doc, '//img[@data-postid="'+postid+'"]'),
+		 reportname: reportname,
+		 icon: nzbdStatus.selectSingleNode(doc, doc, '//img[@data-url="'+postid+'"]'),
 		 tries: 0,
 		 callback: nzbdStatus.processingResponse
 		 };
@@ -2298,6 +2312,7 @@ nzbdStatus.logger('in processingResponse');
 		} catch(e) { nzbdStatus.errorLogger('queuePostId',e); }
 	},
 
+	// Queue up a right click request
 	queueUrl: function(e)
 	{
 		try {
