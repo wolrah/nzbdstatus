@@ -277,8 +277,8 @@ sabnzbdServerObject.prototype = {
 	sendUrl: function(eventDetails)
 	{
 		try{
+nzbdStatus.logger('in sab.sendUrl');
 
-nzbdStatus.logger('in sendurl');
 		var fullUrl = this.url + 'api?mode=addurl';
 		fullUrl += '&name='+encodeURIComponent(eventDetails.url);
 		if (this.loginNeeded)
@@ -307,7 +307,7 @@ nzbdStatus.logger(fullUrl);
 	processingResponse: function(responseText, eventDetails)
 	{
 		try {
-nzbdStatus.logger('in processingResponse');
+nzbdStatus.logger('in sab.processingResponse');
 		if (responseText.search(/ok\n/) > -1)
 		{
 			// Success
