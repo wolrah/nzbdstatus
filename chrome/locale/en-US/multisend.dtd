@@ -1,5 +1,5 @@
 <!ENTITY sabstatus.download_text.value "nzbdStatus has detected a supported file being downloaded">
 <!ENTITY sabstatus.senddownload_text.value "Send the file to the following servers">
 <!ENTITY sabstatus.sendall_text.value "Send the selected links to the following servers">
-<!ENTITY sabstatus.always_checkbox.label "Always send to these">
+<!ENTITY sabstatus.always_checkbox.label "Always send to these without asking">
 
