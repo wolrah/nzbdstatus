@@ -1,12 +1,7 @@
 <!ENTITY sabstatus.window_config.title "nzbdStatus Konfiguration">
-<!ENTITY sabstatus.gen_prefpane.label "Konfig">
-<!ENTITY sabstatus.gen_caption.label "Allmänna inställningar">
-<!ENTITY sabstatus.pref_refreshrate.value "Uppdateringsfrekvens:">
-<!ENTITY sabstatus.pref_refreshrate_units.value "minuter">
 
-<!ENTITY sabstatus.sbar_caption.label "Statusbar inställningar">
-<!ENTITY sabstatus.pref_onlyshow.value "Göm timer">
-<!ENTITY sabstatus.pref_alwaysshow.value "Visa alltid ikoner i statusbar">
+<!ENTITY sabstatus.gen_prefpane.label "Konfig">
+<!ENTITY sabstatus.mouse_caption.label "Mouse Settings">
 <!ENTITY sabstatus.pref_leftclick.label "Vänsterklick:">
 <!ENTITY sabstatus.pref_middleclick.label "Mellanklick:">
 <!ENTITY sabstatus.pref_sbarclick_refresh.value "Uppdatera information">
@@ -19,37 +14,28 @@
 <!ENTITY sabstatus.pref_sbarclick_qsametab.value "Öppna kö-sidan i samma flik">
 <!ENTITY sabstatus.pref_sbarclick_qnewwindow.value "Öppna kö-sidan i nytt fönster">
 <!ENTITY sabstatus.downopts_caption.label "Nedladdnings inställningar">
-<!ENTITY sabstatus.pref_downopts_sendfile.value "Skicka NZB nedladdning till SABnzbd">
 <!ENTITY sabstatus.pref_downopts_prompt.value "Fråga innan du skickar">
 
-<!ENTITY sabstatus.login_caption.label "Logininfomation">
-<!ENTITY sabstatus.pref_sabuser.value "Användarnamn:">
-<!ENTITY sabstatus.pref_sabpass.value "Lösenord:">
-<!ENTITY sabstatus.api_key_caption.label "API-nyckel (endast SABnzbd v0.4.9+)">
-
-<!ENTITY sabstatus.pref_sendfiles.label "Skicka NZB filer till denna tjänst">
-<!ENTITY sabstatus.pref_filesintosab.label "Efter nedladdning:">
-<!ENTITY sabstatus.nzbd_caption.label "Inställningar">
-<!ENTITY sabstatus.pref_saburl.value "URL:">
-<!ENTITY sabstatus.button_testconnect.label "Testa anslutning">
-
-<!ENTITY sabstatus.newzbin_caption.label "Allmänna inställningar">
-<!ENTITY sabstatus.pref_enableinnewzbin.value "Aktivera Newzbin funktioner">
-<!ENTITY sabstatus.pref_newzbintosab.label "Efter nedladdning:">
-<!ENTITY sabstatus.pref_sabproclevel.value6 "Verifiera, Extrahera, Ta bort, Skript">
-<!ENTITY sabstatus.pref_sabproclevel.value5 "Verifiera, Extrahera, Skript">
-<!ENTITY sabstatus.pref_sabproclevel.value4 "Verifiera, Skript">
-<!ENTITY sabstatus.pref_sabproclevel.value3 "Verifiera, Extrahera, Ta bort">
-<!ENTITY sabstatus.pref_sabproclevel.value2 "Verifiera, Extrahera">
-<!ENTITY sabstatus.pref_sabproclevel.value1 "Verifiera">
-<!ENTITY sabstatus.pref_sabproclevel.value0 "Gör ingenting">
-<!ENTITY sabstatus.pref_sabproclevel.valued "Standard">
+<!ENTITY sabstatus.server_prefpane.label "Servers">
+<!ENTITY sabstatus.svrlist_listheader.label "Server Name">
+<!ENTITY sabstatus.svradd_button.label "Add">
+<!ENTITY sabstatus.svrrem_button.label "Remove">
+<!ENTITY sabstatus.svrserver_label.value "Server">
+<!ENTITY sabstatus.svricon_label.value "Icon">
+<!ENTITY sabstatus.svrname_label.value "Name">
+<!ENTITY sabstatus.svrurl_label.value "URL">
+<!ENTITY sabstatus.svrapi_label.value "API-nyckel">
+<!ENTITY sabstatus.svrenable_check.label "Enable server">
+<!ENTITY sabstatus.svrshow_check.label "Show status bar icon">
+<!ENTITY sabstatus.svrpass_button.label "Set password">
+<!ENTITY sabstatus.svrtest_button.label "Test connection">
 
 <!ENTITY sabstatus.category_prefpane.label "Categories">
 <!ENTITY sabstatus.pref_webcategory.label "Website Category">
 <!ENTITY sabstatus.pref_sabcategory.label "Server Category">
 
 <!ENTITY sabstatus.about_prefpane.label "About">
+<!ENTITY sabstatus.pref_versionnumber.value "Version Number Failed To Load">
 <!ENTITY sabstatus.pref_createdby.value "Created by">
 <!ENTITY sabstatus.pref_translatedby.value "Translations by">
 <!ENTITY sabstatus.about_support.label "Support">
