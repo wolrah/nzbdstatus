@@ -1784,7 +1784,7 @@ nzbdStatus.logger('in processingResponse');
 		try {
 
 		var doc = event.originalTarget;
-		if (!doc.location || !doc.location.host)
+		if (!doc.location && !doc.location.host)
 		{
 			return;
 		}
@@ -1886,19 +1886,27 @@ nzbdStatus.logger('in processingResponse');
 			sendAllButton.parentNode.insertBefore(allButton, sendAllButton);
 			sendAllButton.parentNode.insertBefore(doc.createTextNode(' '), sendAllButton);
 		}
-		var url, oldIcon, postId, newIcon, rowcount = results.length;
+		var reportname = null, url, oldIcon, postId, newIcon, rowcount = results.length;
 		for (i = 0; i < rowcount; i++)
 		{
 			oldIcon = results[i];
-			postId = oldIcon.href.match(/nzbindex\.(nl|com)\/download\/(.*)$/i); // Have to be greedy due to required filename
+			postId = oldIcon.href.match(/(nzbindex\.(nl|com)\/download\/(.*)\/(.*))$/i);
 			if (postId == null)
 			{
 				continue;
 			}
 			results[i].parentNode.parentNode.parentNode.parentNode.addEventListener('click', nzbdStatus.rowClick, false);
-			url = 'http://nzbindex.'+postId[1]+'/download/'+postId[2];
-
+			url = 'http://'+postId[1];
 			newIcon = nzbdStatus.makeSendIcon(doc, url);
+			reportname = oldIcon.parentNode.parentNode.parentNode.getElementsByTagName('label');
+			if (reportname)
+			{
+				if (reportname[0].textContent.match(/"(.*)"/))
+				{
+					reportname = reportname[0].textContent.match(/"(.*)"/)[1];
+				}
+			}
+			newIcon.setAttribute('data-name', reportname);
 			dlLink = oldIcon.parentNode.parentNode.parentNode.parentNode.getElementsByClassName('firstcolumn')[0];
 			dlLink.appendChild(newIcon);
 		}
@@ -1912,7 +1920,7 @@ nzbdStatus.logger('in processingResponse');
 		{
 			return;
 		}
-		var sendAllButton = nzbdStatus.selectSingleNode(doc, doc, '//input[@name="watchlist"]');
+		var sendAllButton = nzbdStatus.selectSingleNode(doc, doc, '//form[@name="r"]//input[@class="b"]');
 		if (sendAllButton)
 		{
 			var allButton = nzbdStatus.makeSendAllButton(doc);
@@ -1920,7 +1928,7 @@ nzbdStatus.logger('in processingResponse');
 			sendAllButton.parentNode.insertBefore(allButton, sendAllButton);
 			sendAllButton.parentNode.insertBefore(doc.createTextNode(' '), sendAllButton);
 		}
-		var url, oldIcon, postId, newIcon, rowcount = results.length, domain = doc.location.host.match(/binsearch\.(.*)/)[1];
+		var reportname = null, url, oldIcon, postId, newIcon, rowcount = results.length, domain = doc.location.host.match(/binsearch\.(.*)/)[1];
 		for (i = 0; i < rowcount; i++)
 		{
 			oldIcon = results[i];
@@ -1930,9 +1938,17 @@ nzbdStatus.logger('in processingResponse');
 				continue;
 			}
 			results[i].parentNode.parentNode.addEventListener('click', nzbdStatus.rowClick, false);
-			url = 'http://www.binsearch.'+domain+'/?action=nzb&'+postId[1]+'=1';
-
+			url = 'http://binsearch.'+domain+'/?action=nzb&'+postId[1]+'=1';
 			newIcon = nzbdStatus.makeSendIcon(doc, url);
+			reportname = oldIcon.parentNode.parentNode.getElementsByClassName('s');
+			if (reportname)
+			{
+				if (reportname[0].textContent.match(/"(.*)"/))
+				{
+					reportname = reportname[0].textContent.match(/"(.*)"/)[1];
+				}
+			}
+			newIcon.setAttribute('data-name', reportname);
 			oldIcon.parentNode.style.whiteSpace = 'nowrap';
 			oldIcon.parentNode.appendChild(newIcon);
 		}
@@ -1946,7 +1962,7 @@ nzbdStatus.logger('in processingResponse');
 		{
 			return;
 		}
-		var url, oldIcon, postId, newIcon, rowcount = results.length;
+		var reportname = null, url, oldIcon, postId, newIcon, rowcount = results.length;
 		for (i = 0; i < rowcount; i++)
 		{
 			oldIcon = results[i];
@@ -1957,6 +1973,15 @@ nzbdStatus.logger('in processingResponse');
 			}
 			url = 'http://www.animeusenet.org/nzb/'+postId[1]+'/download/';
 			newIcon = nzbdStatus.makeSendIcon(doc, url);
+			reportname = oldIcon.parentNode.parentNode.parentNode.getElementsByClassName('normaltext');
+			if (reportname)
+			{
+				if (reportname[0].textContent.match(/"(.*)"/))
+				{
+					reportname = reportname[0].textContent.match(/"(.*)"/)[1];
+				}
+			}
+			newIcon.setAttribute('data-name', reportname);
 			newIcon.setAttribute('data-category', 'anime');
 			oldIcon.parentNode.insertBefore(newIcon, oldIcon);
 		}
@@ -1978,7 +2003,7 @@ nzbdStatus.logger('in processingResponse');
 			sendAllButton.parentNode.insertBefore(allButton, sendAllButton);
 			sendAllButton.parentNode.insertBefore(doc.createTextNode(' '), sendAllButton);
 		}
-		var url, oldIcon, postId, newIcon, rowcount = results.length;
+		var reportname = null, url, oldIcon, postId, newIcon, rowcount = results.length;
 		for (i = 0; i < rowcount; i++)
 		{
 			oldIcon = results[i];
@@ -1989,6 +2014,15 @@ nzbdStatus.logger('in processingResponse');
 			}
 			url = 'http://www.newzleech.com/?m=gen&dl=1&post='+postId[1];
 			newIcon = nzbdStatus.makeSendIcon(doc, url);
+			reportname = oldIcon.parentNode.parentNode.getElementsByClassName('subject');
+			if (reportname)
+			{
+				if (reportname[0].textContent.match(/"(.*)"/))
+				{
+					reportname = reportname[0].textContent.match(/"(.*)"/)[1];
+				}
+			}
+			newIcon.setAttribute('data-name', reportname);
 			oldIcon.parentNode.style.whiteSpace = 'nowrap';
 			oldIcon.parentNode.appendChild(newIcon);
 		}
@@ -2235,10 +2269,10 @@ nzbdStatus.logger('in processingResponse');
 		try {
 
 		var doc = e.target.ownerDocument, targ = e.target;
-		var url = null, postid = null, serverid = null, category = null, reportname = null;
+		var url = null, serverid = null, category = null, reportname = null;
 		if (targ.className.match(/nzboneclick/))
 		{
-			postid = targ.getAttribute('data-url');
+			url = targ.getAttribute('data-url');
 			category = targ.getAttribute('data-category');
 			reportname = targ.getAttribute('data-name');
 			serverid = targ.className.match(/nzbServer([0-9]+)/)[1];
@@ -2256,7 +2290,7 @@ nzbdStatus.logger('in processingResponse');
 			}
 			if (datarow.className.match(/nzblistentry/))
 			{
-				postid = doc.getElementById('nzbdserverList').getAttribute('data-url');
+				url = doc.getElementById('nzbdserverList').getAttribute('data-url');
 				category = doc.getElementById('nzbdserverList').getAttribute('data-category');
 				reportname = doc.getElementById('nzbdserverList').getAttribute('data-name');
 				if (datarow.className.match(/nzbServer([0-9]+)/))
@@ -2270,7 +2304,7 @@ nzbdStatus.logger('in processingResponse');
 			}
 		}
 
-		if (postid == null || serverid == null)
+		if (url == null || serverid == null)
 		{
 			return false;
 		}
@@ -2279,20 +2313,20 @@ nzbdStatus.logger('in processingResponse');
 		switch (siteSrc)
 		{
 			case 'newzbin':
-				url = 'http://www.newzbin.com/browse/post/' + postid + '/';
+				url = 'http://www.newzbin.com/browse/post/' + url + '/';
 				break;
 			case 'nzbmatrix':
-				url = 'http://nzbmatrix.com/nzb-details.php?id=' + postid;
+				url = 'http://nzbmatrix.com/nzb-details.php?id=' + url;
 				break;
 			case 'tvnzb':
-				url = 'http://tvnzb.com/nzb/'+postid;
+				url = 'http://tvnzb.com/nzb/'+url;
 				break;
 			case 'nzbsorg':
 				var rssLink = nzbdStatus.selectSingleNode(doc, doc, '//link[@type="application/rss+xml"]');
 				var details = rssLink.href.match(/rss\.php\?.*&i=(\d+)&h=(\w+)/);
 				if (details)
 				{
-					url = 'http://nzbs.org/index.php?action=getnzb&nzbid='+postid+'&i='+details[1]+'&h='+details[2];
+					url = 'http://nzbs.org/index.php?action=getnzb&nzbid='+url+'&i='+details[1]+'&h='+details[2];
 				}
 				break;
 		}
@@ -2303,7 +2337,7 @@ nzbdStatus.logger('in processingResponse');
 		 category: category,
 		 url: url,
 		 reportname: reportname,
-		 icon: nzbdStatus.selectSingleNode(doc, doc, '//img[@data-url="'+postid+'"]'),
+		 icon: nzbdStatus.selectSingleNode(doc, doc, '//img[@data-url="'+url+'"]'),
 		 tries: 0,
 		 callback: nzbdStatus.processingResponse
 		 };
