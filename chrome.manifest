@@ -1,5 +1,11 @@
 content	nzbdstatus	chrome/content/
 locale	nzbdstatus	en-US	chrome/locale/en-US/
+locale	nzbdstatus	de-CH	chrome/locale/de-CH/
+locale	nzbdstatus	fr-FR	chrome/locale/fr-FR/
+locale	nzbdstatus	sv-SE	chrome/locale/sv-SE/
+locale	nzbdstatus	pt-BR	chrome/locale/pt-BR/
+locale	nzbdstatus	nl-NL	chrome/locale/nl-NL/
+locale	nzbdstatus	zh-CN	chrome/locale/zh-CN/
 skin	nzbdstatus	classic/1.0	skin/content/
 content	nzbdstatus	chrome/content/	contentaccessible=yes
 overlay	chrome://browser/content/browser.xul	chrome://nzbdstatus/content/nzbdstatus.xul
