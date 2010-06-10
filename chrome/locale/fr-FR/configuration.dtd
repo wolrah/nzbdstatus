@@ -1,12 +1,7 @@
 <!ENTITY sabstatus.window_config.title "nzbdStatus Configuration">
-<!ENTITY sabstatus.gen_prefpane.label "Config">
-<!ENTITY sabstatus.gen_caption.label "Options Générales">
-<!ENTITY sabstatus.pref_refreshrate.value "Temps de Rafraichissement:">
-<!ENTITY sabstatus.pref_refreshrate_units.value "minutes">
 
-<!ENTITY sabstatus.sbar_caption.label "Paramètres Statusbar">
-<!ENTITY sabstatus.pref_onlyshow.value "Afficher Minuteurs">
-<!ENTITY sabstatus.pref_alwaysshow.value "Toujours Montrez l'Icône SAB">
+<!ENTITY sabstatus.gen_prefpane.label "Générales">
+<!ENTITY sabstatus.mouse_caption.label "Mouse Settings">
 <!ENTITY sabstatus.pref_leftclick.label "Clique Gauche:">
 <!ENTITY sabstatus.pref_middleclick.label "Clique Central:">
 <!ENTITY sabstatus.pref_sbarclick_refresh.value "Rafraichir Informations">
@@ -19,37 +14,28 @@
 <!ENTITY sabstatus.pref_sbarclick_qsametab.value "Ouvrir la page de la file d'attente dans le meme onglet">
 <!ENTITY sabstatus.pref_sbarclick_qnewwindow.value "Ouvrir la file d'attente dans une nouvelle fenetre">
 <!ENTITY sabstatus.downopts_caption.label "Paramètres Téléchargement Fichier">
-<!ENTITY sabstatus.pref_downopts_sendfile.value "Envoyer les NZB Téléchargés vers SABnzbd">
 <!ENTITY sabstatus.pref_downopts_prompt.value "Demander Avant d'Envoyer">
 
-<!ENTITY sabstatus.login_caption.label "Information d'Authentification">
-<!ENTITY sabstatus.pref_sabuser.value "Nom Utilisateur:">
-<!ENTITY sabstatus.pref_sabpass.value "Mots de Passe:">
-<!ENTITY sabstatus.api_key_caption.label "Clé API (SABnzbd v0.4.9+ Seulement)">
-
-<!ENTITY sabstatus.pref_sendfiles.label "Envoyez les Fichiers NZB à ce Daemon">
-<!ENTITY sabstatus.pref_filesintosab.label "Après Téléchargement:">
-<!ENTITY sabstatus.nzbd_caption.label "Paramètres">
-<!ENTITY sabstatus.pref_saburl.value "URL:">
-<!ENTITY sabstatus.button_testconnect.label "Test connection">
-
-<!ENTITY sabstatus.newzbin_caption.label "Options Générales">
-<!ENTITY sabstatus.pref_enableinnewzbin.value "Activer la gestion de Newzbin">
-<!ENTITY sabstatus.pref_newzbintosab.label "Après Téléchargement:">
-<!ENTITY sabstatus.pref_sabproclevel.value6 "Vérifier, Extraire, Effacer, Script">
-<!ENTITY sabstatus.pref_sabproclevel.value5 "Vérifier, Extraire, Script">
-<!ENTITY sabstatus.pref_sabproclevel.value4 "Vérifier, Script">
-<!ENTITY sabstatus.pref_sabproclevel.value3 "Vérifier, Extraire, Effacer">
-<!ENTITY sabstatus.pref_sabproclevel.value2 "Vérifier, Extraire">
-<!ENTITY sabstatus.pref_sabproclevel.value1 "Vérifier">
-<!ENTITY sabstatus.pref_sabproclevel.value0 "Ne Rien Faire">
-<!ENTITY sabstatus.pref_sabproclevel.valued "Défaut">
+<!ENTITY sabstatus.server_prefpane.label "Servers">
+<!ENTITY sabstatus.svrlist_listheader.label "Server Name">
+<!ENTITY sabstatus.svradd_button.label "Add">
+<!ENTITY sabstatus.svrrem_button.label "Remove">
+<!ENTITY sabstatus.svrserver_label.value "Server">
+<!ENTITY sabstatus.svricon_label.value "Icon">
+<!ENTITY sabstatus.svrname_label.value "Name">
+<!ENTITY sabstatus.svrurl_label.value "URL">
+<!ENTITY sabstatus.svrapi_label.value "Clé API">
+<!ENTITY sabstatus.svrenable_check.label "Enable server">
+<!ENTITY sabstatus.svrshow_check.label "Show status bar icon">
+<!ENTITY sabstatus.svrpass_button.label "Set password">
+<!ENTITY sabstatus.svrtest_button.label "Test connection">
 
 <!ENTITY sabstatus.category_prefpane.label "Catégories">
 <!ENTITY sabstatus.pref_webcategory.label "Site Catégorie">
 <!ENTITY sabstatus.pref_sabcategory.label "Serveurs Catégorie">
 
 <!ENTITY sabstatus.about_prefpane.label "A Propos de">
+<!ENTITY sabstatus.pref_versionnumber.value "Version Number Failed To Load">
 <!ENTITY sabstatus.pref_createdby.value "Créer Par">
 <!ENTITY sabstatus.pref_translatedby.value "Traduit Par">
 <!ENTITY sabstatus.about_support.label "Support">
