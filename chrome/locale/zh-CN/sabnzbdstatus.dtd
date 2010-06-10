@@ -1,0 +1,10 @@
+<!ENTITY sabstatus.tooltip_idle.value "SABnzbd 当前空闲">
+<!ENTITY sabstatus.tooltip_pause.value "SABnzbd 当前被暂停">
+<!ENTITY sabstatus.tooltip_kbpersec.value "下载速度：">
+<!ENTITY sabstatus.tooltip_jobs0.value "当前正在下载：">
+<!ENTITY sabstatus.tooltip_jobs0_time.value "当前剩余时间：">
+<!ENTITY sabstatus.tooltip_mbleft.value "总剩余：">
+<!ENTITY sabstatus.tooltip_diskspace1.value "磁盘剩余空间：">
+<!ENTITY sabstatus.menu_pause "暂停 SABnzbd">
+<!ENTITY sabstatus.menu_config "配置 nzbStatus">
+<!ENTITY sabstatus.menu_sendurl.label "发送网址到 SABnzbd">

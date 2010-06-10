@@ -1,0 +1,5 @@
+<!ENTITY sabstatus.newfeed_caption.value "添加 Feed 到 SABnzbd">
+<!ENTITY sabstatus.newfeed_feedname_label.value "Feed 名称：">
+<!ENTITY sabstatus.newfeed_feedname_default.value "新建 Feed">
+<!ENTITY sabstatus.newfeed_feedurl_label.value "Feed 网址：">
+<!ENTITY sabstatus.newfeed_button.value "添加">
