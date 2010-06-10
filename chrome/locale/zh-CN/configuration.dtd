@@ -1,11 +1,7 @@
 <!ENTITY sabstatus.window_config.title "nzbdStatus 配置">
+
 <!ENTITY sabstatus.gen_prefpane.label "配置">
-<!ENTITY sabstatus.gen_caption.label "常规设置">
-<!ENTITY sabstatus.pref_refreshrate.value "刷新率：">
-<!ENTITY sabstatus.pref_refreshrate_units.value "分钟">
-<!ENTITY sabstatus.sbar_caption.label "状态栏设置">
-<!ENTITY sabstatus.pref_onlyshow.value "移除计时器">
-<!ENTITY sabstatus.pref_alwaysshow.value "总是在状态栏显示图标">
+<!ENTITY sabstatus.mouse_caption.label "Mouse Settings">
 <!ENTITY sabstatus.pref_leftclick.label "左击：">
 <!ENTITY sabstatus.pref_middleclick.label "中击：">
 <!ENTITY sabstatus.pref_sbarclick_refresh.value "刷新信息">
@@ -18,32 +14,28 @@
 <!ENTITY sabstatus.pref_sbarclick_qsametab.value "在同一标签页中打开队列页面">
 <!ENTITY sabstatus.pref_sbarclick_qnewwindow.value "在新窗口中打开队列页面">
 <!ENTITY sabstatus.downopts_caption.label "文件下载设置">
-<!ENTITY sabstatus.pref_downopts_sendfile.value "发送 NZB 下载到 SABnzbd">
 <!ENTITY sabstatus.pref_downopts_prompt.value "发送前提示">
-<!ENTITY sabstatus.login_caption.label "登录信息">
-<!ENTITY sabstatus.pref_sabuser.value "用户名：">
-<!ENTITY sabstatus.pref_sabpass.value "密码：">
-<!ENTITY sabstatus.api_key_caption.label "API Key (仅 SABnzbd v0.4.9+)">
-<!ENTITY sabstatus.pref_sendfiles.label "发送 NZB 文件到此后台程序">
-<!ENTITY sabstatus.pref_filesintosab.label "下载后：">
-<!ENTITY sabstatus.nzbd_caption.label "设置：">
-<!ENTITY sabstatus.pref_saburl.value "网址：">
-<!ENTITY sabstatus.button_testconnect.label "测试连接">
-<!ENTITY sabstatus.newzbin_caption.label "常规设置">
-<!ENTITY sabstatus.pref_enableinnewzbin.value "启用 Newzbin 特性">
-<!ENTITY sabstatus.pref_newzbintosab.label "下载后：">
-<!ENTITY sabstatus.pref_sabproclevel.value6 "验证, 解压, 删除, 脚本(Script)">
-<!ENTITY sabstatus.pref_sabproclevel.value5 "验证, 解压, 脚本(Script)">
-<!ENTITY sabstatus.pref_sabproclevel.value4 "验证, 脚本(Script)">
-<!ENTITY sabstatus.pref_sabproclevel.value3 "验证, 解压, 删除">
-<!ENTITY sabstatus.pref_sabproclevel.value2 "验证, 解压">
-<!ENTITY sabstatus.pref_sabproclevel.value1 "验证">
-<!ENTITY sabstatus.pref_sabproclevel.value0 "什么也不做">
-<!ENTITY sabstatus.pref_sabproclevel.valued "默认">
+
+<!ENTITY sabstatus.server_prefpane.label "Servers">
+<!ENTITY sabstatus.svrlist_listheader.label "Server Name">
+<!ENTITY sabstatus.svradd_button.label "Add">
+<!ENTITY sabstatus.svrrem_button.label "Remove">
+<!ENTITY sabstatus.svrserver_label.value "Server">
+<!ENTITY sabstatus.svricon_label.value "Icon">
+<!ENTITY sabstatus.svrname_label.value "Name">
+<!ENTITY sabstatus.svrurl_label.value "网址">
+<!ENTITY sabstatus.svrapi_label.value "API key">
+<!ENTITY sabstatus.svrenable_check.label "Enable server">
+<!ENTITY sabstatus.svrshow_check.label "Show status bar icon">
+<!ENTITY sabstatus.svrpass_button.label "Set password">
+<!ENTITY sabstatus.svrtest_button.label "测试连接">
+
 <!ENTITY sabstatus.category_prefpane.label "分类">
 <!ENTITY sabstatus.pref_webcategory.label "网站分类">
 <!ENTITY sabstatus.pref_sabcategory.label "服务器分类">
+
 <!ENTITY sabstatus.about_prefpane.label "关于">
+<!ENTITY sabstatus.pref_versionnumber.value "Version Number Failed To Load">
 <!ENTITY sabstatus.pref_createdby.value "作者">
 <!ENTITY sabstatus.pref_translatedby.value "翻译人员">
 <!ENTITY sabstatus.about_support.label "支持">
