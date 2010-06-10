@@ -13,7 +13,6 @@
 	<preferences>
 		<preference id='leftclick' name='extensions.nzbdstatus.leftClick' type='string' />
 		<preference id='middleclick' name='extensions.nzbdstatus.middleClick' type='string' />
-		<preference id='sendfiles' name='extensions.nzbdstatus.enableFilesToSAB' type='bool' />
 		<preference id='askenable' name='extensions.nzbdstatus.askAboutEnable' type='bool' />
 	</preferences>
 
@@ -54,9 +53,6 @@
 	</groupbox>
 	<groupbox>
 		<caption label='&sabstatus.downopts_caption.label;' />
-		<hbox align='center' onclick='nzbdStatusConfig.togglePrompt();'>
-			<checkbox label='&sabstatus.pref_downopts_sendfile.value;' preference='sendfiles' id='sabsendfiles' />
-		</hbox>
 		<hbox align='center'>
 			<checkbox label='&sabstatus.pref_downopts_prompt.value;' preference='askenable' id='sabaskenable' />
 		</hbox>
@@ -222,34 +218,35 @@
 </prefpane>
 
 
-<prefpane id='about' label='--About--' image='chrome://nzbdstatus/skin/about.png'>
+<prefpane id='about' label='&sabstatus.about_prefpane.label;' image='chrome://nzbdstatus/skin/about.png'>
 	<groupbox>
 		<vbox>
 			<text value='nzbdStatus' style='font-weight: bold; font-size: x-large;' />
-			<text value='version number' id='sabversion' />
+			<text value='&sabstatus.pref_versionnumber.value;' id='sabversion' />
 			<separator class='thin' />
-			<text value='--created--' style='font-weight: bold;' />
+			<text value='&sabstatus.pref_createdby.value;' style='font-weight: bold;' />
 			<text value='Ben Dusinberre' />
 			<separator class='thin' />
-			<text value='--translated--' style='font-weight: bold;' />
+			<text value='&sabstatus.pref_translatedby.value;' style='font-weight: bold;' />
 			<text value='lantash (de-CH)' />
 			<text value='Severin (de-CH)' />
 			<text value='foxace (fr-FR)' />
 			<text value='Malmis (sv-SE)' />
 			<text value='edgard.magalhaes of babelzilla (pt-BR)' />
 			<text value='jcfp (nl-NL)' />
+			<text value='BruceH of babelzilla (zh-CN)' />
 			<separator class='thin' />
 			<hbox>
-				<html:a href='http://sourceforge.net/projects/nzbdstatus/' target='_blank' style='color:#00b'>--support--</html:a>
+				<html:a href='http://sourceforge.net/projects/nzbdstatus/' target='_blank' style='color:#00b'>&sabstatus.about_support.label;</html:a>
 			</hbox>
 			<separator class='thin' />
 			<hbox>
-				<html:a href='https://addons.mozilla.org/addon/7617?src=external-about' target='_blank' style='color:#00b'>--donate--</html:a>
+				<html:a href='https://addons.mozilla.org/addon/7617?src=external-about' target='_blank' style='color:#00b'>&sabstatus.about_donate.label;</html:a>
 			</hbox>
 			<separator class='thin' />
-			<text value='--License--' style='font-weight: bold;' />
-			<text value='GPL3.0' />
-			<text value='Nuvuo LGPL3.0' />
+			<text value='&sabstatus.license.text;' style='font-weight: bold;' />
+			<text value='&sabstatus.license_code.text;' />
+			<text value='&sabstatus.license_icons.text;' />
 		</vbox>
 	</groupbox>
 </prefpane>
