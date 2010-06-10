@@ -86,7 +86,11 @@
 <!ENTITY sabstatus.pref_sabcategory.label "Server Category">
 
 <!ENTITY sabstatus.about_prefpane.label "About">
+<!ENTITY sabstatus.pref_versionnumber.value "Version Number Failed To Load">
 <!ENTITY sabstatus.pref_createdby.value "Created by">
 <!ENTITY sabstatus.pref_translatedby.value "Translations by">
 <!ENTITY sabstatus.about_support.label "Support">
 <!ENTITY sabstatus.about_donate.label "Donate">
+<!ENTITY sabstatus.license.text "License">
+<!ENTITY sabstatus.license_code.text "Code: GPL3.0">
+<!ENTITY sabstatus.license_icons.text "Nuvuo Icons: LGPL3.0">
