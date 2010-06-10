@@ -109,6 +109,12 @@ nzbdStatusConfigObject.prototype = {
 	prefonload: function()
 	{
 		try {
+		// Get the version number then insert it into the box
+		/// TODO: Update this to the new code for FF4
+		var fuel = Components.classes["@mozilla.org/fuel/application;1"].getService(Components.interfaces.fuelIApplication);
+		var extInfo = fuel.extensions.get('sabnzbdstatus@dq5studios.com');
+		document.getElementById('sabversion').setAttribute('value', extInfo.version);
+
 		nzbdStatusConfig.buildServerList();
 		nzbdStatusConfig.buildServerDeck();
 		nzbdStatusConfig.buildServerPreferences();
