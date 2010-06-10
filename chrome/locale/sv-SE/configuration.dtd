@@ -28,7 +28,7 @@
 <!ENTITY sabstatus.svrenable_check.label "Enable server">
 <!ENTITY sabstatus.svrshow_check.label "Show status bar icon">
 <!ENTITY sabstatus.svrpass_button.label "Set password">
-<!ENTITY sabstatus.svrtest_button.label "Test connection">
+<!ENTITY sabstatus.svrtest_button.label "Testa anslutning">
 
 <!ENTITY sabstatus.category_prefpane.label "Categories">
 <!ENTITY sabstatus.pref_webcategory.label "Website Category">
