@@ -1,0 +1,55 @@
+<!ENTITY sabstatus.window_config.title "Configuração do nzbdStatus">
+<!ENTITY sabstatus.gen_prefpane.label "Configuração">
+<!ENTITY sabstatus.gen_caption.label "Configurações Gerais">
+<!ENTITY sabstatus.pref_refreshrate.value "Atualizar classificação:">
+<!ENTITY sabstatus.pref_refreshrate_units.value "minutos">
+<!ENTITY sabstatus.sbar_caption.label "Configuração da Barra de Status">
+<!ENTITY sabstatus.pref_onlyshow.value "Não mostrar o contador">
+<!ENTITY sabstatus.pref_alwaysshow.value "Sempre mostrar o ícone na Barra de Status">
+<!ENTITY sabstatus.pref_leftclick.label "Clique esquerdo:">
+<!ENTITY sabstatus.pref_middleclick.label "Clique do meio:">
+<!ENTITY sabstatus.pref_sbarclick_refresh.value "Atualizar a informação">
+<!ENTITY sabstatus.pref_sbarclick_newtabfocus.value "Abrir em nova aba">
+<!ENTITY sabstatus.pref_sbarclick_newtabbackground.value "Abrir em nova aba em janela secundária">
+<!ENTITY sabstatus.pref_sbarclick_sametab.value "Abrir na mesma aba">
+<!ENTITY sabstatus.pref_sbarclick_newwindow.value "Abrir em nova janela">
+<!ENTITY sabstatus.pref_sbarclick_qnewtabfocus.value "Abra a página da fila em uma nova aba">
+<!ENTITY sabstatus.pref_sbarclick_qnewtabbackground.value "Abra a página da fila em uma nova aba em uma janela secundária">
+<!ENTITY sabstatus.pref_sbarclick_qsametab.value "Abra a página da fila na mesma aba">
+<!ENTITY sabstatus.pref_sbarclick_qnewwindow.value "Abra a página da fila em uma nova janela">
+<!ENTITY sabstatus.downopts_caption.label "Configurações de download de arquivos">
+<!ENTITY sabstatus.pref_downopts_sendfile.value "Enviar os arquivos NZB para o SABnzbd">
+<!ENTITY sabstatus.pref_downopts_prompt.value "Avisar antes de enviar">
+<!ENTITY sabstatus.login_caption.label "Informação de entrada">
+<!ENTITY sabstatus.pref_sabuser.value "Usuário:">
+<!ENTITY sabstatus.pref_sabpass.value "Senha:">
+<!ENTITY sabstatus.api_key_caption.label "Chave API (Apenas para SABnzbd v0.4.9+)">
+<!ENTITY sabstatus.pref_sendfiles.label "Enviar os arquivos NZB para este daemon">
+<!ENTITY sabstatus.pref_filesintosab.label "Após Baixar Arquivo:">
+<!ENTITY sabstatus.nzbd_caption.label "Configurações">
+<!ENTITY sabstatus.pref_saburl.value "Endereço:">
+<!ENTITY sabstatus.button_testconnect.label "Teste de conexão">
+<!ENTITY sabstatus.newzbin_caption.label "Configurações gerais">
+<!ENTITY sabstatus.pref_enableinnewzbin.value "Permitir o uso das características Newzbin">
+<!ENTITY sabstatus.pref_newzbintosab.label "Após Baixar Arquivo:">
+<!ENTITY sabstatus.pref_sabproclevel.value6 "Verificar, Extrair, Apagar, Gerar Script">
+<!ENTITY sabstatus.pref_sabproclevel.value5 "Verificar, Extrair, Gerar Script">
+<!ENTITY sabstatus.pref_sabproclevel.value4 "Verificar, Gerar Script">
+<!ENTITY sabstatus.pref_sabproclevel.value3 "Verificar, Extrair, Apagar">
+<!ENTITY sabstatus.pref_sabproclevel.value2 "Verificar, Extrair">
+<!ENTITY sabstatus.pref_sabproclevel.value1 "Verificar">
+<!ENTITY sabstatus.pref_sabproclevel.value0 "Não fazer nada">
+<!ENTITY sabstatus.pref_sabproclevel.valued "Padrão">
+
+<!ENTITY sabstatus.category_prefpane.label "Categorias">
+<!ENTITY sabstatus.pref_webcategory.label "Categoria da Página">
+<!ENTITY sabstatus.pref_sabcategory.label "Categoria do Servidor">
+
+<!ENTITY sabstatus.about_prefpane.label "Sobre">
+<!ENTITY sabstatus.pref_createdby.value "Criado por">
+<!ENTITY sabstatus.pref_translatedby.value "Traduções feitas por">
+<!ENTITY sabstatus.about_support.label "Suporte">
+<!ENTITY sabstatus.about_donate.label "Doação">
+<!ENTITY sabstatus.license.text "Licença">
+<!ENTITY sabstatus.license_code.text "Código: GPL3.0">
+<!ENTITY sabstatus.license_icons.text "Ícones Nuvuo: LGPL3.0">

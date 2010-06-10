@@ -1,0 +1,5 @@
+<!ENTITY sabstatus.newfeed_caption.value "Acrescentar um Feed ao SABnzbd">
+<!ENTITY sabstatus.newfeed_feedname_label.value "Nome do Feed:">
+<!ENTITY sabstatus.newfeed_feedname_default.value "Novo Feed">
+<!ENTITY sabstatus.newfeed_feedurl_label.value "Endereço do Feed:">
+<!ENTITY sabstatus.newfeed_button.value "Adicionar">

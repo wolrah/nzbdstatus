@@ -1,0 +1,10 @@
+<!ENTITY sabstatus.tooltip_idle.value "SABnzbd hat momentan nichts zu tun">
+<!ENTITY sabstatus.tooltip_pause.value "SABnzbd ist momentan pausiert">
+<!ENTITY sabstatus.tooltip_kbpersec.value "Download-Geschwindigkeit:">
+<!ENTITY sabstatus.tooltip_jobs0.value "Am herunterladen:">
+<!ENTITY sabstatus.tooltip_jobs0_time.value "Verbleibende Zeit:">
+<!ENTITY sabstatus.tooltip_mbleft.value "Insgesamt verbleibende Zeit:">
+<!ENTITY sabstatus.tooltip_diskspace1.value "Freier Speicherplatz:">
+<!ENTITY sabstatus.menu_pause "SABnzbd pausieren">
+<!ENTITY sabstatus.menu_config "nzbStatus einrichten">
+<!ENTITY sabstatus.menu_sendurl.label "URL an SABnzbd senden">

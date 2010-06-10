@@ -1,0 +1,10 @@
+<!ENTITY sabstatus.tooltip_idle.value "SABnzbd is momenteel inactief">
+<!ENTITY sabstatus.tooltip_pause.value "SABnzbd is momenteel gepauzeerd">
+<!ENTITY sabstatus.tooltip_kbpersec.value "Downloadsnelheid:">
+<!ENTITY sabstatus.tooltip_jobs0.value "Bezig met downloaden van:">
+<!ENTITY sabstatus.tooltip_jobs0_time.value "Tijd resterend:">
+<!ENTITY sabstatus.tooltip_mbleft.value "Totaal resterend:">
+<!ENTITY sabstatus.tooltip_diskspace1.value "Vrije ruimte op de harde schijf:">
+<!ENTITY sabstatus.menu_pause "Pauzeer SABnzbd">
+<!ENTITY sabstatus.menu_config "Configureer nzbStatus">
+<!ENTITY sabstatus.menu_sendurl.label "Stuur URL naar SABnzbd">

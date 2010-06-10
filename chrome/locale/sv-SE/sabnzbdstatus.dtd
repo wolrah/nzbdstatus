@@ -1,0 +1,10 @@
+<!ENTITY sabstatus.tooltip_idle.value "SABnzbd är vilande">
+<!ENTITY sabstatus.tooltip_pause.value "SABnzbd är pausat">
+<!ENTITY sabstatus.tooltip_kbpersec.value "Nedladdningshastighet:">
+<!ENTITY sabstatus.tooltip_jobs0.value "Laddar ner just nu:">
+<!ENTITY sabstatus.tooltip_jobs0_time.value "Aktuell återstående tid:">
+<!ENTITY sabstatus.tooltip_mbleft.value "Kvarstående totalt:">
+<!ENTITY sabstatus.tooltip_diskspace1.value "Ledigt diskutrymme:">
+<!ENTITY sabstatus.menu_pause "Pausa SABnzbd">
+<!ENTITY sabstatus.menu_config "Konfigurera nzbStatus">
+<!ENTITY sabstatus.menu_sendurl.label "Skicka URL till SABnzbd">

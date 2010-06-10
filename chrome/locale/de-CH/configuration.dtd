@@ -1,0 +1,59 @@
+<!ENTITY sabstatus.window_config.title "nzbdStatus-Konfiguration">
+<!ENTITY sabstatus.gen_prefpane.label "Konfiguration">
+<!ENTITY sabstatus.gen_caption.label "Allgemein">
+<!ENTITY sabstatus.pref_refreshrate.value "Aktualisierungsrate:">
+<!ENTITY sabstatus.pref_refreshrate_units.value "Minuten">
+
+<!ENTITY sabstatus.sbar_caption.label "Statusleiste">
+<!ENTITY sabstatus.pref_onlyshow.value "Timer entfernen">
+<!ENTITY sabstatus.pref_alwaysshow.value "SABnzbd-Symbol immer anzeigen">
+<!ENTITY sabstatus.pref_leftclick.label "Klick mit der linken Maustaste:">
+<!ENTITY sabstatus.pref_middleclick.label "Klick mit der mittleren Maustaste:">
+<!ENTITY sabstatus.pref_sbarclick_refresh.value "Informationen neu laden">
+<!ENTITY sabstatus.pref_sbarclick_newtabfocus.value "SABnzbd in einem neuen Tab öffnen">
+<!ENTITY sabstatus.pref_sbarclick_newtabbackground.value "SABnzbd in einem neuen Tab im Hintergrund öffnen">
+<!ENTITY sabstatus.pref_sbarclick_sametab.value "SABnzbd im gleichen Tab öffnen">
+<!ENTITY sabstatus.pref_sbarclick_newwindow.value "SABnzbd in einem neuen Fenster öffnen">
+<!ENTITY sabstatus.pref_sbarclick_qnewtabfocus.value "Warteschlange in einem neuen Tab öffnen">
+<!ENTITY sabstatus.pref_sbarclick_qnewtabbackground.value "Warteschlange in einem neuen Tab im Hintergrund öffnen">
+<!ENTITY sabstatus.pref_sbarclick_qsametab.value "Warteschlange im gleichen Tab öffnen">
+<!ENTITY sabstatus.pref_sbarclick_qnewwindow.value "Warteschlange in einem neuen Fenster öffnen">
+<!ENTITY sabstatus.downopts_caption.label "Einstellungen für Datei-Downloads">
+<!ENTITY sabstatus.pref_downopts_sendfile.value "NZB-Downloads an SABnzbd senden">
+<!ENTITY sabstatus.pref_downopts_prompt.value "Vor dem Senden nachfragen">
+
+<!ENTITY sabstatus.login_caption.label "Anmelde-Informationen">
+<!ENTITY sabstatus.pref_sabuser.value "Benutzername:">
+<!ENTITY sabstatus.pref_sabpass.value "Passwort:">
+<!ENTITY sabstatus.api_key_caption.label "API-Schlüssel (SABnzbd 0.4.9 oder neuer)">
+
+<!ENTITY sabstatus.pref_sendfiles.label "NZB-Dateien an diesen Daemon senden">
+<!ENTITY sabstatus.pref_filesintosab.label "Nach dem Download:">
+<!ENTITY sabstatus.nzbd_caption.label "Einstellungen">
+<!ENTITY sabstatus.pref_saburl.value "URL:">
+<!ENTITY sabstatus.button_testconnect.label "Verbindung prüfen">
+
+<!ENTITY sabstatus.newzbin_caption.label "Allgemeine Einstellungen">
+<!ENTITY sabstatus.pref_enableinnewzbin.value "Newzbin-Funktionen aktivieren">
+<!ENTITY sabstatus.pref_newzbintosab.label "Nach dem Download:">
+<!ENTITY sabstatus.pref_sabproclevel.value6 "Überprüfen, Entpacken, Löschen, Skript">
+<!ENTITY sabstatus.pref_sabproclevel.value5 "Überprüfen, Entpacken, Skript">
+<!ENTITY sabstatus.pref_sabproclevel.value4 "Überprüfen, Skript">
+<!ENTITY sabstatus.pref_sabproclevel.value3 "Überprüfen, Entpacken, Löschen">
+<!ENTITY sabstatus.pref_sabproclevel.value2 "Überprüfen, Entpacken">
+<!ENTITY sabstatus.pref_sabproclevel.value1 "Überprüfen">
+<!ENTITY sabstatus.pref_sabproclevel.value0 "Nichts tun">
+<!ENTITY sabstatus.pref_sabproclevel.valued "Standard">
+
+<!ENTITY sabstatus.category_prefpane.label "Categories">
+<!ENTITY sabstatus.pref_webcategory.label "Website Category">
+<!ENTITY sabstatus.pref_sabcategory.label "Server Category">
+
+<!ENTITY sabstatus.about_prefpane.label "Über">
+<!ENTITY sabstatus.pref_createdby.value "Erstellt von">
+<!ENTITY sabstatus.pref_translatedby.value "Übersetzt von">
+<!ENTITY sabstatus.about_support.label "Unterstützen">
+<!ENTITY sabstatus.about_donate.label "Spenden">
+<!ENTITY sabstatus.license.text "License">
+<!ENTITY sabstatus.license_code.text "Code: GPL3.0">
+<!ENTITY sabstatus.license_icons.text "Nuvuo Icons: LGPL3.0">

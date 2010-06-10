@@ -1,0 +1,59 @@
+<!ENTITY sabstatus.window_config.title "nzbdStatus Configuratie">
+<!ENTITY sabstatus.gen_prefpane.label "Configuratie">
+<!ENTITY sabstatus.gen_caption.label "Algemene instellingen">
+<!ENTITY sabstatus.pref_refreshrate.value "Vernieuwingsfrequentie:">
+<!ENTITY sabstatus.pref_refreshrate_units.value "minuten">
+
+<!ENTITY sabstatus.sbar_caption.label "Statusbalk">
+<!ENTITY sabstatus.pref_onlyshow.value "Verberg timer">
+<!ENTITY sabstatus.pref_alwaysshow.value "Laat het icoon in de statusbalk altijd zien">
+<!ENTITY sabstatus.pref_leftclick.label "Linker muisknop:">
+<!ENTITY sabstatus.pref_middleclick.label "Middelste muisknop:">
+<!ENTITY sabstatus.pref_sbarclick_refresh.value "Vernieuwen">
+<!ENTITY sabstatus.pref_sbarclick_newtabfocus.value "Open in een nieuw tabblad">
+<!ENTITY sabstatus.pref_sbarclick_newtabbackground.value "Open in een nieuw tabblad in de achtergrond">
+<!ENTITY sabstatus.pref_sbarclick_sametab.value "Open in hetzelfde tabblad">
+<!ENTITY sabstatus.pref_sbarclick_newwindow.value "Open in een nieuw venster">
+<!ENTITY sabstatus.pref_sbarclick_qnewtabfocus.value "Open de wachtrijpagina in een nieuw tabblad">
+<!ENTITY sabstatus.pref_sbarclick_qnewtabbackground.value "Open de wachtrijpagina in een nieuw tabblad in de achtergrond">
+<!ENTITY sabstatus.pref_sbarclick_qsametab.value "Open de wachtrij pagina in hetzelfde tabblad">
+<!ENTITY sabstatus.pref_sbarclick_qnewwindow.value "Open de wachtrijpagina in een nieuw venster">
+<!ENTITY sabstatus.downopts_caption.label "Gedownloade bestanden">
+<!ENTITY sabstatus.pref_downopts_sendfile.value "Stuur gedownloade nzb-bestanden naar SABnzbd">
+<!ENTITY sabstatus.pref_downopts_prompt.value "Vraag bevestiging voor versturen">
+
+<!ENTITY sabstatus.login_caption.label "Inloginformatie">
+<!ENTITY sabstatus.pref_sabuser.value "Gebruikersnaam:">
+<!ENTITY sabstatus.pref_sabpass.value "Wachtwoord:">
+<!ENTITY sabstatus.api_key_caption.label "API-sleutel (alléén voor SABnzbd 0.4.9 of nieuwer)">
+
+<!ENTITY sabstatus.pref_sendfiles.label "Nzb-bestanden naar deze daemon sturen">
+<!ENTITY sabstatus.pref_filesintosab.label "Na het downloaden:">
+<!ENTITY sabstatus.nzbd_caption.label "Instellingen">
+<!ENTITY sabstatus.pref_saburl.value "URL:">
+<!ENTITY sabstatus.button_testconnect.label "Verbinding testen">
+
+<!ENTITY sabstatus.newzbin_caption.label "Algemene instellingen">
+<!ENTITY sabstatus.pref_enableinnewzbin.value "Activeer Newzbin-functies">
+<!ENTITY sabstatus.pref_newzbintosab.label "Na het downloaden:">
+<!ENTITY sabstatus.pref_sabproclevel.value6 "Controleren, Uitpakken, Wissen, Script">
+<!ENTITY sabstatus.pref_sabproclevel.value5 "Controleren, Uitpakken, Script">
+<!ENTITY sabstatus.pref_sabproclevel.value4 "Controleren, Script">
+<!ENTITY sabstatus.pref_sabproclevel.value3 "Controleren, Uitpakken, Wissen">
+<!ENTITY sabstatus.pref_sabproclevel.value2 "Controleren, Uitpakken">
+<!ENTITY sabstatus.pref_sabproclevel.value1 "Controleren">
+<!ENTITY sabstatus.pref_sabproclevel.value0 "Doe niets">
+<!ENTITY sabstatus.pref_sabproclevel.valued "Standaard">
+
+<!ENTITY sabstatus.category_prefpane.label "Categories">
+<!ENTITY sabstatus.pref_webcategory.label "Website Category">
+<!ENTITY sabstatus.pref_sabcategory.label "Server Category">
+
+<!ENTITY sabstatus.about_prefpane.label "Over">
+<!ENTITY sabstatus.pref_createdby.value "Auteur">
+<!ENTITY sabstatus.pref_translatedby.value "Vertalingen door">
+<!ENTITY sabstatus.about_support.label "Ondersteuning">
+<!ENTITY sabstatus.about_donate.label "Doneer">
+<!ENTITY sabstatus.license.text "License">
+<!ENTITY sabstatus.license_code.text "Code: GPL3.0">
+<!ENTITY sabstatus.license_icons.text "Nuvuo Icons: LGPL3.0">

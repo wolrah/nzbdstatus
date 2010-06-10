@@ -1,0 +1,10 @@
+<!ENTITY sabstatus.tooltip_idle.value "SABnzbd est Inactif">
+<!ENTITY sabstatus.tooltip_pause.value "SABnzbd est en Pause">
+<!ENTITY sabstatus.tooltip_kbpersec.value "Vitesse:">
+<!ENTITY sabstatus.tooltip_jobs0.value "Actuellement:">
+<!ENTITY sabstatus.tooltip_jobs0_time.value "Temps Restant:">
+<!ENTITY sabstatus.tooltip_mbleft.value "Total Restant:">
+<!ENTITY sabstatus.tooltip_diskspace1.value "Espace Libre:">
+<!ENTITY sabstatus.menu_pause "Pause SABnzbd">
+<!ENTITY sabstatus.menu_config "Configurer nzbStatus">
+<!ENTITY sabstatus.menu_sendurl.label "Envoyer L'URL a SABnzbd">

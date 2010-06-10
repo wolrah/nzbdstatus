@@ -1,0 +1,5 @@
+<!ENTITY sabstatus.newfeed_caption.value "Feed toevoegen aan SABnzbd">
+<!ENTITY sabstatus.newfeed_feedname_label.value "Feednaam:">
+<!ENTITY sabstatus.newfeed_feedname_default.value "Nieuwe feed">
+<!ENTITY sabstatus.newfeed_feedurl_label.value "Feed URL:">
+<!ENTITY sabstatus.newfeed_button.value "Toevoegen">

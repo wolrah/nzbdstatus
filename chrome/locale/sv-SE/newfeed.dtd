@@ -1,0 +1,5 @@
+<!ENTITY sabstatus.newfeed_caption.value "Lägg till flöde till SABnzbd">
+<!ENTITY sabstatus.newfeed_feedname_label.value "Flödesnamn:">
+<!ENTITY sabstatus.newfeed_feedname_default.value "Nytt flöde">
+<!ENTITY sabstatus.newfeed_feedurl_label.value "Flödes URL:">
+<!ENTITY sabstatus.newfeed_button.value "Lägg till">

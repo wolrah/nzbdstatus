@@ -1,0 +1,5 @@
+<!ENTITY sabstatus.newfeed_caption.value "Ajouter Flux a SABnzbd">
+<!ENTITY sabstatus.newfeed_feedname_label.value "Nom du Flux:">
+<!ENTITY sabstatus.newfeed_feedname_default.value "Nouveau Flux">
+<!ENTITY sabstatus.newfeed_feedurl_label.value "URL Flux:">
+<!ENTITY sabstatus.newfeed_button.value "Ajouter">
