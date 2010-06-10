@@ -1101,7 +1101,7 @@ return;
 		siStream.close();
 		fiStream.close();
 
-		var serverDetails = this.serverDetails[eventDetails.serverId];
+		var serverDetails = this.servers[eventDetails.serverId];
 		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
 
 		switch (serverDetails.type)
@@ -1149,7 +1149,7 @@ return;
 	sendNewzbinId: function(eventDetails)
 	{
 
-		var serverDetails = this.serverDetails[eventDetails.serverId];
+		var serverDetails = this.servers[eventDetails.serverId];
 		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
 
 		switch (serverDetails.type)
@@ -1185,7 +1185,7 @@ return;
 	sendRefresh: function(eventDetails)
 	{
 
-		var serverDetails = this.serverDetails[eventDetails.serverId];
+		var serverDetails = this.servers[eventDetails.serverId];
 		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
 
 		switch (serverDetails.type)
@@ -1221,7 +1221,7 @@ return;
 	sendPause: function(eventDetails)
 	{
 
-		var serverDetails = this.serverDetails[eventDetails.serverId];
+		var serverDetails = this.servers[eventDetails.serverId];
 		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
 
 		switch (serverDetails.type)
@@ -1257,7 +1257,7 @@ return;
 	sendResume: function(eventDetails)
 	{
 
-		var serverDetails = this.serverDetails[eventDetails.serverId];
+		var serverDetails = this.servers[eventDetails.serverId];
 		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
 
 		switch (serverDetails.type)
@@ -1784,7 +1784,7 @@ nzbdStatus.logger('in processingResponse');
 		try {
 
 		var doc = event.originalTarget;
-		if (!doc.location && !doc.location.host)
+		if (!(doc.location && doc.location.host))
 		{
 			return;
 		}
@@ -1899,16 +1899,32 @@ nzbdStatus.logger('in processingResponse');
 			url = 'http://'+postId[1];
 			newIcon = nzbdStatus.makeSendIcon(doc, url);
 			reportname = oldIcon.parentNode.parentNode.parentNode.getElementsByTagName('label');
-			if (reportname)
+			if (reportname.length)
 			{
 				if (reportname[0].textContent.match(/"(.*)"/))
 				{
 					reportname = reportname[0].textContent.match(/"(.*)"/)[1];
 				}
 			}
+			else
+			{
+				reportname = null;
+			}
 			newIcon.setAttribute('data-name', reportname);
-			dlLink = oldIcon.parentNode.parentNode.parentNode.parentNode.getElementsByClassName('firstcolumn')[0];
-			dlLink.appendChild(newIcon);
+			dlLink = oldIcon.parentNode.parentNode.parentNode;
+			if (dlLink.nodeName.toLowerCase() == 'td')
+			{
+				dlLink = dlLink.parentNode;
+			}
+			dlLink = dlLink.getElementsByClassName('firstcolumn');
+			if (dlLink.length)
+			{
+				dlLink[0].appendChild(newIcon);
+			}
+			else
+			{
+				oldIcon.parentNode.insertBefore(newIcon, oldIcon);
+			}
 		}
 	},
 
@@ -1941,12 +1957,16 @@ nzbdStatus.logger('in processingResponse');
 			url = 'http://binsearch.'+domain+'/?action=nzb&'+postId[1]+'=1';
 			newIcon = nzbdStatus.makeSendIcon(doc, url);
 			reportname = oldIcon.parentNode.parentNode.getElementsByClassName('s');
-			if (reportname)
+			if (reportname.length)
 			{
 				if (reportname[0].textContent.match(/"(.*)"/))
 				{
 					reportname = reportname[0].textContent.match(/"(.*)"/)[1];
 				}
+			}
+			else
+			{
+				reportname = null;
 			}
 			newIcon.setAttribute('data-name', reportname);
 			oldIcon.parentNode.style.whiteSpace = 'nowrap';
@@ -1974,12 +1994,13 @@ nzbdStatus.logger('in processingResponse');
 			url = 'http://www.animeusenet.org/nzb/'+postId[1]+'/download/';
 			newIcon = nzbdStatus.makeSendIcon(doc, url);
 			reportname = oldIcon.parentNode.parentNode.parentNode.getElementsByClassName('normaltext');
-			if (reportname)
+			if (reportname.length)
 			{
-				if (reportname[0].textContent.match(/"(.*)"/))
-				{
-					reportname = reportname[0].textContent.match(/"(.*)"/)[1];
-				}
+				reportname = reportname[0].textContent;
+			}
+			else
+			{
+				reportname = null;
 			}
 			newIcon.setAttribute('data-name', reportname);
 			newIcon.setAttribute('data-category', 'anime');
@@ -2015,12 +2036,16 @@ nzbdStatus.logger('in processingResponse');
 			url = 'http://www.newzleech.com/?m=gen&dl=1&post='+postId[1];
 			newIcon = nzbdStatus.makeSendIcon(doc, url);
 			reportname = oldIcon.parentNode.parentNode.getElementsByClassName('subject');
-			if (reportname)
+			if (reportname.length)
 			{
 				if (reportname[0].textContent.match(/"(.*)"/))
 				{
 					reportname = reportname[0].textContent.match(/"(.*)"/)[1];
 				}
+			}
+			else
+			{
+				reportname = null;
 			}
 			newIcon.setAttribute('data-name', reportname);
 			oldIcon.parentNode.style.whiteSpace = 'nowrap';
@@ -2036,7 +2061,7 @@ nzbdStatus.logger('in processingResponse');
 		{
 			return;
 		}
-		var filename, url, oldIcon, postId, newIcon, rowcount = results.length;
+		var album = null, artist = null, filename = null, url, oldIcon, postId, newIcon, rowcount = results.length;
 		for (i = 0; i < rowcount; i++)
 		{
 			oldIcon = results[i];
@@ -2049,9 +2074,11 @@ nzbdStatus.logger('in processingResponse');
 			{
 				continue;
 			}
-			if (oldIcon.parentNode.getElementsByClassName('res_album').length > 0)
+			album = oldIcon.parentNode.getElementsByClassName('res_album');
+			artist = oldIcon.parentNode.getElementsByClassName('res_artist');
+			if (album.length && artist.length)
 			{
-				filename = oldIcon.parentNode.getElementsByClassName('res_artist')[0].textContent + ' - ' + oldIcon.parentNode.getElementsByClassName('res_album')[0].textContent;
+				filename = artist[0].textContent + ' - ' + album[0].textContent;
 			}
 			else if (doc.getElementsByTagName('h1').length > 1)
 			{
