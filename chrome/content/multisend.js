@@ -9,6 +9,16 @@ function onload()
 		newText.setAttribute('src', 'chrome://nzbdstatus/skin/'+servers[i].icon);
 		afterlist.parentNode.insertBefore(newText, afterlist);
 	}
+	var sendAllMessage = document.getElementsByClassName('download');
+	for (i = 0; i < sendAllMessage.length; i++)
+	{
+		sendAllMessage.setAttribute('hidden', 'false');
+	}
+	var sendAllMessage = document.getElementsByClassName('sendall');
+	for (i = 0; i < sendAllMessage.length; i++)
+	{
+		sendAllMessage.setAttribute('hidden', 'false');
+	}
 }
 function onexit()
 {
