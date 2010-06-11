@@ -675,32 +675,6 @@ return;
 		}
 	},
 
-	onNzbmatrixPageLoad: function(doc)
-	{
-		var results = nzbdStatus.selectNodes(doc, doc, '//a[contains(@href,"/nzb-download.php?id=")]');
-		if (results.length == 0)
-		{
-			return;
-		}
-		var oldIcon, postId, newIcon, rowcount = results.length;
-		for (i = 0; i < rowcount; i++)
-		{
-			oldIcon = results[i];
-			postId = oldIcon.href.match(/nzb-download\.php\?id=(\d+)/i);
-			if (postId == null)
-			{
-				continue;
-			}
-			if (oldIcon.href.match(/&nozip=1/i) != null)
-			{
-				continue;
-			}
-			postId = postId[1];
-			newIcon = nzbdStatus.makeSendIcon(doc, postId);
-			oldIcon.parentNode.insertBefore(newIcon, oldIcon);
-		}
-	},
-
 	onTvnzbLoad: function(doc)
 	{
 		var results = nzbdStatus.selectNodes(doc, doc, '//a[contains(@href,"tvnzb.com/nzb/")]');
@@ -886,7 +860,13 @@ return;
 		{
 			if (nzbdStatus.servers[i].enabled)
 			{
-				nzbdStatus.servers[i].refresh();
+				var newEvent = {
+				 action: 'refresh',
+				 serverid: i,
+				 tries: 0,
+				 callback: nzbdStatus.processingResponse
+				 };
+				nzbdStatus.queueEvent(newEvent);
 			}
 		}
 
@@ -980,10 +960,10 @@ return;
 	},
 
 	// Make the changes neeeded for when a widget goes active
-	displayActive: function(serverId)
+	displayActive: function(serverid)
 	{
 
-		var widget = document.getElementById('nzbdstatus-panel-'+serverId);
+		var widget = document.getElementById('nzbdstatus-panel-'+serverid);
 		widget.getElementsByClassName('nzbdstatus-context-pause')[0].removeAttribute('checked');
 		widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].className += ' nzbdstatus-hidden';
 		widget.getElementsByClassName('nzbdstatus-tooltip-data')[0].className = widget.getElementsByClassName('nzbdstatus-tooltip-data')[0].className.replace(/nzbdstatus-hidden/g, '');
@@ -1039,7 +1019,7 @@ return;
 	{
 
 		var newEvent = {
-		 action: 'sendRefresh',
+		 action: 'refresh',
 		 serverId: serverId,
 		 tries: 0
 		 };
@@ -1106,7 +1086,7 @@ return;
 
 		switch (serverDetails.type)
 		{
-			case 'sabnzbd+':
+			case 'sabnzbd':
 				fullUrl += 'api?mode=addfile';
 				if (serverDetails.username != null || serverDetails.password != null)
 				{
@@ -1154,7 +1134,7 @@ return;
 
 		switch (serverDetails.type)
 		{
-			case 'sabnzbd+':
+			case 'sabnzbd':
 				fullUrl += 'api?mode=addid&name='+eventDetails.newzbinId;
 				if (serverDetails.username != null || serverDetails.password != null)
 				{
@@ -1182,41 +1162,7 @@ return;
 
 	},
 
-	sendRefresh: function(eventDetails)
-	{
 
-		var serverDetails = this.servers[eventDetails.serverId];
-		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
-
-		switch (serverDetails.type)
-		{
-			case 'sabnzbd+':
-				fullUrl += 'api?mode=qstatus&output=json';
-				if (serverDetails.username != null || serverDetails.password != null)
-				{
-					fullUrl += '&ma_username='+serverDetails.username+'&ma_password='+serverDetails.password;
-				}
-				if (serverDetails.apikey != '')
-				{
-					fullUrl += '&apikey='+serverDetails.apikey;
-				}
-				// Optional: &cat=<category>&pp=<job-option>&script=<script>
-				break;
-			case 'hellanzb':
-			case 'nzbget':
-			default:
-				// Something that's not been implemented yet
-				dump('Unsupported server type `'+serverDetails.type+'` requested\n');
-				break;
-		}
-
-		var processingHttp = nzbdStatus.processingHttp;
-		processingHttp.open('GET', fullUrl, true);
-		processingHttp.onload = function() { nzbdStatus.processingResponse(this.responseText, eventDetails, serverDetails) };
-		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout*1000);
-		processingHttp.send(null);
-
-	},
 
 	sendPause: function(eventDetails)
 	{
@@ -1226,7 +1172,7 @@ return;
 
 		switch (serverDetails.type)
 		{
-			case 'sabnzbd+':
+			case 'sabnzbd':
 				fullUrl += 'api?mode=pause';
 				if (serverDetails.username != null || serverDetails.password != null)
 				{
@@ -1262,7 +1208,7 @@ return;
 
 		switch (serverDetails.type)
 		{
-			case 'sabnzbd+':
+			case 'sabnzbd':
 				fullUrl += 'api?mode=resume';
 				if (serverDetails.username != null || serverDetails.password != null)
 				{
@@ -1376,15 +1322,21 @@ nzbdStatus.logger('in processingResponse');
 						alertMessage += ', '+eventDetails.newzbinIdName;
 					}
 					break;
-				case 'sendRefresh':
-					if (responseStatus)
+				case 'refresh':
+					switch (responseStatus)
 					{
-						nzbdStatus.processRefresh(serverDetails, refreshObject);
-					}
-					else
-					{
-						alertMessage = 'Could not retrieve data from '+serverDetails.label;
-						alertTitle = serverDetails.label+' Failure Detected';
+						case 'pause':
+							nzbdStatus.displayPaused(eventDetails.serverid);
+							break;
+						case 'idle':
+							nzbdStatus.displayIdle(eventDetails.serverid);
+							break;
+						case 'active':
+							nzbdStatus.displayActive(eventDetails.serverid);
+							break;
+						default:
+							alertMessage = 'Could not retrieve data from '+serverDetails.label;
+							alertTitle = serverDetails.label+' Failure Detected';
 					}
 					break;
 				case 'sendPause':
@@ -1436,7 +1388,7 @@ nzbdStatus.logger('in processingResponse');
 
 		switch (serverDetails.type)
 		{
-			case 'sabnzbd+':
+			case 'sabnzbd':
 				speed = refreshObject.kbpersec;
 				totalMbRemain = refreshObject.mbleft;
 				totalMb = refreshObject.mb;
@@ -1576,7 +1528,7 @@ nzbdStatus.logger('in processingResponse');
 		{
 			return 'newzbin';
 		}
-		if (host.search('nzbmatrix.com') > -1)
+		if ((host.search('nzbmatrix.com') > -1) || (host.search('nzbxxx.com') > -1))
 		{
 			return 'nzbmatrix';
 		}
@@ -1867,6 +1819,60 @@ nzbdStatus.logger('in processingResponse');
 		{
 			nzbdStatus.onNewzbinRawMode(doc);
 			return;
+		}
+	},
+
+	// nzbmatrix.com and nzbxxx.com
+	onNzbmatrixPageLoad: function(doc)
+	{
+		var results = nzbdStatus.selectNodes(doc, doc, '//a[contains(@href,"/nzb-download.php?id=")]');
+		if (results.length == 0)
+		{
+			return;
+		}
+		var url, oldIcon, postId, newIcon, rowcount = results.length;
+		for (i = 0; i < rowcount; i++)
+		{
+			oldIcon = results[i];
+			postId = oldIcon.href.match(/nzb-download\.php\?id=(\d+)/i);
+			if (postId == null)
+			{
+				continue;
+			}
+			if (oldIcon.href.match(/&nozip=1/i) != null)
+			{
+				continue;
+			}
+			postId = postId[1];
+			catIcon = nzbdStatus.selectSingleNode(doc, oldIcon, '../../td/a[contains(@href,"nzb.php?cat=")]');
+			if (catIcon != null)
+			{
+				category = catIcon.textContent.split(':')[0].toLowerCase();
+			}
+			else
+			{
+				catIcon = nzbdStatus.selectSingleNode(doc, oldIcon, '../../../td/a[contains(@href,"nzb.php?cat=")]');
+				if (catIcon != null)
+				{
+					category = catIcon.textContent.split(':')[0].toLowerCase();
+				}
+				else
+				{
+					catIcon = nzbdStatus.selectSingleNode(doc, oldIcon, '../../div/table/tbody/tr/td/a[contains(@href,"nzb.php?cat=")]');
+					if (catIcon != null)
+					{
+						category = catIcon.textContent.split(':')[0].toLowerCase();
+					}
+					else
+					{
+						category = null;
+					}
+				}
+			}
+			url = 'http://nzbmatrix.com/nzb-details.php?id=' + url;
+			newIcon = nzbdStatus.makeSendIcon(doc, postId);
+			newIcon.setAttribute('data-category', category);
+			oldIcon.parentNode.insertBefore(newIcon, oldIcon);
 		}
 	},
 
@@ -2342,9 +2348,6 @@ nzbdStatus.logger('in processingResponse');
 			case 'newzbin':
 				url = 'http://www.newzbin.com/browse/post/' + url + '/';
 				break;
-			case 'nzbmatrix':
-				url = 'http://nzbmatrix.com/nzb-details.php?id=' + url;
-				break;
 			case 'tvnzb':
 				url = 'http://tvnzb.com/nzb/'+url;
 				break;
@@ -2448,14 +2451,14 @@ nzbdStatus.logger('in processingResponse');
 				case 'sendFile':
 					nzbdStatus.sendFile(currentEvent);
 					break;
-				case 'sendRefresh':
-					nzbdStatus.sendRefresh(currentEvent);
-					break;
 				case 'sendPause':
 					nzbdStatus.sendPause(currentEvent);
 					break;
 				case 'sendResume':
 					nzbdStatus.sendResume(currentEvent);
+					break;
+				case 'refresh':
+					nzbdStatus.sendRefresh(currentEvent);
 					break;
 				default:
 					// Something that's not been implemented yet
@@ -2483,11 +2486,19 @@ nzbdStatus.logger('in processingResponse');
 	// Process a Send URL event
 	sendUrl: function(eventDetails)
 	{
-		nzbdStatus.logger('in sendUrl');
 		var server = nzbdStatus.servers[eventDetails.serverid];
 		requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs'); // TODO: server.timeout
 		nzbdStatus.queueTimeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(eventDetails) }, requestTimeout*1000);
 		server.sendUrl(eventDetails);
+	},
+
+	// Process a refresh event
+	sendRefresh: function(eventDetails)
+	{
+		var server = nzbdStatus.servers[eventDetails.serverid];
+		requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs'); // TODO: server.timeout
+		nzbdStatus.queueTimeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(eventDetails) }, requestTimeout*1000);
+		server.refresh(eventDetails);
 	},
 
 
