@@ -16,16 +16,16 @@
 // (c) 2010 Ben Dusinberre
 
 // The sabnzbdServerObject definition itself
-function sabnzbdServerObject(serverId)
+function sabnzbdServerObject(serverid)
 {
 	try {
 
 	this.stringsBundle = document.getElementById("nzb-string-bundle"); // Localization
 	this._preferences = Components.classes['@mozilla.org/preferences;1']
 	 .getService(Components.interfaces.nsIPrefService)
-	 .getBranch('extensions.nzbdstatus.servers.'+serverId+'.');
+	 .getBranch('extensions.nzbdstatus.servers.'+serverid+'.');
 
-	this.serverId = serverId;
+	this.serverid = serverid;
 	this.enabled = this.getPreference('enable');
 	this.showNotifications = this.getPreference('showNotifications');
 	this.showInStatusBar = this.getPreference('showInStatusBar');
@@ -328,9 +328,9 @@ nzbdStatus.logger('in sab.processingResponse');
 		this.queueHttp.abort();
 	},
 
-	refresh: function()
+	refresh: function(eventDetails)
 	{
-		var fullUrl = this.url + 'api?mode=qstatus&output=json';
+		var fullUrl = this.url + 'api?mode=queue&output=json';
 		if (this.apikeyNeeded)
 		{
 			fullUrl += '&apikey='+this.apikey;
@@ -339,36 +339,38 @@ nzbdStatus.logger('in sab.processingResponse');
 		{
 			fullUrl += '&ma_username='+this.username+'&ma_password='+this.password;
 		}
+		var queueReceived = this.queueReceived;
 		var xmldoc = this.xmlHttp;
-		var thisServer = this;
 		xmldoc.open('GET', fullUrl, true);
-		xmldoc.onload = function() { thisServer.queueReceived(this); };
-		//this.timeout = setTimeout(function() { thisServer.abortTest(xmldoc); }, 10000);
+		xmldoc.onload = function() { queueReceived(this, eventDetails); };
 		xmldoc.send(null);
 	},
 
-	queueReceived: function(that)
+	queueReceived: function(that, eventDetails)
 	{
 		try {
 
 		if (that.status != 200)
 		{
 			dump('queueReceived status: '+that.status+'\n');
+			eventDetails.callback(false, eventDetails);
 			return;
 		}
 		var output = that.responseText;
 		if (output == '')
 		{
 			dump('queueReceived empty output\n');
+			eventDetails.callback(false, eventDetails);
 			return;
 		}
-		if ((output.search('<title>Login</title>') > -1) || (output.search('Missing authentication') > -1) || (nzbdStatus.connectionTest == false))
+		if ((output.search('<title>Login</title>') > -1) || (output.search('Missing authentication') > -1))
 		{
 			dump('queueReceived Not logged in\n');
+			eventDetails.callback(false, eventDetails);
 			return;
 		}
 
-		var status, speed, totalTimeRemain, totalMb, totalMbRemain, totalPer, curDL, curTime, curMbRemain, finSpace, queue;
+		var i, status, queue;
 
 		if (!JSON)
 		{
@@ -381,64 +383,56 @@ nzbdStatus.logger('in sab.processingResponse');
 			queueData = JSON.parse(output);
 		}
 
-		speed = queueData.kbpersec;
-		totalMbRemain = queueData.mbleft;
-		totalMb = queueData.mb;
-//dump('1\n');
-		if (queueData.jobs.length > 0)
+		if (queueData.queue.paused == true || queueData.queue.paused.toLowerCase == 'true')
 		{
-			curDL = queueData.jobs[0].filename;
-			curMbRemain = queueData.jobs[0].mbleft;
-		}
-		finSpace = queueData.diskspace1;
-		if (queueData.paused == true || queueData.paused == 'true')
-		{
-			status = 'pause';
-		}
-//dump('2\n');
-
-		if (status == 'pause')
-		{
-			//nzbdStatus.goPaused();
+			eventDetails.callback('pause', eventDetails);
 			return;
 		}
-		if ((Math.floor(totalMbRemain) == 0) || speed == 0)
+		if ((Math.floor(queueData.queue.mbleft) == 0) || queueData.queue.kbpersec == 0)
 		{
-			//nzbdStatus.goIdle();
+			eventDetails.callback('idle', eventDetails);
 			return;
 		}
 
-		totalPer = Math.floor((1 - (totalMbRemain / totalMb)) * 100)+'%';
-		totalTimeRemain = (totalMbRemain * 1024) / speed;
-		totalTimeRemain = nzbdStatus.convertSecondsToTime(totalTimeRemain);
-		curTime = (curMbRemain * 1024) / speed;
-		curTime = nzbdStatus.convertSecondsToTime(curTime);
-
-		document.getElementById('nzbdstatus-panel-'+this.serverId).getElementsByClassName('nzbdstatus-label')[0].value = totalTimeRemain;
-		if (Math.floor(speed) > 1100)
+		if (queueData.queue.slots.length > 0)
 		{
-			var kbpersec = Math.floor(speed / 100) / 10 + ' MB/s';
+			i = 0;
+			do
+			{
+				/// TODO: Fix case for when all slots are paused
+				jobData = queueData.queue.slots[i++]
+			}
+			while (jobData.status.toLowerCase() == 'paused')
+		}
+
+		if (Math.floor(queueData.queue.kbpersec) > 1100)
+		{
+			var kbpersec = Math.floor(queueData.queue.kbpersec / 100) / 10 + ' MB/s';
 		}
 		else
 		{
-			var kbpersec = Math.floor(speed) + ' KB/s';
+			var kbpersec = Math.floor(queueData.queue.kbpersec) + ' KB/s';
 		}
-		document.getElementById('nzbdstatus-panel-'+this.serverId).getElementsByClassName('nzbdstatus-kbpersec')[0].value = kbpersec;
-		document.getElementById('nzbdstatus-panel-'+this.serverId).getElementsByClassName('nzbdstatus-mbleft')[0].setAttribute('value', totalPer);
-		document.getElementById('nzbdstatus-panel-'+this.serverId).getElementsByClassName('nzbdstatus-diskspace1')[0].value = (Math.floor(finSpace * 100) / 100) + ' GB';
-		document.getElementById('nzbdstatus-panel-'+this.serverId).getElementsByClassName('nzbdstatus-jobs0')[0].value = curDL;
-		document.getElementById('nzbdstatus-panel-'+this.serverId).getElementsByClassName('nzbdstatus-jobs0-time')[0].value = curTime;
+
+dump('serverId: '+eventDetails.serverid+'\n');
+dump('timeleft: '+queueData.queue.timeleft+'\n');
 dump('kbpersec: '+kbpersec+'\n')
-dump('totalPer: '+totalPer+'\n')
-dump('finSpace: '+finSpace+'\n')
-dump('curDL: '+curDL+'\n')
-dump('curTime: '+curTime+'\n')
+dump('percent:  '+jobData.percentage+'\n')
+dump('finSpace: '+queueData.queue.diskspace1+'\n')
+dump('filename: '+jobData.filename+'\n')
+dump('curTime:  '+jobData.timeleft+'\n')
 
+		// The Total Time Remaining goes on the widget
+		document.getElementById('nzbdstatus-panel-'+eventDetails.serverid).getElementsByClassName('nzbdstatus-label')[0].value = queueData.queue.timeleft;
+		document.getElementById('nzbdstatus-panel-'+eventDetails.serverid).getElementsByClassName('nzbdstatus-kbpersec')[0].value = kbpersec;
+		document.getElementById('nzbdstatus-panel-'+eventDetails.serverid).getElementsByClassName('nzbdstatus-mbleft')[0].setAttribute('value', jobData.percentage+'%');
+		document.getElementById('nzbdstatus-panel-'+eventDetails.serverid).getElementsByClassName('nzbdstatus-diskspace1')[0].value = (Math.floor(queueData.queue.diskspace1 * 100) / 100) + ' GB';
+		document.getElementById('nzbdstatus-panel-'+eventDetails.serverid).getElementsByClassName('nzbdstatus-jobs0')[0].value = jobData.filename;
+		document.getElementById('nzbdstatus-panel-'+eventDetails.serverid).getElementsByClassName('nzbdstatus-jobs0-time')[0].value = jobData.timeleft;
 
-		nzbdStatus.goActive(this.serverId);
+		eventDetails.callback('active', eventDetails);
 
-
-		} catch(error) {dump('queue threw error `' + error.message + '` on line: ' + error.lineNumber + '\n'); }
+		} catch(error) {dump('sab.queue threw error `' + error.message + '` on line: ' + error.lineNumber + '\n'); }
 	},
 
 	errorLogger: function(fName, error)
