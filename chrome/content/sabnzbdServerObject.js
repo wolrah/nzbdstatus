@@ -37,6 +37,7 @@ function sabnzbdServerObject(serverid)
 	this.type = 'sabnzbd';
 	this.icon = this.getPreference('icon');
 	this.extension = 'nzb';
+	this.paused = false;
 
 	} catch(e) { this.errorLogger('connect',e); }
 }
@@ -293,7 +294,6 @@ nzbdStatus.logger('in sab.sendUrl');
 		{
 			fullUrl += '&cat='+eventDetails.category;
 		}
-nzbdStatus.logger(fullUrl);
 
 		var processingResponse = this.processingResponse;
 		var queueHttp = this.queueHttp;
@@ -385,14 +385,17 @@ nzbdStatus.logger('in sab.processingResponse');
 
 		if (queueData.queue.paused == true || queueData.queue.paused.toLowerCase == 'true')
 		{
+			this.paused = true;
 			eventDetails.callback('pause', eventDetails);
 			return;
 		}
 		if ((Math.floor(queueData.queue.mbleft) == 0) || queueData.queue.kbpersec == 0)
 		{
+			this.paused = false;
 			eventDetails.callback('idle', eventDetails);
 			return;
 		}
+		this.paused = false;
 
 		if (queueData.queue.slots.length > 0)
 		{
@@ -403,6 +406,10 @@ nzbdStatus.logger('in sab.processingResponse');
 				jobData = queueData.queue.slots[i++]
 			}
 			while (jobData.status.toLowerCase() == 'paused')
+		}
+		else
+		{
+			/// TODO: Queue is empty but it's still download?
 		}
 
 		if (Math.floor(queueData.queue.kbpersec) > 1100)
@@ -433,6 +440,58 @@ dump('curTime:  '+jobData.timeleft+'\n')
 		eventDetails.callback('active', eventDetails);
 
 		} catch(error) {dump('sab.queue threw error `' + error.message + '` on line: ' + error.lineNumber + '\n'); }
+	},
+
+	pause: function(eventDetails)
+	{
+		try{
+nzbdStatus.logger('in sab.pause');
+
+		var fullUrl = this.url + 'api?mode=pause';
+		if (this.loginNeeded)
+		{
+			fullUrl += '&ma_username='+this.username+'&ma_password='+this.password;
+		}
+		if (this.apikeyNeeded)
+		{
+			fullUrl += '&apikey='+this.apikey;
+		}
+
+		var processingResponse = this.processingResponse;
+		var queueHttp = this.queueHttp;
+		queueHttp.open('GET', fullUrl, true);
+		queueHttp.onload = function() { processingResponse(this.responseText, eventDetails) };
+		queueHttp.send(null);
+
+		this.paused = true;
+
+		} catch(e) { this.errorLogger('sab.pause',e); }
+	},
+
+	resume: function(eventDetails)
+	{
+		try{
+nzbdStatus.logger('in sab.resume');
+
+		var fullUrl = this.url + 'api?mode=resume';
+		if (this.loginNeeded)
+		{
+			fullUrl += '&ma_username='+this.username+'&ma_password='+this.password;
+		}
+		if (this.apikeyNeeded)
+		{
+			fullUrl += '&apikey='+this.apikey;
+		}
+
+		var processingResponse = this.processingResponse;
+		var queueHttp = this.queueHttp;
+		queueHttp.open('GET', fullUrl, true);
+		queueHttp.onload = function() { processingResponse(this.responseText, eventDetails) };
+		queueHttp.send(null);
+
+		this.paused = false;
+
+		} catch(e) { this.errorLogger('sab.resume',e); }
 	},
 
 	errorLogger: function(fName, error)
