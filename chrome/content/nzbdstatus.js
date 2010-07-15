@@ -246,27 +246,6 @@ nzbdStatusObject.prototype = {
 		}
 	},
 /*
-	sendPause: function()
-	{
-		var sabUrl = nzbdStatus.getPreference('servers.'+this.favServer+'.url') + nzbdStatus.getPreference('pauseUrl');
-		var xmlHttp = this.xmlHttp;
-		xmlHttp.open('GET', sabUrl, true);
-		xmlHttp.send(null);
-	},
-
-	sendResume: function()
-	{
-		try {
-
-		var sabUrl = nzbdStatus.getPreference('servers.'+this.favServer+'.url') + nzbdStatus.getPreference('unpauseUrl');
-		var xmlHttp = this.xmlHttp;
-		xmlHttp.open('GET', sabUrl, true);
-		xmlHttp.send(null);
-		this.refreshStatus();
-
-		} catch(e) { dump('sendResume error:'+e); }
-	},
-*//*
 	loginToSAB: function()
 	{
 
@@ -648,9 +627,6 @@ return;
 			case 'nzbsorg':
 				results = nzbdStatus.selectNodes(doc, doc, '//tr[contains(@class,"selected")]/td/b/img[@class="sabsend"]');
 				break;
-			case 'tvnzb':
-				results = nzbdStatus.selectNodes(doc, doc, '//input[@name="marked_nzb[]"]');
-				break;
 			case 'nzbindex':
 				results = nzbdStatus.selectNodes(doc, doc, '//input[@name="r[]"]');
 				break;
@@ -667,7 +643,7 @@ return;
 				{
 					results[i].click(event);
 				}
-				if (((siteSrc == 'tvnzb') || (siteSrc == 'nzbindex')) && results[i].checked)
+				if (((siteSrc == 'nzbindex')) && results[i].checked)
 				{
 					results[i].parentNode.parentNode.getElementsByClassName('sabsend')[0].click(event);
 				}
@@ -675,65 +651,6 @@ return;
 		}
 	},
 
-	onTvnzbLoad: function(doc)
-	{
-		var results = nzbdStatus.selectNodes(doc, doc, '//a[contains(@href,"tvnzb.com/nzb/")]');
-		if (results.length == 0)
-		{
-			return;
-		}
-		var sendAllButton = nzbdStatus.selectSingleNode(doc, doc, '//input[@type="submit"][@value="Download Selected NZBs"]');
-		if (sendAllButton)
-		{
-			var allButton = nzbdStatus.makeSendAllButton(doc);
-			allButton.className = sendAllButton.className;
-			sendAllButton.parentNode.insertBefore(allButton, sendAllButton);
-		}
-		var oldIcon, postId, newIcon, rowcount = results.length;
-		for (i = 0; i < rowcount; i++)
-		{
-			oldIcon = results[i];
-			postId = oldIcon.href.match(/tvnzb\.com\/nzb\/(\d+)/i);
-			if (postId == null)
-			{
-				continue;
-			}
-			postId = postId[1];
-			newIcon = nzbdStatus.makeSendIcon(doc, postId);
-			newIcon.style.marginRight = '.5em';
-			oldIcon.parentNode.insertBefore(newIcon, oldIcon);
-		}
-	},
-
-	onNzbsOrgLoad: function(doc)
-	{
-		var results = nzbdStatus.selectNodes(doc, doc, '//a[contains(@href,"index.php?action=view&nzbid=")]');
-		if (results.length == 0)
-		{
-			return;
-		}
-		var sendAllButton = doc.getElementById('addtomynzbs');
-		if (sendAllButton)
-		{
-			var allButton = nzbdStatus.makeSendAllButton(doc);
-			allButton.className = sendAllButton.className;
-			sendAllButton.parentNode.insertBefore(allButton, sendAllButton);
-		}
-		var oldIcon, postId, newIcon, rowcount = results.length;
-		for (i = 0; i < rowcount; i++)
-		{
-			oldIcon = results[i];
-			postId = oldIcon.href.match(/index\.php\?action=view&nzbid=(\d+)$/i);
-			if (postId == null)
-			{
-				continue;
-			}
-			postId = postId[1];
-			newIcon = nzbdStatus.makeSendIcon(doc, postId);
-			newIcon.style.marginRight = '.5em';
-			oldIcon.parentNode.insertBefore(newIcon, oldIcon);
-		}
-	},
 
 
 
@@ -851,28 +768,6 @@ return;
 
 
 
-	// Queue a refresh request for each widget
-	refreshAll: function()
-	{
-		try {
-
-		for each (var i in nzbdStatus.serverOrder)
-		{
-			if (nzbdStatus.servers[i].enabled)
-			{
-				var newEvent = {
-				 action: 'refresh',
-				 serverid: i,
-				 tries: 0,
-				 callback: nzbdStatus.processingResponse
-				 };
-				nzbdStatus.queueEvent(newEvent);
-			}
-		}
-
-		} catch(e) { nzbdStatus.errorLogger('refreshAll',e); }
-	},
-
 	// Count down a second
 	countdown: function()
 	{
@@ -895,23 +790,6 @@ return;
 
 	},
 
-	// Check to see if a pause or a resume should be sent
-	togglePause: function(e)
-	{
-
-		var widget = e.currentTarget.parentNode.id.match(/nzbdstatus-context-(\d)+/)[1];
-		var toPause = (document.getElementById('nzbdstatus-panel-'+widget).getElementsByClassName('nzbdstatus-context-pause')[0].getAttribute('checked') != '');
-		if (toPause)
-		{
-			nzbdStatus.queuePause(widget);
-		}
-		else
-		{
-			nzbdStatus.queueResume(widget);
-		}
-
-	},
-
 	// Make the changes needed for when a widget is paused
 	displayPaused: function(serverId)
 	{
@@ -924,6 +802,10 @@ return;
 		widget.getElementsByTagName('label')[0].className = widget.getElementsByTagName('label')[0].className.replace(/nzbdstatus-time/g, '');
 		widget.getElementsByClassName('nzbdstatus-jobs0-time')[0].className = widget.getElementsByClassName('nzbdstatus-jobs0-time')[0].className.replace(/nzbdstatus-time/g, '');
 		widget.className = widget.className.replace(/nzbdstatus-hidden/g, '');
+		if (this.countdownId != null)
+		{
+			this.countdownId = clearInterval(this.countdownId);
+		}
 	},
 
 	// Make the changes needed for when a widget goes idle
@@ -957,6 +839,10 @@ return;
 			this.countdownId = clearInterval(this.countdownId);
 		}
 */
+		if (this.countdownId != null)
+		{
+			this.countdownId = clearInterval(this.countdownId);
+		}
 	},
 
 	// Make the changes neeeded for when a widget goes active
@@ -1015,46 +901,10 @@ return;
 
 	},
 
-	queueRefresh: function(serverId)
-	{
-
-		var newEvent = {
-		 action: 'refresh',
-		 serverId: serverId,
-		 tries: 0
-		 };
-		nzbdStatus.queueEvent(newEvent);
-
-	},
-
 	queueRefreshSoon: function(serverId)
 	{
 		// Have a five second delay before asking for a refresh
 		window.setTimeout(function() { nzbdStatus.queueRefresh(serverId); }, 5000);
-	},
-
-	queuePause: function(serverId)
-	{
-
-		var newEvent = {
-		 action: 'sendPause',
-		 serverId: serverId,
-		 tries: 0
-		 };
-		nzbdStatus.queueEvent(newEvent);
-
-	},
-
-	queueResume: function(serverId)
-	{
-
-		var newEvent = {
-		 action: 'sendResume',
-		 serverId: serverId,
-		 tries: 0
-		 };
-		nzbdStatus.queueEvent(newEvent);
-
 	},
 
 	// Process a Send File event
@@ -1342,7 +1192,7 @@ nzbdStatus.logger('in processingResponse');
 				case 'sendPause':
 					if (responseStatus)
 					{
-						nzbdStatus.displayPaused(eventDetails.serverId);
+						nzbdStatus.displayPaused(eventDetails.serverid);
 					}
 					else
 					{
@@ -1353,8 +1203,8 @@ nzbdStatus.logger('in processingResponse');
 				case 'sendResume':
 					if (responseStatus)
 					{
-						nzbdStatus.displayIdle(eventDetails.serverId);
-						nzbdStatus.queueRefreshSoon(eventDetails.serverId);
+						nzbdStatus.displayIdle(eventDetails.serverid);
+						nzbdStatus.queueRefresh(eventDetails.serverid);
 					}
 					else
 					{
@@ -1455,13 +1305,13 @@ nzbdStatus.logger('in processingResponse');
 	},
 
 	// Loads the details for a single server into the cache
-	loadDetailsOf: function(serverId)
+	loadDetailsOf: function(serverid)
 	{
-		var serverType = nzbdStatus.getPreference('servers.'+serverId+'.type');
+		var serverType = nzbdStatus.getPreference('servers.'+serverid+'.type');
 		switch (serverType)
 		{
 			case 'sabnzbd':
-				var serverObject = new sabnzbdServerObject(serverId);
+				var serverObject = new sabnzbdServerObject(serverid);
 				if (serverObject.enabled)
 				{
 					serverObject.connect();
@@ -1469,7 +1319,7 @@ nzbdStatus.logger('in processingResponse');
 				}
 				break;
 		}
-		nzbdStatus.servers[serverId] = serverObject;
+		nzbdStatus.servers[serverid] = serverObject;
 	},
 
 	// This creates a widget for each server then sticks it into the status bar
@@ -1531,10 +1381,6 @@ nzbdStatus.logger('in processingResponse');
 		if ((host.search('nzbmatrix.com') > -1) || (host.search('nzbxxx.com') > -1))
 		{
 			return 'nzbmatrix';
-		}
-		if (host.search('tvnzb.com') > -1)
-		{
-			return 'tvnzb';
 		}
 		if (host.search('nzbs.org') > -1)
 		{
@@ -1697,9 +1543,6 @@ nzbdStatus.logger('in processingResponse');
 			case 'nzbmatrix':
 				return (href.search(/nzbmatrix\.com\/nzb-d(ownload|etails).php\?id=(\d+)/i) > -1);
 				break;
-			case 'tvnzb':
-				return (href.search(/tvnzb\.com\/nzb\/(\d+)/i) > -1);
-				break;
 			case 'nzbsorg':
 				return (href.search(/nzbs\.org\/index\.php\?.*nzbid=(\d+)/i) > -1);
 				break;
@@ -1707,7 +1550,7 @@ nzbdStatus.logger('in processingResponse');
 				return (href.search(/nzbindex\.(nl|com)\/download\/(\d+)/i) > -1);
 				break;
 			case 'binsearch':
-				return (href.search(/tvnzb\.com\/nzb\/(\d+)/i) > -1);
+				return (href.search(/binsearch\.(info|net)\/\?action=nzb&(\d+)=1/i) > -1);
 				break;
 			case 'animeusenet':
 				return (href.search(/animeusenet\.org\/.*\/(\d+)/i) > -1);
@@ -1766,9 +1609,6 @@ nzbdStatus.logger('in processingResponse');
 				break;
 			case 'nzbmatrix':
 				nzbdStatus.onNzbmatrixPageLoad(doc);
-				break;
-			case 'tvnzb':
-				nzbdStatus.onTvnzbLoad(doc);
 				break;
 			case 'nzbsorg':
 				nzbdStatus.onNzbsOrgLoad(doc);
@@ -1869,10 +1709,80 @@ nzbdStatus.logger('in processingResponse');
 					}
 				}
 			}
-			url = 'http://nzbmatrix.com/nzb-details.php?id=' + url;
-			newIcon = nzbdStatus.makeSendIcon(doc, postId);
+			url = 'http://nzbmatrix.com/nzb-details.php?id=' + postId;
+			newIcon = nzbdStatus.makeSendIcon(doc, url);
 			newIcon.setAttribute('data-category', category);
 			oldIcon.parentNode.insertBefore(newIcon, oldIcon);
+		}
+	},
+
+	// nzbs.org
+	onNzbsOrgLoad: function(doc)
+	{
+		var results = nzbdStatus.selectNodes(doc, doc, '//input[@name="items[]"][@type="checkbox"]');
+		if (results.length == 0)
+		{
+			results = nzbdStatus.selectNodes(doc, doc, '//a[contains(@href,"index.php?action=view&nzbid=")]');
+			if (results.length == 0)
+			{
+				return;
+			}
+		}
+		var rssLink = nzbdStatus.selectSingleNode(doc, doc, '//link[@type="application/rss+xml"]');
+		var rssInfo = rssLink.href.match(/rss\.php\?.*&i=(\d+)&h=(\w+)/);
+		var sendAllButton = doc.getElementById('addtomynzbs');
+		if (sendAllButton)
+		{
+			var allButton = nzbdStatus.makeSendAllButton(doc);
+			allButton.className = sendAllButton.className;
+			sendAllButton.parentNode.insertBefore(allButton, sendAllButton);
+		}
+		var oldIcon, postId, newIcon, rowcount = results.length;
+		for (i = 0; i < rowcount; i++)
+		{
+			oldIcon = results[i];
+			if (oldIcon.nodeName.toLowerCase() == 'input')
+			{
+				postId = oldIcon.value;
+			}
+			else if (oldIcon.nodeName.toLowerCase() == 'a')
+			{
+				postId = oldIcon.href.match(/index\.php\?action=view&nzbid=(\d+)$/i);
+			}
+			if (postId == null)
+			{
+				continue;
+			}
+			catIcon = nzbdStatus.selectSingleNode(doc, oldIcon, '../../td/a[contains(@href,"index.php?action=browse&catid=")]');
+			if (catIcon == null)
+			{
+				catIcon = nzbdStatus.selectSingleNode(doc, oldIcon, '//h3/a[contains(@href,"index.php?action=browse&type=")]');
+				if (catIcon == null)
+				{
+					category = null;
+				}
+				else
+				{
+					category = catIcon.textContent.toLowerCase();
+				}
+			}
+			else
+			{
+				category = catIcon.textContent.split('-')[0].toLowerCase();
+			}
+			url = 'http://nzbs.org/index.php?action=getnzb&nzbid='+postId+'&i='+rssInfo[1]+'&h='+rssInfo[2];
+			newIcon = nzbdStatus.makeSendIcon(doc, url);
+			if (oldIcon.nodeName.toLowerCase() == 'input')
+			{
+				oldIcon.parentNode.appendChild(newIcon);
+			}
+			else if (oldIcon.nodeName.toLowerCase() == 'a')
+			{
+				newIcon.style.marginRight = '.5em';
+				newIcon.setAttribute('data-category', category);
+				oldIcon.parentNode.insertBefore(newIcon, oldIcon);
+			}
+
 		}
 	},
 
@@ -2262,9 +2172,6 @@ nzbdStatus.logger('in processingResponse');
 			case 'nzbsorg':
 				results = nzbdStatus.selectNodes(doc, doc, '//tr[contains(@class,"selected")]/td/b/img[@class="sabsend"]');
 				break;
-			case 'tvnzb':
-				results = nzbdStatus.selectNodes(doc, doc, '//input[@name="marked_nzb[]"]');
-				break;
 			case 'nzbindex':
 				results = nzbdStatus.selectNodes(doc, doc, '//input[@name="r[]"]');
 				break;
@@ -2281,7 +2188,7 @@ nzbdStatus.logger('in processingResponse');
 				{
 					results[i].click(event);
 				}
-				if (((siteSrc == 'tvnzb') || (siteSrc == 'nzbindex')) && results[i].checked)
+				if (((siteSrc == 'nzbindex')) && results[i].checked)
 				{
 					results[i].parentNode.parentNode.getElementsByClassName('sabsend')[0].click(event);
 				}
@@ -2290,6 +2197,37 @@ nzbdStatus.logger('in processingResponse');
 
 		} catch(e) { nzbdStatus.errorLogger('sendAllToServer',e); }
 	},
+
+	// Check to see if a pause or a resume should be sent
+	togglePause: function(e)
+	{
+		try {
+		var widget = e.currentTarget.parentNode.id.match(/nzbdstatus-context-(\d)+/)[1];
+			dump('p.serverid:'+widget+'\n');
+		if (nzbdStatus.servers[widget].paused)
+		{
+			dump('p.resumed:'+widget+'\n');
+			nzbdStatus.queueResume(widget);
+		}
+		else
+		{
+			dump('p.paused:'+widget+'\n');
+			nzbdStatus.queuePause(widget);
+		}
+/*
+		var toPause = (document.getElementById('nzbdstatus-panel-'+widget).getElementsByClassName('nzbdstatus-context-pause')[0].getAttribute('checked') != '');
+		if (toPause)
+		{
+			nzbdStatus.queuePause(widget);
+		}
+		else
+		{
+			nzbdStatus.queueResume(widget);
+		}
+*/
+		} catch(e) { nzbdStatus.errorLogger('togglePause',e); }
+	},
+
 
 
 	///
@@ -2347,17 +2285,6 @@ nzbdStatus.logger('in processingResponse');
 		{
 			case 'newzbin':
 				url = 'http://www.newzbin.com/browse/post/' + url + '/';
-				break;
-			case 'tvnzb':
-				url = 'http://tvnzb.com/nzb/'+url;
-				break;
-			case 'nzbsorg':
-				var rssLink = nzbdStatus.selectSingleNode(doc, doc, '//link[@type="application/rss+xml"]');
-				var details = rssLink.href.match(/rss\.php\?.*&i=(\d+)&h=(\w+)/);
-				if (details)
-				{
-					url = 'http://nzbs.org/index.php?action=getnzb&nzbid='+url+'&i='+details[1]+'&h='+details[2];
-				}
 				break;
 		}
 
@@ -2417,6 +2344,63 @@ nzbdStatus.logger('in processingResponse');
 		} catch(e) { nzbdStatus.errorLogger('queueUrl',e); }
 	},
 
+	// request to refresh the data
+	queueRefresh: function(serverid)
+	{
+		try {
+
+		var newEvent = {
+		 action: 'refresh',
+		 serverid: serverid,
+		 tries: 0,
+		 callback: nzbdStatus.processingResponse
+		 };
+		nzbdStatus.queueEvent(newEvent);
+
+		} catch(e) { nzbdStatus.errorLogger('refresh',e); }
+	},
+
+	// Queue a refresh request for each widget
+	refreshAll: function()
+	{
+		try {
+
+		for each (var i in nzbdStatus.serverOrder)
+		{
+			if (nzbdStatus.servers[i].enabled)
+			{
+				nzbdStatus.queueRefresh(i);
+			}
+		}
+
+		} catch(e) { nzbdStatus.errorLogger('refreshAll',e); }
+	},
+
+	// send a pause
+	queuePause: function(serverid)
+	{
+		var newEvent = {
+		 action: 'sendPause',
+		 serverid: serverid,
+		 tries: 0,
+		 callback: nzbdStatus.processingResponse
+		 };
+		nzbdStatus.queueEvent(newEvent);
+	},
+
+	// send a resume
+	queueResume: function(serverid)
+	{
+		var newEvent = {
+		 action: 'sendResume',
+		 serverid: serverid,
+		 tries: 0,
+		 callback: nzbdStatus.processingResponse
+		 };
+		nzbdStatus.queueEvent(newEvent);
+	},
+
+
 	// Add an event to the end of the event queue
 	queueEvent: function(newEvent)
 	{
@@ -2443,22 +2427,25 @@ nzbdStatus.logger('in processingResponse');
 		{
 			var currentEvent = nzbdStatus.processingQueue.shift();
 			nzbdStatus.logger('action: '+currentEvent.action);
+			var server = nzbdStatus.servers[currentEvent.serverid];
+			requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs'); // TODO: server.timeout
+			nzbdStatus.queueTimeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(currentEvent) }, requestTimeout*1000);
 			switch (currentEvent.action)
 			{
 				case 'sendUrl':
-					nzbdStatus.sendUrl(currentEvent);
+					server.sendUrl(currentEvent);
 					break;
 				case 'sendFile':
 					nzbdStatus.sendFile(currentEvent);
 					break;
 				case 'sendPause':
-					nzbdStatus.sendPause(currentEvent);
+					server.pause(currentEvent);
 					break;
 				case 'sendResume':
-					nzbdStatus.sendResume(currentEvent);
+					server.resume(currentEvent);
 					break;
 				case 'refresh':
-					nzbdStatus.sendRefresh(currentEvent);
+					server.refresh(currentEvent);
 					break;
 				default:
 					// Something that's not been implemented yet
@@ -2468,7 +2455,7 @@ nzbdStatus.logger('in processingResponse');
 		}
 		else
 		{
-			nzbdStatus.logger('nothing in queue; '+nzbdStatus.processingQueue.length);
+			nzbdStatus.logger('nothing in queue');
 			nzbdStatus.processingQueueActive = false;
 		}
 
@@ -2483,23 +2470,6 @@ nzbdStatus.logger('in processingResponse');
 		nzbdStatus.processingResponse(false, eventDetails)
 	},
 
-	// Process a Send URL event
-	sendUrl: function(eventDetails)
-	{
-		var server = nzbdStatus.servers[eventDetails.serverid];
-		requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs'); // TODO: server.timeout
-		nzbdStatus.queueTimeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(eventDetails) }, requestTimeout*1000);
-		server.sendUrl(eventDetails);
-	},
-
-	// Process a refresh event
-	sendRefresh: function(eventDetails)
-	{
-		var server = nzbdStatus.servers[eventDetails.serverid];
-		requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs'); // TODO: server.timeout
-		nzbdStatus.queueTimeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(eventDetails) }, requestTimeout*1000);
-		server.refresh(eventDetails);
-	},
 
 
 
