@@ -1406,6 +1406,22 @@ nzbdStatus.logger('in processingResponse');
 		{
 			return 'albumsindex';
 		}
+		if (host.search('nzbclub.com') > -1)
+		{
+			return 'nzbclub';
+		}
+		if (host.search('bintube.com') > -1)
+		{
+			return 'bintube';
+		}
+		if (host.search('nzbtvseeker.com') > -1)
+		{
+			return 'nzbtvseeker';
+		}
+		if (host.search('bin-req.net') > -1)
+		{
+			return 'binreq';
+		}
 		return false;
 	},
 
@@ -1431,7 +1447,7 @@ nzbdStatus.logger('in processingResponse');
 			serverLink.appendChild(doc.createTextNode(nzbdStatus.servers[i].label));
 			serverItem.appendChild(serverLink);
 			serverItem.className += 'nzblistentry nzbServer'+i;
-			serverItem.addEventListener('click', nzbdStatus.queuePostId, false);
+			serverItem.addEventListener('click', nzbdStatus.eventOneClick, false);
 			if (!nzbdStatus.servers[i].enabled)
 			{
 				serverItem.style.display = 'none';
@@ -1506,7 +1522,7 @@ nzbdStatus.logger('in processingResponse');
 		sendIcon.setAttribute('data-url', url);
 		sendIcon.className = 'nzboneclick nzbServer0';  // TODO: make this fav / first server?
 		sendIcon.title = 'Send to Server';
-		sendIcon.addEventListener('click', nzbdStatus.queuePostId, false);
+		sendIcon.addEventListener('click', nzbdStatus.eventOneClick, false);
 		if (nzbdStatus.numServerEnabled > 1)
 		{
 			sendIcon.addEventListener('mouseover', nzbdStatus.showServerList, false);
@@ -1628,6 +1644,18 @@ nzbdStatus.logger('in processingResponse');
 			case 'albumsindex':
 				nzbdStatus.onAlbumsindexLoad(doc);
 				break;
+			case 'nzbclub':
+				nzbdStatus.onNzbclubLoad(doc);
+				break;
+			case 'bintube':
+				nzbdStatus.onBintubeLoad(doc);
+				break;
+			case 'nzbtvseeker':
+				nzbdStatus.onNzbtvseekerLoad(doc);
+				break;
+			case 'binreq':
+				nzbdStatus.onBinreqLoad(doc);
+				break;
 		}
 
 		} catch(e) { nzbdStatus.errorLogger('onPageLoad',e); }
@@ -1744,6 +1772,7 @@ nzbdStatus.logger('in processingResponse');
 			if (oldIcon.nodeName.toLowerCase() == 'input')
 			{
 				postId = oldIcon.value;
+				results[i].parentNode.parentNode.addEventListener('click', nzbdStatus.rowClick, false);
 			}
 			else if (oldIcon.nodeName.toLowerCase() == 'a')
 			{
@@ -1782,7 +1811,20 @@ nzbdStatus.logger('in processingResponse');
 				newIcon.setAttribute('data-category', category);
 				oldIcon.parentNode.insertBefore(newIcon, oldIcon);
 			}
-
+		}
+		// If a single view page, insert a one click icon in the filename row
+		if (doc.location.href.search(/action=view/) > -1)
+		{
+			oldIcon = nzbdStatus.selectSingleNode(doc, doc, '//th');
+			postId = doc.location.href.match(/action=view&nzbid=(\d+)/);
+			postId = postId[1];
+			catIcon = nzbdStatus.selectSingleNode(doc, doc, '//h3/a[contains(@href,"action=browse&type=")]');
+			category = catIcon.textContent.toLowerCase();
+			url = 'http://nzbs.org/index.php?action=getnzb&nzbid='+postId+'&i='+rssInfo[1]+'&h='+rssInfo[2];
+			newIcon = nzbdStatus.makeSendIcon(doc, url);
+			newIcon.style.marginRight = '.5em';
+			newIcon.setAttribute('data-category', category);
+			oldIcon.insertBefore(newIcon, oldIcon.childNodes[0]);
 		}
 	},
 
@@ -2013,6 +2055,26 @@ nzbdStatus.logger('in processingResponse');
 		}
 	},
 
+	onNzbclubLoad: function(doc)
+	{
+		//
+	},
+
+	onBintubeLoad: function(doc)
+	{
+		//
+	},
+
+	onNzbtvseekerLoad: function(doc)
+	{
+		//
+	},
+
+	onBinreqLoad: function(doc)
+	{
+		//
+	},
+
 	// Newzbin's individual report view
 	onNewzbinReportDetailMode: function(doc)
 	{
@@ -2150,27 +2212,32 @@ nzbdStatus.logger('in processingResponse');
 	sendAllToServer: function(event)
 	{
 		try{
-		var params = {servers:[], out:null};
-		for each (var i in nzbdStatus.serverOrder)
+		var params = {servers:[], out:null, type:'links'};
+		var i = 0;
+		for each (var order in nzbdStatus.serverOrder)
 		{
 			if (nzbdStatus.servers[i].enabled)
 			{
 				params.servers[i] = {};
 				params.servers[i].label = nzbdStatus.servers[i].label;
 				params.servers[i].icon = nzbdStatus.servers[i].icon;
+				params.servers[i].order = order;
+				params.servers[i].checked = false; /// TODO: see what the default is
 			}
+			i++;
 		}
 
 		window.openDialog("chrome://nzbdstatus/content/multisend.xul", "", "chrome, dialog, modal, resizable=no", params).focus();
 
 		var doc = event.originalTarget.ownerDocument;
-		switch (nzbdStatus.supportedSite(doc.location.host))
+		var siteSrc = nzbdStatus.supportedSite(doc.location.host);
+		switch (siteSrc)
 		{
 			case 'newzbin':
-				results = nzbdStatus.selectNodes(doc, doc, '//tbody[contains(@class,"select")]/tr/td/img[@class="sabsend"]');
+				results = nzbdStatus.selectNodes(doc, doc, '//tbody[contains(@class,"select")]/tr/td/img[@class="nzboneclick"]');
 				break;
 			case 'nzbsorg':
-				results = nzbdStatus.selectNodes(doc, doc, '//tr[contains(@class,"selected")]/td/b/img[@class="sabsend"]');
+				results = nzbdStatus.selectNodes(doc, doc, '//tr[contains(@class,"selected")]/td/img[contains(@class,"nzboneclick")]');
 				break;
 			case 'nzbindex':
 				results = nzbdStatus.selectNodes(doc, doc, '//input[@name="r[]"]');
@@ -2186,7 +2253,18 @@ nzbdStatus.logger('in processingResponse');
 			{
 				if ((siteSrc == 'newzbin') || (siteSrc == 'nzbsorg'))
 				{
-					results[i].click(event);
+					for (j = 0; j < params.servers.length; j++)
+					{
+						if (params.servers[j].checked)
+						{
+							url = results[i].getAttribute('data-url');
+							category = results[i].getAttribute('data-category');
+							reportname = results[i].getAttribute('data-name');
+							icon = results[i];
+							serverid = params.servers[j].order;
+							nzbdStatus.queueUrl(serverid, url, icon, category, reportname);
+						}
+					}
 				}
 				if (((siteSrc == 'nzbindex')) && results[i].checked)
 				{
@@ -2234,8 +2312,8 @@ nzbdStatus.logger('in processingResponse');
 	/// Methods for adding to the queue
 	///
 
-	// Queue up a one click request
-	queuePostId: function(e)
+	// Process a one click event
+	eventOneClick: function(e)
 	{
 		try {
 
@@ -2287,6 +2365,17 @@ nzbdStatus.logger('in processingResponse');
 				url = 'http://www.newzbin.com/browse/post/' + url + '/';
 				break;
 		}
+		var icon = nzbdStatus.selectSingleNode(doc, doc, '//img[@data-url="'+url+'"]');
+
+		nzbdStatus.queueUrl(serverid, url, icon, category, reportname);
+
+		} catch(e) { nzbdStatus.errorLogger('eventOneClick',e); }
+	},
+
+	// Add a url to the queue
+	queueUrl: function(serverid, url, icon, category, reportname)
+	{
+		try {
 
 		var newEvent = {
 		 action: 'sendUrl',
@@ -2294,7 +2383,7 @@ nzbdStatus.logger('in processingResponse');
 		 category: category,
 		 url: url,
 		 reportname: reportname,
-		 icon: nzbdStatus.selectSingleNode(doc, doc, '//img[@data-url="'+url+'"]'),
+		 icon: icon,
 		 tries: 0,
 		 callback: nzbdStatus.processingResponse
 		 };
@@ -2303,8 +2392,8 @@ nzbdStatus.logger('in processingResponse');
 		} catch(e) { nzbdStatus.errorLogger('queuePostId',e); }
 	},
 
-	// Queue up a right click request
-	queueUrl: function(e)
+	// Process a right click event
+	eventRightClick: function(e)
 	{
 		try {
 
@@ -2312,14 +2401,14 @@ nzbdStatus.logger('in processingResponse');
 		// I stole this if/else block from somewhere, I don't know what it means
 		if (gContextMenu && gContextMenu.getLinkURL)
 		{
-			var href = gContextMenu.getLinkURL();
+			var url = gContextMenu.getLinkURL();
 		}
 		else if (gContextMenu && gContextMenu.linkURL)
 		{
-			var href = gContextMenu.linkURL();
+			var url = gContextMenu.linkURL();
 		}
 		// We wern't able to obtain a link that they clicked on, so give up
-		if (!href)
+		if (!url)
 		{
 			return false;
 		}
@@ -2331,17 +2420,13 @@ nzbdStatus.logger('in processingResponse');
 
 		/// TODO: Some sort of thing to modify urls that need it
 
-		var newEvent = {
-		 action: 'sendUrl',
-		 serverid: serverid,
-		 url: href,
-		 icon: gContextMenu.target,
-		 tries: 0,
-		 callback: nzbdStatus.processingResponse
-		 };
-		nzbdStatus.queueEvent(newEvent);
+		var category = null;
+		var reportname = null;
+		var icon = gContextMenu.target;
 
-		} catch(e) { nzbdStatus.errorLogger('queueUrl',e); }
+		nzbdStatus.queueUrl(serverid, url, icon, category, reportname);
+
+		} catch(e) { nzbdStatus.errorLogger('eventRightClick',e); }
 	},
 
 	// request to refresh the data
