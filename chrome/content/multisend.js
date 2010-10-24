@@ -16,7 +16,7 @@ function onload()
 		var sendAllMessage = document.getElementsByClassName('sendall');
 		for (i = 0; i < sendAllMessage.length; i++)
 		{
-			sendAllMessage.setAttribute('hidden', 'false');
+			sendAllMessage[i].setAttribute('hidden', 'false');
 		}
 	}
 	else
@@ -24,9 +24,10 @@ function onload()
 		var sendAllMessage = document.getElementsByClassName('download');
 		for (i = 0; i < sendAllMessage.length; i++)
 		{
-			sendAllMessage.setAttribute('hidden', 'false');
+			sendAllMessage[i].setAttribute('hidden', 'false');
 		}
 	}
+	window.sizeToContent();
 }
 
 function onexit()
@@ -35,6 +36,7 @@ function onexit()
 	for (i = 0; i < servers.length; i++)
 	{
 		chk = document.getElementById('servers'+i);
-		servers[i].checked = chk.getAttribute('checked');
+		servers[i].checked = (chk.getAttribute('checked') == 'true');
 	}
+	/// TODO: See if always_checkbox is checked and save the results
 }
