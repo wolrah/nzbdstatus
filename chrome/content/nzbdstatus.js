@@ -882,11 +882,15 @@ return;
 		var dlCom = subject.QueryInterface(Components.interfaces.nsIDownload);
 		var filename = null;
 		filename = dlCom.displayName;
+		/// TODO: Add .zip, .rar support
 		if (filename.search(/\.nzb$/) == -1)
 		{
 			// Not an NZB file
 			return;
 		}
+		// check how many servers enabled
+		// if 1, do v1 prompt
+		// if 2+, do multisend
 
 		var newEvent = {
 		 action: 'sendFile',
@@ -2281,9 +2285,20 @@ nzbdStatus.logger('in processingResponse');
 				}
 				i++;
 			}
-			if (j > 1)
+			if (nzbdStatus.getPreference('prompt.sendMulti'))
 			{
-				window.openDialog("chrome://nzbdstatus/content/multisend.xul", "", "chrome, dialog, modal, resizable=no", params).focus();
+				if (j > 1)
+				{
+					window.openDialog("chrome://nzbdstatus/content/multisend.xul", "", "chrome, dialog, modal, resizable=no", params).focus();
+				}
+				else
+				{
+					/// TODO: Prompt for single send
+				}
+			}
+			else
+			{
+				// We don't need to do anything if we're not prompting, right?
 			}
 
 			var rowcount = results.length;
@@ -2566,7 +2581,7 @@ nzbdStatus.logger('in processingResponse');
 					server.sendUrl(currentEvent);
 					break;
 				case 'sendFile':
-					nzbdStatus.sendFile(currentEvent);
+					server.sendFile(currentEvent);
 					break;
 				case 'sendPause':
 					server.pause(currentEvent);
