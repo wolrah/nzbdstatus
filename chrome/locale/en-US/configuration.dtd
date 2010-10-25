@@ -13,8 +13,9 @@
 <!ENTITY sabstatus.pref_sbarclick_qnewtabbackground.value "Open queue page in new tab in background">
 <!ENTITY sabstatus.pref_sbarclick_qsametab.value "Open queue page in same tab">
 <!ENTITY sabstatus.pref_sbarclick_qnewwindow.value "Open queue page in new window">
-<!ENTITY sabstatus.downopts_caption.label "File Download Settings">
-<!ENTITY sabstatus.pref_downopts_prompt.value "Prompt before sending files">
+<!ENTITY sabstatus.promptopts_caption.label "Prompt Settings">
+<!ENTITY sabstatus.pref_file_prompt.value "Before sending files">
+<!ENTITY sabstatus.pref_multi_prompt.value "Before sending multiple links">
 
 <!ENTITY sabstatus.server_prefpane.label "Servers">
 <!ENTITY sabstatus.svrlist_listheader.label "Server Name">
@@ -26,7 +27,7 @@
 <!ENTITY sabstatus.svrurl_label.value "URL">
 <!ENTITY sabstatus.svrapi_label.value "API key">
 <!ENTITY sabstatus.svrenable_check.label "Enable server">
-<!ENTITY sabstatus.svrshow_check.label "Show status bar icon">
+<!ENTITY sabstatus.svrshow_check.label "Show in status bar">
 <!ENTITY sabstatus.svrpass_button.label "Set password">
 <!ENTITY sabstatus.svrtest_button.label "Test connection">
 
