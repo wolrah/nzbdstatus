@@ -2238,7 +2238,7 @@ nzbdStatus.logger('in processingResponse');
 		{
 			// There's something selected so we can prompt for where to send it
 			var params = {servers:[], out:null, type:'links'};
-			var i = 0;
+			var i = 0, j = 0;
 			for each (var order in nzbdStatus.serverOrder)
 			{
 				if (nzbdStatus.servers[i].enabled)
@@ -2248,10 +2248,14 @@ nzbdStatus.logger('in processingResponse');
 					params.servers[i].icon = nzbdStatus.servers[i].icon;
 					params.servers[i].order = order;
 					params.servers[i].checked = false; /// TODO: see what the default is
+					j++;
 				}
 				i++;
 			}
-			window.openDialog("chrome://nzbdstatus/content/multisend.xul", "", "chrome, dialog, modal, resizable=no", params).focus();
+			if (j > 1)
+			{
+				window.openDialog("chrome://nzbdstatus/content/multisend.xul", "", "chrome, dialog, modal, resizable=no", params).focus();
+			}
 
 			var rowcount = results.length;
 			for (i = 0; i < rowcount; i++)
