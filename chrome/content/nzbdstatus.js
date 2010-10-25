@@ -1430,6 +1430,10 @@ nzbdStatus.logger('in processingResponse');
 		{
 			return 'fanzub';
 		}
+		if (host.search('nzb.su') > -1)
+		{
+			return 'nzbsu';
+		}
 		return false;
 	},
 
@@ -1666,6 +1670,9 @@ nzbdStatus.logger('in processingResponse');
 				break;
 			case 'fanzub':
 				nzbdStatus.onFanzubLoad(doc);
+				return;
+			case 'nzbsu':
+				nzbdStatus.onNzbSuLoad(doc);
 				return;
 		}
 
@@ -2107,6 +2114,48 @@ nzbdStatus.logger('in processingResponse');
 			reportname = oldIcon.textContent;
 			newIcon.setAttribute('data-name', reportname);
 			newIcon.setAttribute('data-category', 'anime');
+			oldIcon.parentNode.insertBefore(newIcon, oldIcon);
+		}
+	},
+
+	onNzbSuLoad: function(doc)
+	{
+//		http://nzb.su/download/testtest/nzb/b6eedaa6d6e1eaf60332cb270eaaf4c6.nzb
+//		http://nzb.su/details/Hostel%202005%20Directors%20Cut%20720p%20BDRip%20AC3%20x264-DEM/viewnzb/3ebd35aa7b823940f6edd824c2ccc1d3
+//		http://nzb.su/details/Hostel.2005.1080p.MULTI.BluRay.x264-1080/viewnzb/b6eedaa6d6e1eaf60332cb270eaaf4c6
+
+//var win = window.top.getBrowser().selectedBrowser.contentWindow;
+//   var win = content;
+var win = gBrowser.contentWindow;
+try {
+dump('a:'+window.top.getBrowser().selectedBrowser.contentWindow.wrappedJSObject.RSSTOKEN+'\n');
+}catch(e){dump('e:'+e+'\n');}
+try {
+dump('b:'+content.wrappedJSObject.RSSTOKEN+'\n');
+}catch(e){dump('e:'+e+'\n');}
+try {
+dump('c:'+gBrowser.contentWindow.wrappedJSObject.RSSTOKEN+'\n');
+}catch(e){dump('e:'+e+'\n');}
+
+		var results = nzbdStatus.selectNodes(doc, doc, '//a[contains(@href,"/viewnzb/")]');
+		if (results.length == 0)
+		{
+			return;
+		}
+		var reportname = null, url, oldIcon, postId, newIcon, rowcount = results.length;
+		for (i = 0; i < rowcount; i++)
+		{
+			oldIcon = results[i];
+			postId = oldIcon.href.match(/nzb\.su\/details\/.*\/viewnzb\/([a-f0-9]+)/i);
+			if (postId == null)
+			{
+				continue;
+			}
+			url = 'http://nzb.su/api?t=get&id='+postId[1]+'&apikey='+win.wrappedJSObject.RSSTOKEN;
+			newIcon = nzbdStatus.makeSendIcon(doc, url);
+			reportname = oldIcon.textContent;
+			newIcon.setAttribute('data-name', reportname);
+			//newIcon.setAttribute('data-category', 'anime');
 			oldIcon.parentNode.insertBefore(newIcon, oldIcon);
 		}
 	},
