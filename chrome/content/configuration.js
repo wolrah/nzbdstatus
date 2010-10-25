@@ -489,24 +489,6 @@ nzbdStatusConfigObject.prototype = {
 		connectionText.value = this.stringsBundle.getString('testFail');
 	},
 
-	togglePrompt: function()
-	{
-		var askenable = document.getElementById('sabaskenable');
-		if (!nzbdStatusConfig.getPreference('enableFilesToSAB'))
-		{
-			if (askenable.getAttribute('disabled') == 'true')
-			{
-				askenable.setAttribute('disabled', 'false');
-				nzbdStatusConfig.setPreference('askAboutEnable', true);
-			}
-		}
-		else
-		{
-			askenable.setAttribute('disabled', 'true');
-			nzbdStatusConfig.setPreference('askAboutEnable', false);
-		}
-	},
-
 	updateName: function(e)
 	{
 		var newLabel = e.target.value;
