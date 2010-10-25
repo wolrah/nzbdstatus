@@ -3,7 +3,7 @@
 <!ENTITY nzbdstatus.tooltip_kbpersec.value "Download Speed:">
 <!ENTITY nzbdstatus.tooltip_jobs0.value "Currently Downloading:">
 <!ENTITY nzbdstatus.tooltip_jobs0_time.value "Current Time Remaining:">
-<!ENTITY nzbdstatus.tooltip_mbleft.value "Total Remaining:">
+<!ENTITY nzbdstatus.tooltip_mbleft.value "Percent Remaining:">
 <!ENTITY nzbdstatus.tooltip_diskspace1.value "Diskspace Free:">
 <!ENTITY nzbdstatus.menu_pause "Pause this server">
 <!ENTITY nzbdstatus.menu_config "Configure nzbStatus">
