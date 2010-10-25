@@ -389,7 +389,7 @@ nzbdStatus.logger('in sab.processingResponse');
 			eventDetails.callback('pause', eventDetails);
 			return;
 		}
-		if ((Math.floor(queueData.queue.mbleft) == 0) || queueData.queue.kbpersec == 0)
+		if ((Math.floor(queueData.queue.mbleft) == 0) || queueData.queue.kbpersec < 5)
 		{
 			this.paused = false;
 			eventDetails.callback('idle', eventDetails);
