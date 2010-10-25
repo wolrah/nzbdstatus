@@ -1660,6 +1660,9 @@ nzbdStatus.logger('in processingResponse');
 			case 'binreq':
 				nzbdStatus.onBinreqLoad(doc);
 				break;
+			case 'fanzub':
+				nzbdStatus.onFanzubLoad(doc);
+				return;
 		}
 
 		} catch(e) { nzbdStatus.errorLogger('onPageLoad',e); }
@@ -2079,6 +2082,31 @@ nzbdStatus.logger('in processingResponse');
 		//
 	},
 
+	onFanzubLoad: function(doc)
+	{
+		var results = nzbdStatus.selectNodes(doc, doc, '//a[contains(@href,"/nzb/")]');
+		if (results.length == 0)
+		{
+			return;
+		}
+		var reportname = null, url, oldIcon, postId, newIcon, rowcount = results.length;
+		for (i = 0; i < rowcount; i++)
+		{
+			oldIcon = results[i];
+			postId = oldIcon.href.match(/fanzub\.com\/nzb\/(\d+)/i);
+			if (postId == null)
+			{
+				continue;
+			}
+			url = 'http://www.fanzub.com/nzb/'+postId[1];
+			newIcon = nzbdStatus.makeSendIcon(doc, url);
+			reportname = oldIcon.textContent;
+			newIcon.setAttribute('data-name', reportname);
+			newIcon.setAttribute('data-category', 'anime');
+			oldIcon.parentNode.insertBefore(newIcon, oldIcon);
+		}
+	},
+
 	// Newzbin's individual report view
 	onNewzbinReportDetailMode: function(doc)
 	{
@@ -2227,6 +2255,7 @@ nzbdStatus.logger('in processingResponse');
 			case 'nzbsorg':
 				results = nzbdStatus.selectNodes(doc, doc, '//tr[contains(@class,"selected")]/td/img[contains(@class,"nzboneclick")]');
 				break;
+			/// TODO: Put in the rest of the sites
 			case 'nzbindex':
 				results = nzbdStatus.selectNodes(doc, doc, '//input[@name="r[]"]');
 				break;
@@ -2279,6 +2308,7 @@ nzbdStatus.logger('in processingResponse');
 						}
 						break;
 					// Sites that the above xpath don't get you the one click button
+					/// TODO: Put in the rest of the sites
 					case 'nzbindex':
 						results[i].parentNode.parentNode.getElementsByClassName('sabsend')[0].click(event);
 						break;
