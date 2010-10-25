@@ -342,11 +342,12 @@ nzbdStatus.logger('in sab.processingResponse');
 		var queueReceived = this.queueReceived;
 		var xmldoc = this.xmlHttp;
 		xmldoc.open('GET', fullUrl, true);
-		xmldoc.onload = function() { queueReceived(this, eventDetails); };
+		that = this;
+		xmldoc.onload = function() { queueReceived(this, eventDetails, that); };
 		xmldoc.send(null);
 	},
 
-	queueReceived: function(that, eventDetails)
+	queueReceived: function(that, eventDetails, thisObject)
 	{
 		try {
 
@@ -385,17 +386,17 @@ nzbdStatus.logger('in sab.processingResponse');
 
 		if (queueData.queue.paused == true || queueData.queue.paused.toLowerCase == 'true')
 		{
-			this.paused = true;
+			thisObject.paused = true;
 			eventDetails.callback('pause', eventDetails);
 			return;
 		}
 		if ((Math.floor(queueData.queue.mbleft) == 0) || queueData.queue.kbpersec < 5)
 		{
-			this.paused = false;
+			thisObject.paused = false;
 			eventDetails.callback('idle', eventDetails);
 			return;
 		}
-		this.paused = false;
+		thisObject.paused = false;
 
 		if (queueData.queue.slots.length > 0)
 		{
