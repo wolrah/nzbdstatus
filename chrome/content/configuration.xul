@@ -13,7 +13,8 @@
 	<preferences>
 		<preference id='leftclick' name='extensions.nzbdstatus.leftClick' type='string' />
 		<preference id='middleclick' name='extensions.nzbdstatus.middleClick' type='string' />
-		<preference id='askenable' name='extensions.nzbdstatus.askAboutEnable' type='bool' />
+		<preference id='promptfile' name='extensions.nzbdstatus.prompt.sendFile' type='bool' />
+		<preference id='promptmulti' name='extensions.nzbdstatus.prompt.sendMulti' type='bool' />
 	</preferences>
 
 	<groupbox>
@@ -52,9 +53,12 @@
 		</hbox>
 	</groupbox>
 	<groupbox>
-		<caption label='&sabstatus.downopts_caption.label;' />
+		<caption label='&sabstatus.promptopts_caption.label;' />
 		<hbox align='center'>
-			<checkbox label='&sabstatus.pref_downopts_prompt.value;' preference='askenable' id='sabaskenable' />
+			<checkbox label='&sabstatus.pref_file_prompt.value;' preference='promptfile' />
+		</hbox>
+		<hbox align='center'>
+			<checkbox label='&sabstatus.pref_multi_prompt.value;' preference='promptmulti' />
 		</hbox>
 	</groupbox>
 </prefpane>
