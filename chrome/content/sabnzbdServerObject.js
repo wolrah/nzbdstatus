@@ -198,7 +198,7 @@ sabnzbdServerObject.prototype = {
 				var fullUrl = this.url + 'api?mode=get_cats&output=json&apikey=' + this.apikey;
 				if (this.loginNeeded)
 				{
-					fullUrl += '&ma_username='+this.username+'&ma_password='+this.password;
+					fullUrl += '&ma_username='+encodeURIComponent(this.username)+'&ma_password='+encodeURIComponent(this.password);
 				}
 				var xmldoc = this.xmlHttp;
 				var thisServer = this;
@@ -284,7 +284,7 @@ nzbdStatus.logger('in sab.sendUrl');
 		fullUrl += '&name='+encodeURIComponent(eventDetails.url);
 		if (this.loginNeeded)
 		{
-			fullUrl += '&ma_username='+this.username+'&ma_password='+this.password;
+			fullUrl += '&ma_username='+encodeURIComponent(this.username)+'&ma_password='+encodeURIComponent(this.password);
 		}
 		if (this.apikeyNeeded)
 		{
@@ -302,6 +302,35 @@ nzbdStatus.logger('in sab.sendUrl');
 		queueHttp.send(null);
 
 		} catch(e) { this.errorLogger('sab.sendUrl',e); }
+	},
+
+	sendFile: function(eventDetails)
+	{
+		try{
+nzbdStatus.logger('in sab.sendFile');
+/*
+		var fullUrl = this.url + 'api?mode=addurl';
+		fullUrl += '&name='+encodeURIComponent(eventDetails.url);
+		if (this.loginNeeded)
+		{
+			fullUrl += '&ma_username='+encodeURIComponent(this.username)+'&ma_password='+encodeURIComponent(this.password);
+		}
+		if (this.apikeyNeeded)
+		{
+			fullUrl += '&apikey='+this.apikey;
+		}
+		if ((eventDetails.category != null) && (eventDetails.category != 'None'))
+		{
+			fullUrl += '&cat='+eventDetails.category;
+		}
+
+		var processingResponse = this.processingResponse;
+		var queueHttp = this.queueHttp;
+		queueHttp.open('GET', fullUrl, true);
+		queueHttp.onload = function() { processingResponse(this.responseText, eventDetails) };
+		queueHttp.send(null);
+*/
+		} catch(e) { this.errorLogger('sab.sendFile',e); }
 	},
 
 	processingResponse: function(responseText, eventDetails)
@@ -337,7 +366,7 @@ nzbdStatus.logger('in sab.processingResponse');
 		}
 		if (this.loginNeeded)
 		{
-			fullUrl += '&ma_username='+this.username+'&ma_password='+this.password;
+			fullUrl += '&ma_username='+encodeURIComponent(this.username)+'&ma_password='+encodeURIComponent(this.password);
 		}
 		var queueReceived = this.queueReceived;
 		var xmldoc = this.xmlHttp;
@@ -451,7 +480,7 @@ nzbdStatus.logger('in sab.pause');
 		var fullUrl = this.url + 'api?mode=pause';
 		if (this.loginNeeded)
 		{
-			fullUrl += '&ma_username='+this.username+'&ma_password='+this.password;
+			fullUrl += '&ma_username='+encodeURIComponent(this.username)+'&ma_password='+encodeURIComponent(this.password);
 		}
 		if (this.apikeyNeeded)
 		{
@@ -477,7 +506,7 @@ nzbdStatus.logger('in sab.resume');
 		var fullUrl = this.url + 'api?mode=resume';
 		if (this.loginNeeded)
 		{
-			fullUrl += '&ma_username='+this.username+'&ma_password='+this.password;
+			fullUrl += '&ma_username='+encodeURIComponent(this.username)+'&ma_password='+encodeURIComponent(this.password);
 		}
 		if (this.apikeyNeeded)
 		{
