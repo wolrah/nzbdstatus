@@ -1422,6 +1422,10 @@ nzbdStatus.logger('in processingResponse');
 		{
 			return 'binreq';
 		}
+		if (host.search('fanzub.com') > -1)
+		{
+			return 'fanzub';
+		}
 		return false;
 	},
 
@@ -2212,22 +2216,6 @@ nzbdStatus.logger('in processingResponse');
 	sendAllToServer: function(event)
 	{
 		try{
-		var params = {servers:[], out:null, type:'links'};
-		var i = 0;
-		for each (var order in nzbdStatus.serverOrder)
-		{
-			if (nzbdStatus.servers[i].enabled)
-			{
-				params.servers[i] = {};
-				params.servers[i].label = nzbdStatus.servers[i].label;
-				params.servers[i].icon = nzbdStatus.servers[i].icon;
-				params.servers[i].order = order;
-				params.servers[i].checked = false; /// TODO: see what the default is
-			}
-			i++;
-		}
-
-		window.openDialog("chrome://nzbdstatus/content/multisend.xul", "", "chrome, dialog, modal, resizable=no", params).focus();
 
 		var doc = event.originalTarget.ownerDocument;
 		var siteSrc = nzbdStatus.supportedSite(doc.location.host);
@@ -2248,27 +2236,50 @@ nzbdStatus.logger('in processingResponse');
 
 		if (results != null && results.length > 0)
 		{
+			// There's something selected so we can prompt for where to send it
+			var params = {servers:[], out:null, type:'links'};
+			var i = 0;
+			for each (var order in nzbdStatus.serverOrder)
+			{
+				if (nzbdStatus.servers[i].enabled)
+				{
+					params.servers[i] = {};
+					params.servers[i].label = nzbdStatus.servers[i].label;
+					params.servers[i].icon = nzbdStatus.servers[i].icon;
+					params.servers[i].order = order;
+					params.servers[i].checked = false; /// TODO: see what the default is
+				}
+				i++;
+			}
+			window.openDialog("chrome://nzbdstatus/content/multisend.xul", "", "chrome, dialog, modal, resizable=no", params).focus();
+
 			var rowcount = results.length;
 			for (i = 0; i < rowcount; i++)
 			{
-				if ((siteSrc == 'newzbin') || (siteSrc == 'nzbsorg'))
+				switch (siteSrc)
 				{
-					for (j = 0; j < params.servers.length; j++)
-					{
-						if (params.servers[j].checked)
+					// Sites that the above xpath gets you the one click button directly
+					case 'newzbin':
+					case 'nzbsorg':
+						for (j = 0; j < params.servers.length; j++)
 						{
-							url = results[i].getAttribute('data-url');
-							category = results[i].getAttribute('data-category');
-							reportname = results[i].getAttribute('data-name');
-							icon = results[i];
-							serverid = params.servers[j].order;
-							nzbdStatus.queueUrl(serverid, url, icon, category, reportname);
+							if (params.servers[j].checked)
+							{
+								url = results[i].getAttribute('data-url');
+								category = results[i].getAttribute('data-category');
+								reportname = results[i].getAttribute('data-name');
+								icon = results[i];
+								serverid = params.servers[j].order;
+								nzbdStatus.queueUrl(serverid, url, icon, category, reportname);
+							}
 						}
-					}
-				}
-				if (((siteSrc == 'nzbindex')) && results[i].checked)
-				{
-					results[i].parentNode.parentNode.getElementsByClassName('sabsend')[0].click(event);
+						break;
+					// Sites that the above xpath don't get you the one click button
+					case 'nzbindex':
+						results[i].parentNode.parentNode.getElementsByClassName('sabsend')[0].click(event);
+						break;
+					default:
+						return;
 				}
 			}
 		}
