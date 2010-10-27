@@ -9,7 +9,7 @@
 		<text class='download' value='&sabstatus.senddownload_text.value;' hidden='true' />
 		<text class='sendall' value='&sabstatus.sendall_text.value;' hidden='true' />
 		<separator class='thin' id='afterlist' />
-		<checkbox label='&sabstatus.always_checkbox.label;' />
+		<checkbox class='download' label='&sabstatus.always_checkbox.label;' />
 	</vbox>
 	<script type="application/javascript" src="chrome://nzbdstatus/content/multisend.js"/>
 </dialog>
