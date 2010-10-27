@@ -308,9 +308,9 @@ nzbdStatus.logger('in sab.sendUrl');
 	{
 		try{
 nzbdStatus.logger('in sab.sendFile');
-/*
-		var fullUrl = this.url + 'api?mode=addurl';
-		fullUrl += '&name='+encodeURIComponent(eventDetails.url);
+
+		var justname = eventDetails.filename.split(/(\/|\\)/)[eventDetails.filename.split(/(\/|\\)/).length-1];
+		var fullUrl = this.url + 'api?mode=addfile';
 		if (this.loginNeeded)
 		{
 			fullUrl += '&ma_username='+encodeURIComponent(this.username)+'&ma_password='+encodeURIComponent(this.password);
@@ -323,12 +323,38 @@ nzbdStatus.logger('in sab.sendFile');
 		{
 			fullUrl += '&cat='+eventDetails.category;
 		}
+		var d = new Date();
+		var boundary = '--------' + d.getTime();
+		var requestbody = '--' + boundary + '\nContent-Disposition: form-data; name="name"; filename="' + justname + '"\n' +
+		 'Content-Type: application/octet-stream\n\n' + eventDetails.filedata + '\n' +
+		 '--' + boundary + '--\n';
 
 		var processingResponse = this.processingResponse;
 		var queueHttp = this.queueHttp;
-		queueHttp.open('GET', fullUrl, true);
+		queueHttp.open('POST', fullUrl, true);
+		queueHttp.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
+		queueHttp.setRequestHeader('Connection', 'close');
+		queueHttp.setRequestHeader('Content-Length', requestbody.length);
+
 		queueHttp.onload = function() { processingResponse(this.responseText, eventDetails) };
-		queueHttp.send(null);
+		queueHttp.send(requestbody);
+
+/*
+
+		xmlHttp.filename = filename;
+		xmlHttp.onload = function(e) {
+			var fileResponse = this.responseText;
+			if (fileResponse.search(/ok\n/) > -1)
+			{
+				var file = Components.classes['@mozilla.org/file/local;1']
+				 .createInstance(Components.interfaces.nsILocalFile);
+				file.initWithPath(this.filename);
+				// Delete file file now that we're done with it
+				file.remove(false);
+			}
+			SABnzbdStatus.goActiveSoon();
+		}
+		xmlHttp.send(requestbody);
 */
 		} catch(e) { this.errorLogger('sab.sendFile',e); }
 	},
