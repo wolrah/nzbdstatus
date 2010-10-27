@@ -874,37 +874,6 @@ return;
 
 	},
 
-	queueFile: function(subject, topic, data)
-	{
-
-		try {
-
-		var dlCom = subject.QueryInterface(Components.interfaces.nsIDownload);
-		var filename = null;
-		filename = dlCom.displayName;
-		/// TODO: Add .zip, .rar support
-		if (filename.search(/\.nzb$/) == -1)
-		{
-			// Not an NZB file
-			return;
-		}
-		// check how many servers enabled
-		// if 1, do v1 prompt
-		// if 2+, do multisend
-
-		var newEvent = {
-		 action: 'sendFile',
-		 serverId: nzbdStatus.favServer,
-		 path: dlCom.targetFile.path,
-		 filename: filename,
-		 deleteAfter: true
-		 };
-		nzbdStatus.queueEvent(newEvent);
-
-		} catch(e) { nzbdStatus.errorLogger('queueFile',e); }
-
-	},
-
 	queueRefreshSoon: function(serverId)
 	{
 		// Have a five second delay before asking for a refresh
@@ -1189,8 +1158,8 @@ nzbdStatus.logger('in processingResponse');
 							nzbdStatus.displayActive(eventDetails.serverid);
 							break;
 						default:
-							alertMessage = 'Could not retrieve data from '+serverDetails.label;
-							alertTitle = serverDetails.label+' Failure Detected';
+							///alertMessage = 'Could not retrieve data from '+serverDetails.label;
+							///alertTitle = serverDetails.label+' Failure Detected';
 					}
 					break;
 				case 'sendPause':
@@ -2127,15 +2096,6 @@ nzbdStatus.logger('in processingResponse');
 //var win = window.top.getBrowser().selectedBrowser.contentWindow;
 //   var win = content;
 var win = gBrowser.contentWindow;
-try {
-dump('a:'+window.top.getBrowser().selectedBrowser.contentWindow.wrappedJSObject.RSSTOKEN+'\n');
-}catch(e){dump('e:'+e+'\n');}
-try {
-dump('b:'+content.wrappedJSObject.RSSTOKEN+'\n');
-}catch(e){dump('e:'+e+'\n');}
-try {
-dump('c:'+gBrowser.contentWindow.wrappedJSObject.RSSTOKEN+'\n');
-}catch(e){dump('e:'+e+'\n');}
 
 		var results = nzbdStatus.selectNodes(doc, doc, '//a[contains(@href,"/viewnzb/")]');
 		if (results.length == 0)
@@ -2594,6 +2554,79 @@ dump('c:'+gBrowser.contentWindow.wrappedJSObject.RSSTOKEN+'\n');
 		nzbdStatus.queueEvent(newEvent);
 	},
 
+	// Queue up a downloaded file
+	queueFile: function(subject, topic, data)
+	{
+
+		try {
+
+		var dlCom = subject.QueryInterface(Components.interfaces.nsIDownload);
+		var filename = null;
+		filename = dlCom.displayName;
+		var fileDetails = null;
+		fileDetails = dlCom.targetFile;
+		/// TODO: Add .zip, .rar support
+		if (filename.search(/\.nzb$/) == -1)
+		{
+			// Not an NZB file
+			return;
+		}
+		if (nzbdStatus.getPreference('prompt.sendFile'))
+		{
+			// check how many servers enabled
+			// if 1, do v1 prompt
+			// if 2+, do multisend
+			var fileSendText = nzbdStatus.stringsBundle.getString('fileSendText');
+			var fileSendConf = nzbdStatus.stringsBundle.getString('fileSendConf');
+			var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"] .getService(Components.interfaces.nsIPromptService);
+			var check = {value: false};
+			var flags = prompts.BUTTON_POS_0 * prompts.BUTTON_TITLE_YES + prompts.BUTTON_POS_1 * prompts.BUTTON_TITLE_NO;
+			var button = prompts.confirmEx(null, "nzbdStatus", fileSendText, flags, "", "", "", fileSendConf, check);
+			nzbdStatus.setPreference('prompt.sendFile', !check.value);
+			if (button == 1)
+			{
+				if (check.value)
+				{
+					nzbdStatus.setPreference('enableFilesToServer', false);
+				}
+				return;
+			}
+		}
+
+		var file = Components.classes['@mozilla.org/file/local;1']
+		 .createInstance(Components.interfaces.nsILocalFile);
+		file.initWithPath(fileDetails.path);
+		var fiStream = Components.classes['@mozilla.org/network/file-input-stream;1']
+		 .createInstance(Components.interfaces.nsIFileInputStream);
+		var siStream = Components.classes['@mozilla.org/scriptableinputstream;1']
+		 .createInstance(Components.interfaces.nsIScriptableInputStream);
+		var data = new String();
+		fiStream.init(file, 1, 0, false);
+		siStream.init(fiStream);
+		data += siStream.read(-1);
+		siStream.close();
+		fiStream.close();
+		// delete file
+		/*
+				var file = Components.classes['@mozilla.org/file/local;1']
+				 .createInstance(Components.interfaces.nsILocalFile);
+				file.initWithPath(this.filename);
+				// Delete file file now that we're done with it
+				file.remove(false);
+		*/
+
+		var newEvent = {
+		 action: 'sendFile',
+		 serverid: 0,
+		 path: dlCom.targetFile.path,
+		 filename: filename,
+		 filedata: data
+		 };
+		nzbdStatus.queueEvent(newEvent);
+
+		} catch(e) { nzbdStatus.errorLogger('queueFile',e); }
+
+	},
 
 	// Add an event to the end of the event queue
 	queueEvent: function(newEvent)
