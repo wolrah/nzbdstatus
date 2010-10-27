@@ -4,6 +4,8 @@ pref('extensions.nzbdstatus.alwaysShowIcon', true);
 pref('extensions.nzbdstatus.onlyShowIcon', false);
 pref('extensions.nzbdstatus.leftClick', 'refresh');
 pref('extensions.nzbdstatus.middleClick', 'newtab');
+pref('extensions.nzbdstatus.prompt.sendFile', true);
+pref('extensions.nzbdstatus.prompt.sendMulti', true);
 
 pref('extensions.nzbdstatus.iconIdle', 'chrome://nzbdstatus/skin/sab.png');
 pref('extensions.nzbdstatus.iconDownload', 'chrome://nzbdstatus/skin/download.png');
