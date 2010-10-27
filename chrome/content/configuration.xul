@@ -53,6 +53,10 @@
 		</hbox>
 	</groupbox>
 	<groupbox>
+		<caption label='Monitor Downloads For Supported Filetypes' />
+		<hbox align='center'>
+			<checkbox label='NZB' preference='dlnzb' />
+		</hbox>
 		<caption label='&sabstatus.promptopts_caption.label;' />
 		<hbox align='center'>
 			<checkbox label='&sabstatus.pref_file_prompt.value;' preference='promptfile' />
