@@ -110,10 +110,20 @@ nzbdStatusConfigObject.prototype = {
 	{
 		try {
 		// Get the version number then insert it into the box
-		/// TODO: Update this to the new code for FF4
-		var fuel = Components.classes["@mozilla.org/fuel/application;1"].getService(Components.interfaces.fuelIApplication);
-		var extInfo = fuel.extensions.get('sabnzbdstatus@dq5studios.com');
-		document.getElementById('sabversion').setAttribute('value', extInfo.version);
+		if (Application.extensions == null)
+		{
+			// Firefox 4
+			Application.getExtensions(function(extensions) {
+				document.getElementById('sabversion').setAttribute('value', extensions.get('sabnzbdstatus@dq5studios.com').version);
+			});
+		}
+		else
+		{
+			// Firefox 3
+			var fuel = Components.classes["@mozilla.org/fuel/application;1"].getService(Components.interfaces.fuelIApplication);
+			var extInfo = fuel.extensions.get('sabnzbdstatus@dq5studios.com');
+			document.getElementById('sabversion').setAttribute('value', extInfo.version);
+		}
 
 		nzbdStatusConfig.buildServerList();
 		nzbdStatusConfig.buildServerDeck();
