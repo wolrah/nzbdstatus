@@ -3,7 +3,7 @@
 	<Description about="urn:mozilla:install-manifest">
 		<!-- Extension Settings -->
 		<em:id>sabnzbdstatus@dq5studios.com</em:id>
-		<em:version>2.0f</em:version>
+		<em:version>2.0b2</em:version>
 		<em:type>2</em:type>
 		<em:homepageURL>https://sourceforge.net/projects/nzbdstatus/</em:homepageURL>
 		<em:iconURL>chrome://nzbdstatus/skin/icon.png</em:iconURL>
@@ -14,7 +14,7 @@
 			<Description>
 				<em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id> <!-- Firefox -->
 				<em:minVersion>3.0</em:minVersion>
-				<em:maxVersion>4.*</em:maxVersion>
+				<em:maxVersion>4.0.*</em:maxVersion>
 			</Description>
 		</em:targetApplication>
 
@@ -22,6 +22,14 @@
 		<em:name>nzbdStatus</em:name>
 		<em:description>Allows remote control and monitoring of NZB download dameons as well as NZB integration features</em:description>
 		<em:creator>Ben Dusinberre</em:creator>
+		<em:contributor>Graham Perry</em:contributor>
+		<em:translator>lantash (de-CH)</em:translator>
+		<em:translator>Severin (de-CH)</em:translator>
+		<em:translator>foxace (fr-FR)</em:translator>
+		<em:translator>Malmis (sv-SE)</em:translator>
+		<em:translator>edgard.magalhaes of babelzilla (pt-BR)</em:translator>
+		<em:translator>jcfp (nl-NL)</em:translator>
+		<em:translator>BruceH of babelzilla (zh-CN)</em:translator>
 
 	</Description>
 </RDF>
