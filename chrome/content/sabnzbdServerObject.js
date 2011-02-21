@@ -140,6 +140,25 @@ sabnzbdServerObject.prototype = {
 		} catch(e) { this.errorLogger('connect',e); }
 	},
 
+	testConnection: function(successResult, failureResult)
+	{
+		//	successResult(this.serverid, 'Testing succeed');
+		//	failureResult(this.serverid, message)
+
+		var fullUrl = this.url + 'api?mode=version&output=xml';
+		if (this.loginNeeded)
+		{
+			fullUrl += '&ma_username='+this.username+'&ma_password='+this.password;
+		}
+
+		var xmldoc = this.xmlHttp;
+		var thisServer = this;
+		xmldoc.open('GET', fullUrl, true);
+		xmldoc.onload = function() { thisServer.testConnectionResponse(this, successResult, failureResult); };
+		this.connectiontimeout = setTimeout(function() { thisServer.abortTestConection(xmldoc, failureResult); }, 30000);
+		xmldoc.send(null);
+	},
+
 	checkIfApiKeyNeeded: function()
 	{
 		var fullUrl = this.url + 'api?mode=version&output=xml';
@@ -151,11 +170,109 @@ sabnzbdServerObject.prototype = {
 		xmldoc.send(null);
 	},
 
+	testConnectionResponse: function(that, successResult, failureResult)
+	{
+		clearTimeout(this.connectiontimeout);
+		if ((that.status == 200) || (that.status == 500))
+		{
+			if ((that.responseText.search('<title>Login</title>') > -1) || (that.responseText.search('Missing authentication') > -1))
+			{
+				if (this.loginNeeded)
+				{
+					var message = 'Username/password missing or incorrect';
+					failureResult(this.serverid, message);
+				}
+				else
+				{
+					//nzbdStatusConfig.testConnection(true);
+				}
+			}
+			else
+			{
+				var version = that.responseXML.getElementsByTagName('version')[0].textContent;
+				if ((version.split('.')[1] < 4) || ((version.split('.')[1] == 4) && (version.split('.')[2] < 9)))
+				{
+					var message = 'Successfully Connected';
+					successResult(this.serverid, message);
+				}
+				else
+				{
+					var fullUrl = this.url + 'api?mode=get_cats&output=json&apikey=' + this.apikey;
+					if (this.loginNeeded)
+					{
+						fullUrl += '&ma_username='+encodeURIComponent(this.username)+'&ma_password='+encodeURIComponent(this.password);
+					}
+					var xmldoc = this.xmlHttp;
+					var thisServer = this;
+					xmldoc.open('GET', fullUrl, true);
+					xmldoc.onload = function() { thisServer.apiKeyTestResponse(this, successResult, failureResult); };
+					this.connectiontimeout = setTimeout(function() { thisServer.abortTestConnection(xmldoc, failureResult); }, 30000);
+					xmldoc.send(null);
+				}
+			}
+		}
+		else
+		{
+			var message = 'Timed out trying to connect to server';
+			failureResult(this.serverid, message);
+		}
+	},
+
 	abortTest: function(xmldoc)
 	{
 		xmldoc.abort();
 		this.connected = false;
 		this.logger('Timed out trying to connect to server for initial check');
+	},
+
+	abortTestConnection: function(xmldoc, failureResult)
+	{
+		xmldoc.abort();
+		var message = 'Timed out trying to connect to server';
+		failureResult(this.serverid, message);
+	},
+
+	apiKeyTestResponse: function(that, successResult, failureResult)
+	{
+		clearTimeout(nzbdStatusConfig.timeout);
+		if ((that.status == 200) || (that.status == 500))
+		{
+			if (that.responseText.search('Missing authentication') > -1)
+			{
+				if (withpass)
+				{
+					var message = 'testPasswordFail';
+					failureResult(this.serverid, message);
+				}
+				else
+				{
+					nzbdStatusConfig.testConnection(true);
+				}
+			}
+			else
+			{
+				if (that.responseText.search('API Key Required') > -1)
+				{
+					var message = 'testAPIKeyMissing';
+					failureResult(this.serverid, message);
+				}
+				else if (that.responseText.search('API Key Incorrect') > -1)
+				{
+					var message = 'testAPIKeyWrong';
+					failureResult(this.serverid, message);
+				}
+				else
+				{
+					var message = 'Successfully Connected';
+					successResult(this.serverid, message);
+				}
+			}
+		}
+		else
+		{
+			var message = 'testFail';
+			failureResult(this.serverid, message);
+		}
 	},
 
 	checkIfApiKeyNeededResponse: function(that)
