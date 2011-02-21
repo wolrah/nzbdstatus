@@ -2123,6 +2123,7 @@ nzbdStatus.logger('in processingResponse');
 
 	onNzbSuLoad: function(doc)
 	{
+		try {
 //		http://nzb.su/download/testtest/nzb/b6eedaa6d6e1eaf60332cb270eaaf4c6.nzb
 //		http://nzb.su/details/Hostel%202005%20Directors%20Cut%20720p%20BDRip%20AC3%20x264-DEM/viewnzb/3ebd35aa7b823940f6edd824c2ccc1d3
 //		http://nzb.su/details/Hostel.2005.1080p.MULTI.BluRay.x264-1080/viewnzb/b6eedaa6d6e1eaf60332cb270eaaf4c6
@@ -2131,7 +2132,7 @@ nzbdStatus.logger('in processingResponse');
 //   var win = content;
 var win = gBrowser.contentWindow;
 
-		var results = nzbdStatus.selectNodes(doc, doc, '//a[contains(@href,"/viewnzb/")]');
+		var results = nzbdStatus.selectNodes(doc, doc, '//tr[contains(@id,"guid")]');
 		if (results.length == 0)
 		{
 			return;
@@ -2140,18 +2141,18 @@ var win = gBrowser.contentWindow;
 		for (i = 0; i < rowcount; i++)
 		{
 			oldIcon = results[i];
-			postId = oldIcon.href.match(/nzb\.su\/details\/.*\/viewnzb\/([a-f0-9]+)/i);
+			postId = oldIcon.id.match(/guid([a-f0-9]+)/i);
 			if (postId == null)
 			{
 				continue;
 			}
 			url = 'http://nzb.su/api?t=get&id='+postId[1]+'&apikey='+win.wrappedJSObject.RSSTOKEN;
 			newIcon = nzbdStatus.makeSendIcon(doc, url);
-			reportname = oldIcon.textContent;
+			reportname = oldIcon.getElementsByTagName('label')[0].textContent;
 			newIcon.setAttribute('data-name', reportname);
-			//newIcon.setAttribute('data-category', 'anime');
-			oldIcon.parentNode.insertBefore(newIcon, oldIcon);
+			oldIcon.getElementsByTagName('td')[0].appendChild(newIcon);
 		}
+		} catch(e) { nzbdStatus.errorLogger('onNzbSuLoad',e); }
 	},
 
 	// Newzbin's individual report view
