@@ -24,6 +24,9 @@ function sabnzbdServerObject(serverid)
 	this._preferences = Components.classes['@mozilla.org/preferences;1']
 	 .getService(Components.interfaces.nsIPrefService)
 	 .getBranch('extensions.nzbdstatus.servers.'+serverid+'.');
+	this._globalPreferences = Components.classes['@mozilla.org/preferences;1']
+	 .getService(Components.interfaces.nsIPrefService)
+	 .getBranch('extensions.nzbdstatus.servers.'+serverid+'.');
 
 	this.serverid = serverid;
 	this.enabled = this.getPreference('enable');
@@ -60,6 +63,10 @@ sabnzbdServerObject.prototype = {
 	get preferences()
 	{
 		return this._preferences;
+	},
+	get globalPreferences()
+	{
+		return this._globalPreferences;
 	},
 
 	// Ajax for little things that shouldn't conflict
@@ -142,21 +149,22 @@ sabnzbdServerObject.prototype = {
 
 	testConnection: function(successResult, failureResult)
 	{
-		//	successResult(this.serverid, 'Testing succeed');
-		//	failureResult(this.serverid, message)
+		try {
+		this.url = document.getElementById('nzbdurlid-'+this.serverid).value;
+		this.apikey = document.getElementById('nzbdapikeyid-'+this.serverid).value;
 
 		var fullUrl = this.url + 'api?mode=version&output=xml';
 		if (this.loginNeeded)
 		{
 			fullUrl += '&ma_username='+this.username+'&ma_password='+this.password;
 		}
-
 		var xmldoc = this.xmlHttp;
 		var thisServer = this;
 		xmldoc.open('GET', fullUrl, true);
 		xmldoc.onload = function() { thisServer.testConnectionResponse(this, successResult, failureResult); };
 		this.connectiontimeout = setTimeout(function() { thisServer.abortTestConection(xmldoc, failureResult); }, 30000);
 		xmldoc.send(null);
+		} catch(e) { this.errorLogger('testConnection',e); }
 	},
 
 	checkIfApiKeyNeeded: function()
@@ -172,6 +180,7 @@ sabnzbdServerObject.prototype = {
 
 	testConnectionResponse: function(that, successResult, failureResult)
 	{
+		try {
 		clearTimeout(this.connectiontimeout);
 		if ((that.status == 200) || (that.status == 500))
 		{
@@ -216,6 +225,7 @@ sabnzbdServerObject.prototype = {
 			var message = 'Timed out trying to connect to server';
 			failureResult(this.serverid, message);
 		}
+		} catch(e) { this.errorLogger('testConnectionResponse',e); }
 	},
 
 	abortTest: function(xmldoc)
@@ -234,7 +244,8 @@ sabnzbdServerObject.prototype = {
 
 	apiKeyTestResponse: function(that, successResult, failureResult)
 	{
-		clearTimeout(nzbdStatusConfig.timeout);
+		try {
+		clearTimeout(this.connectiontimeout);
 		if ((that.status == 200) || (that.status == 500))
 		{
 			if (that.responseText.search('Missing authentication') > -1)
@@ -273,6 +284,7 @@ sabnzbdServerObject.prototype = {
 			var message = 'testFail';
 			failureResult(this.serverid, message);
 		}
+		} catch(e) { this.errorLogger('apiKeyTestResponse',e); }
 	},
 
 	checkIfApiKeyNeededResponse: function(that)
@@ -395,7 +407,6 @@ sabnzbdServerObject.prototype = {
 	sendUrl: function(eventDetails)
 	{
 		try{
-nzbdStatus.logger('in sab.sendUrl');
 
 		var fullUrl = this.url + 'api?mode=addurl';
 		fullUrl += '&name='+encodeURIComponent(eventDetails.url);
@@ -424,7 +435,6 @@ nzbdStatus.logger('in sab.sendUrl');
 	sendFile: function(eventDetails)
 	{
 		try{
-nzbdStatus.logger('in sab.sendFile');
 
 		var justname = eventDetails.filename.split(/(\/|\\)/)[eventDetails.filename.split(/(\/|\\)/).length-1];
 		var fullUrl = this.url + 'api?mode=addfile';
@@ -479,7 +489,7 @@ nzbdStatus.logger('in sab.sendFile');
 	processingResponse: function(responseText, eventDetails)
 	{
 		try {
-nzbdStatus.logger('in sab.processingResponse');
+
 		if (responseText.search(/ok\n/) > -1)
 		{
 			// Success
@@ -618,7 +628,6 @@ dump('curTime:  '+jobData.timeleft+'\n')
 	pause: function(eventDetails)
 	{
 		try{
-nzbdStatus.logger('in sab.pause');
 
 		var fullUrl = this.url + 'api?mode=pause';
 		if (this.loginNeeded)
@@ -644,7 +653,6 @@ nzbdStatus.logger('in sab.pause');
 	resume: function(eventDetails)
 	{
 		try{
-nzbdStatus.logger('in sab.resume');
 
 		var fullUrl = this.url + 'api?mode=resume';
 		if (this.loginNeeded)
@@ -669,12 +677,12 @@ nzbdStatus.logger('in sab.resume');
 
 	errorLogger: function(fName, error)
 	{
-		if (!nzbdStatus.getPreference('showErrors'))
+		if (!this.getPreference('showErrors'))
 		{
 			return;
 		}
 		var msg = 'sabnzbdServerObject.' + fName + ' threw error `' + error.message + '` on line: ' + error.lineNumber + '\n';
-		switch (nzbdStatus.getPreference('errorMode'))
+		switch (this.getPreference('errorMode'))
 		{
 			case 0: // alert
 				alert(msg);
@@ -691,11 +699,11 @@ nzbdStatus.logger('in sab.resume');
 	// Outputting of log messages happens here
 	logger: function(msg)
 	{
-		if (!nzbdStatus.getPreference('showLogger'))
+		if (!this.getPreference('showLogger'))
 		{
 			return;
 		}
-		switch (nzbdStatus.getPreference('loggerMode'))
+		switch (this.getPreference('loggerMode'))
 		{
 			case 0: // alert
 				alert(msg);
