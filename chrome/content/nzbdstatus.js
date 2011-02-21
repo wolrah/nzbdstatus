@@ -796,7 +796,7 @@ return;
 		var widget = document.getElementById('nzbdstatus-panel-'+serverId);
 		widget.getElementsByClassName('nzbdstatus-context-pause')[0].setAttribute('checked', true);
 		widget.getElementsByTagName('image')[0].setAttribute('src', this.getPreference('iconPaused'));
-		widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].setAttribute('value', '&nzbdstatus.tooltip_pause.value;');
+		widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].setAttribute('value', 'paused');
 		widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].className = widget.getElementsByClassName('nzbdstatus-tooltip-text')[0].className.replace(/nzbdstatus-hidden/g, '');
 		widget.getElementsByClassName('nzbdstatus-tooltip-data')[0].className += ' nzbdstatus-hidden';
 		widget.getElementsByTagName('label')[0].className = widget.getElementsByTagName('label')[0].className.replace(/nzbdstatus-time/g, '');
@@ -1268,12 +1268,51 @@ nzbdStatus.logger('in processingResponse');
 /// Rewritten
 
 
+	// Read in the old v1 settings
+	importOldSettings: function()
+	{
+		var oldPrefs = Components.classes['@mozilla.org/preferences;1']
+		 .getService(Components.interfaces.nsIPrefService).getBranch('extensions.sabnzbdstatus.');
+
+		// Invalid preference, never had v1 installed
+		if (oldPrefs.getPrefType('sabUrl') == oldPrefs.PREF_INVALID)
+		{
+			nzbdStatus.setPreference('importOldSettings', false);
+			return;
+		}
+
+		nzbdStatus.setPreference('leftClick', oldPrefs.getCharPref('leftClick'));
+		nzbdStatus.setPreference('middleClick', oldPrefs.getCharPref('middleClick'));
+		nzbdStatus.setPreference('prompt.sendFile', oldPrefs.getCharPref('askAboutEnable'));
+		nzbdStatus.setPreference('servers.0.url', oldPrefs.getCharPref('sabUrl'));
+		nzbdStatus.setPreference('servers.0.apikey', oldPrefs.getCharPref('apikey'));
+		nzbdStatus.setPreference('category.0.anime', oldPrefs.getCharPref('category.0.anime'));
+		nzbdStatus.setPreference('category.0.apps', oldPrefs.getCharPref('category.0.apps'));
+		nzbdStatus.setPreference('category.0.console', oldPrefs.getCharPref('category.0.console'));
+		nzbdStatus.setPreference('category.0.documentaries', oldPrefs.getCharPref('category.0.documentaries'));
+		nzbdStatus.setPreference('category.0.games', oldPrefs.getCharPref('category.0.games'));
+		nzbdStatus.setPreference('category.0.movies', oldPrefs.getCharPref('category.0.movies'));
+		nzbdStatus.setPreference('category.0.music', oldPrefs.getCharPref('category.0.music'));
+		nzbdStatus.setPreference('category.0.pc', oldPrefs.getCharPref('category.0.pc'));
+		nzbdStatus.setPreference('category.0.tv', oldPrefs.getCharPref('category.0.tv'));
+		nzbdStatus.setPreference('category.0.xxx', oldPrefs.getCharPref('category.0.xxx'));
+		nzbdStatus.setPreference('category.0.other', oldPrefs.getCharPref('category.0.other'));
+		nzbdStatus.setPreference('category.avail', oldPrefs.getCharPref('category.avail'));
+
+		nzbdStatus.setPreference('importOldSettings', false);
+	},
+
 	// Read the server details into the cache
 	loadServers: function()
 	{
 		for each (var i in nzbdStatus.serverOrder)
 		{
 			nzbdStatus.loadDetailsOf(i);
+			if (nzbdStatus.servers[i].enabled)
+			{
+					nzbdStatus.servers[i].connect();
+					nzbdStatus.numServerEnabled += 1;
+			}
 		}
 	},
 
@@ -1285,11 +1324,6 @@ nzbdStatus.logger('in processingResponse');
 		{
 			case 'sabnzbd':
 				var serverObject = new sabnzbdServerObject(serverid);
-				if (serverObject.enabled)
-				{
-					serverObject.connect();
-					nzbdStatus.numServerEnabled += 1;
-				}
 				break;
 		}
 		nzbdStatus.servers[serverid] = serverObject;
@@ -2716,6 +2750,11 @@ var win = gBrowser.contentWindow;
 		if (nzbdStatus.getPreference('addFeedHandler'))
 		{
 			nzbdStatus.addFeedHandler();
+		}
+		// Import server settings from v1
+		if (nzbdStatus.getPreference('importOldSettings'))
+		{
+			nzbdStatus.importOldSettings();
 		}
 
 		// Load up some preferences into the object
