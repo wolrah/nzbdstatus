@@ -32,6 +32,7 @@ pref('extensions.nzbdstatus.errorMode', 0);
 pref('extensions.nzbdstatus.showLogger', false);
 pref('extensions.nzbdstatus.loggerMode', 0);
 pref('extensions.nzbdstatus.addFeedHandler', true);
+pref('extensions.nzbdstatus.servers.importOldSettings', true);
 
 pref('extensions.nzbdstatus.servers.count', 5);
 pref('extensions.nzbdstatus.servers.order', '0,1,2,3,4');
@@ -94,3 +95,16 @@ pref('extensions.nzbdstatus.servers.4.username', '');
 pref('extensions.nzbdstatus.servers.4.password', '');
 pref('extensions.nzbdstatus.servers.4.type', 'sabnzbd');
 pref('extensions.nzbdstatus.servers.4.icon', 'flag_purple.png');
+
+pref('extensions.nzbdstatus.category.0.anime', 'anime');
+pref('extensions.nzbdstatus.category.0.apps', 'apps');
+pref('extensions.nzbdstatus.category.0.console', 'consoles');
+pref('extensions.nzbdstatus.category.0.documentaries', 'movies');
+pref('extensions.nzbdstatus.category.0.games', 'games');
+pref('extensions.nzbdstatus.category.0.movies', 'movies');
+pref('extensions.nzbdstatus.category.0.music', 'music');
+pref('extensions.nzbdstatus.category.0.pc', 'apps');
+pref('extensions.nzbdstatus.category.0.tv', 'tv');
+pref('extensions.nzbdstatus.category.0.xxx', 'xxx');
+pref('extensions.nzbdstatus.category.0.other', 'misc');
+pref('extensions.nzbdstatus.category.avail', '{"categories":["None","anime","apps","books","consoles","emulation","games","misc","movies","music","tv","xxx"]}');
