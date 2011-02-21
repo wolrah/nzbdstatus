@@ -138,13 +138,13 @@
 							<hbox align='center'>
 								<label value='&sabstatus.svrurl_label.value;' />
 							</hbox>
-							<textbox flex='1' class='nzbd-updatepref' preference='nzbdurl-template' newlines='stripsurroundingwhitespace' />
+							<textbox flex='1' class='nzbd-updatepref nzbd-update' preference='nzbdurl-template' id='nzbdurlid-template' newlines='stripsurroundingwhitespace' />
 						</row>
 						<row>
 							<hbox align='center'>
 								<label value='&sabstatus.svrapi_label.value;' />
 							</hbox>
-							<textbox flex='1' class='nzbd-updatepref' preference='nzbdapikey-template' newlines='stripsurroundingwhitespace' />
+							<textbox flex='1' class='nzbd-updatepref nzbd-update' preference='nzbdapikey-template' id='nzbdapikeyid-template' newlines='stripsurroundingwhitespace' />
 						</row>
 					</rows>
 				</grid>
@@ -168,60 +168,23 @@
 
 
 <prefpane id='nzbd-category' label='Categories' image='chrome://nzbdstatus/skin/category.png'>
+	<preferences>
+		<preference id='catanime' name='extensions.nzbdstatus.category.0.anime' type='string' />
+		<preference id='catapps' name='extensions.nzbdstatus.category.0.apps' type='string' />
+		<preference id='catconsole' name='extensions.nzbdstatus.category.0.console' type='string' />
+		<preference id='catdocumentaries' name='extensions.nzbdstatus.category.0.documentaries' type='string' />
+		<preference id='catgames' name='extensions.nzbdstatus.category.0.games' type='string' />
+		<preference id='catmovies' name='extensions.nzbdstatus.category.0.movies' type='string' />
+		<preference id='catmusic' name='extensions.nzbdstatus.category.0.music' type='string' />
+		<preference id='catpc' name='extensions.nzbdstatus.category.0.pc' type='string' />
+		<preference id='cattv' name='extensions.nzbdstatus.category.0.tv' type='string' />
+		<preference id='catxxx' name='extensions.nzbdstatus.category.0.xxx' type='string' />
+		<preference id='catother' name='extensions.nzbdstatus.category.0.other' type='string' />
+	</preferences>
 	<groupbox flex='1'>
 	<hbox>
-		<vbox>
-			<listbox id='nzbdserver-list' rows='5' flex='1' onselect='nzbdStatusConfig.changeServerDeck()'>
-				<listhead>
-					<listheader label='Server Name'/>
-				</listhead>
-			</listbox>
-		</vbox>
-			<grid>
-				<columns>
-					<column flex='1' />
-					<column />
-					<column flex='1' />
-				</columns>
-				<rows>
-					<row>
-			<label value='Website Category' />
-			<spacer />
-			<label value='Server Category' />
-					</row>
-					<row>
-			<menulist>
-			  <menupopup>
-			    <menuitem label='Movies' value='l'/>
-			  </menupopup>
-			</menulist>
-			<hbox align='center'>
-				<image src='chrome://nzbdstatus/skin/right.png' />
-			</hbox>
-			<menulist>
-			  <menupopup>
-			    <menuitem label='Movies' value='l'/>
-			  </menupopup>
-			</menulist>
-					</row>
-					<row>
-			<menulist>
-			  <menupopup>
-			    <menuitem label='TV' value='l'/>
-			  </menupopup>
-			</menulist>
-			<hbox align='center'>
-				<image src='chrome://nzbdstatus/skin/right.png' />
-			</hbox>
-			<menulist>
-			  <menupopup>
-			    <menuitem label='TV-Archive' value='l'/>
-			  </menupopup>
-			</menulist>
-					</row>
-				</rows>
-			</grid>
-		</hbox>
+		<text value='Not finished' />
+	</hbox>
 	</groupbox>
 </prefpane>
 
