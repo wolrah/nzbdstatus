@@ -22,6 +22,7 @@ nzbdStatusConfigObject.prototype = {
 
 	// Public variables
 	stringsBundle: document.getElementById('nzb-config-string-bundle'),
+	servers: Array(), // Cache for the server details
 
 	// Private variables
 	_preferences: Components.classes['@mozilla.org/preferences;1']
@@ -125,11 +126,14 @@ nzbdStatusConfigObject.prototype = {
 			document.getElementById('sabversion').setAttribute('value', extInfo.version);
 		}
 
+		nzbdStatusConfig.serverOrder = nzbdStatusConfig.getPreference('servers.order').split(',');
+		nzbdStatusConfig.loadServers();
 		nzbdStatusConfig.buildServerList();
 		nzbdStatusConfig.buildServerDeck();
 		nzbdStatusConfig.buildServerPreferences();
 		nzbdStatusConfig.inactivateMovement();
 		// Check to see if we're supposed to open a certain panel
+		// Also, this probably doesn't work
 		if (window.arguments && window.arguments.length != 0)
 		{
 			var selected = document.getElementById(window.arguments[0]);
@@ -138,6 +142,32 @@ nzbdStatusConfigObject.prototype = {
 		window.sizeToContent();
 		document.getElementById('nzbdserver-list').selectedIndex = 0;
 		} catch(e) {dump('prefonload error: '+e+'\n'); }
+	},
+
+	// Read the server details into the cache
+	loadServers: function()
+	{
+		for each (var i in nzbdStatusConfig.serverOrder)
+		{
+			nzbdStatusConfig.loadDetailsOf(i);
+		}
+	},
+
+	// Loads the details for a single server into the cache
+	loadDetailsOf: function(serverid)
+	{
+		var serverType = nzbdStatusConfig.getPreference('servers.'+serverid+'.type');
+		switch (serverType)
+		{
+			case 'sabnzbd':
+				var serverObject = new sabnzbdServerObject(serverid);
+				if (serverObject.enabled)
+				{
+					nzbdStatusConfig.numServerEnabled += 1;
+				}
+				break;
+		}
+		nzbdStatusConfig.servers[serverid] = serverObject;
 	},
 
 	buildServerList: function()
@@ -161,25 +191,25 @@ nzbdStatusConfigObject.prototype = {
 		}
 	},
 
-	addServerDeck: function(serverId, iAfter)
+	addServerDeck: function(serverid, iAfter)
 	{
 		var sDeck = document.getElementById('nzbdserver-deck');
 		var sTemplate = document.getElementById('nzbdserver-deck-template');
 		var newDeck = sTemplate.cloneNode(true);
 		var nAtt;
-		newDeck.getElementsByTagName('caption')[0].setAttribute('label', this.getPreference('servers.'+serverId+'.label'));
-		newDeck.setAttribute('id', newDeck.id.replace(/template/, serverId));
+		newDeck.getElementsByTagName('caption')[0].setAttribute('label', this.getPreference('servers.'+serverid+'.label'));
+		newDeck.setAttribute('id', newDeck.id.replace(/template/, serverid));
 		var elems = newDeck.getElementsByClassName('nzbd-updatepref');
 		for (j = 0; j < elems.length; j++)
 		{
 			nAtt = elems[j].getAttribute('preference');
-			elems[j].setAttribute('preference', nAtt.replace(/template/, serverId));
+			elems[j].setAttribute('preference', nAtt.replace(/template/, serverid));
 		}
 		var elems = newDeck.getElementsByClassName('nzbd-update');
 		for (j = 0; j < elems.length; j++)
 		{
 			nAtt = elems[j].getAttribute('id');
-			elems[j].setAttribute('id', nAtt.replace(/template/, serverId));
+			elems[j].setAttribute('id', nAtt.replace(/template/, serverid));
 		}
 		if (iAfter == undefined)
 		{
@@ -357,20 +387,13 @@ nzbdStatusConfigObject.prototype = {
 		try {
 
 		var serverOrder = nzbdStatusConfig.getPreference('servers.order').split(',');
-		var serverid = serverOrder[document.getElementById('nzbdserver-list').currentIndex];
+		var serverid = nzbdStatusConfig.serverOrder[document.getElementById('nzbdserver-list').currentIndex];
 		var connectionText = document.getElementById('nzbdconnectionText-'+serverid);
 		var connectionIcon = document.getElementById('nzbdconnectionIcon-'+serverid);
 		connectionIcon.src = 'chrome://nzbdstatus/skin/throbber.gif';
 		connectionText.value = this.stringsBundle.getString('testActive');
-
-		var serverType = this.getPreference('servers.'+serverid+'.type');
-		switch (serverType)
-		{
-			case 'sabnzbd':
-				var serverObject = new sabnzbdServerObject(serverId);
-				serverObject.testConnection(this.successResult, this.failureResult);
-				break;
-		}
+		/// TODO: Update servers[] with current values
+		nzbdStatusConfig.servers[serverid].testConnection(this.successResult, this.failureResult);
 
 		} catch(e) { dump('testConnection threw error `' + e.message + '` on line: ' + e.lineNumber + '\n');}
 	},
@@ -502,10 +525,10 @@ nzbdStatusConfigObject.prototype = {
 	updateName: function(e)
 	{
 		var newLabel = e.target.value;
-		var serverId = e.target.getAttribute('preference').match(/nzbdlabel-(\d+)/)[1];
+		var serverid = e.target.getAttribute('preference').match(/nzbdlabel-(\d+)/)[1];
 		var serverOrder = nzbdStatusConfig.getPreference('servers.order').split(',');
-		document.getElementById('nzbdserver-deck-'+serverId).getElementsByTagName('caption')[0].setAttribute('label', newLabel);
-		document.getElementById('nzbdserver-list').getElementsByTagName('listitem')[serverOrder.indexOf(serverId)].setAttribute('label', newLabel);
+		document.getElementById('nzbdserver-deck-'+serverid).getElementsByTagName('caption')[0].setAttribute('label', newLabel);
+		document.getElementById('nzbdserver-list').getElementsByTagName('listitem')[serverOrder.indexOf(serverid)].setAttribute('label', newLabel);
 	}
 
 }
