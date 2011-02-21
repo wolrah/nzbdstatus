@@ -32,10 +32,10 @@ pref('extensions.nzbdstatus.errorMode', 0);
 pref('extensions.nzbdstatus.showLogger', false);
 pref('extensions.nzbdstatus.loggerMode', 0);
 pref('extensions.nzbdstatus.addFeedHandler', true);
-pref('extensions.nzbdstatus.servers.importOldSettings', true);
+pref('extensions.nzbdstatus.importOldSettings', true);
 
-pref('extensions.nzbdstatus.servers.count', 5);
-pref('extensions.nzbdstatus.servers.order', '0,1,2,3,4');
+pref('extensions.nzbdstatus.servers.count', 1);
+pref('extensions.nzbdstatus.servers.order', '0');
 pref('extensions.nzbdstatus.servers.favorite', 0);
 
 pref('extensions.nzbdstatus.servers.retryLimit', 3);
