@@ -1274,32 +1274,77 @@ nzbdStatus.logger('in processingResponse');
 		var oldPrefs = Components.classes['@mozilla.org/preferences;1']
 		 .getService(Components.interfaces.nsIPrefService).getBranch('extensions.sabnzbdstatus.');
 
-		// Invalid preference, never had v1 installed
-		if (oldPrefs.getPrefType('sabUrl') == oldPrefs.PREF_INVALID)
+		nzbdStatus.setPreference('importOldSettings', false);
+
+		if (oldPrefs.getPrefType('leftClick') != oldPrefs.PREF_INVALID)
 		{
-			nzbdStatus.setPreference('importOldSettings', false);
-			return;
+		nzbdStatus.setPreference('leftClick', oldPrefs.getCharPref('leftClick'));
+		}
+		if (oldPrefs.getPrefType('middleClick') != oldPrefs.PREF_INVALID)
+		{
+		nzbdStatus.setPreference('middleClick', oldPrefs.getCharPref('middleClick'));
+		}
+		if (oldPrefs.getPrefType('askAboutEnable') != oldPrefs.PREF_INVALID)
+		{
+		nzbdStatus.setPreference('prompt.sendFile', oldPrefs.getCharPref('askAboutEnable'));
+		}
+		if (oldPrefs.getPrefType('sabUrl') != oldPrefs.PREF_INVALID)
+		{
+		nzbdStatus.setPreference('servers.0.url', oldPrefs.getCharPref('sabUrl'));
+		}
+		if (oldPrefs.getPrefType('apikey') != oldPrefs.PREF_INVALID)
+		{
+		nzbdStatus.setPreference('servers.0.apikey', oldPrefs.getCharPref('apikey'));
+		}
+		if (oldPrefs.getPrefType('category.0.anime') != oldPrefs.PREF_INVALID)
+		{
+		nzbdStatus.setPreference('category.0.anime', oldPrefs.getCharPref('category.0.anime'));
+		}
+		if (oldPrefs.getPrefType('category.0.apps') != oldPrefs.PREF_INVALID)
+		{
+		nzbdStatus.setPreference('category.0.apps', oldPrefs.getCharPref('category.0.apps'));
+		}
+		if (oldPrefs.getPrefType('category.0.console') != oldPrefs.PREF_INVALID)
+		{
+		nzbdStatus.setPreference('category.0.console', oldPrefs.getCharPref('category.0.console'));
+		}
+		if (oldPrefs.getPrefType('category.0.documentaries') != oldPrefs.PREF_INVALID)
+		{
+		nzbdStatus.setPreference('category.0.documentaries', oldPrefs.getCharPref('category.0.documentaries'));
+		}
+		if (oldPrefs.getPrefType('category.0.games') != oldPrefs.PREF_INVALID)
+		{
+		nzbdStatus.setPreference('category.0.games', oldPrefs.getCharPref('category.0.games'));
+		}
+		if (oldPrefs.getPrefType('category.0.movies') != oldPrefs.PREF_INVALID)
+		{
+		nzbdStatus.setPreference('category.0.movies', oldPrefs.getCharPref('category.0.movies'));
+		}
+		if (oldPrefs.getPrefType('category.0.music') != oldPrefs.PREF_INVALID)
+		{
+		nzbdStatus.setPreference('category.0.music', oldPrefs.getCharPref('category.0.music'));
+		}
+		if (oldPrefs.getPrefType('category.0.pc') != oldPrefs.PREF_INVALID)
+		{
+		nzbdStatus.setPreference('category.0.pc', oldPrefs.getCharPref('category.0.pc'));
+		}
+		if (oldPrefs.getPrefType('category.0.tv') != oldPrefs.PREF_INVALID)
+		{
+		nzbdStatus.setPreference('category.0.tv', oldPrefs.getCharPref('category.0.tv'));
+		}
+		if (oldPrefs.getPrefType('category.0.xxx') != oldPrefs.PREF_INVALID)
+		{
+		nzbdStatus.setPreference('category.0.xxx', oldPrefs.getCharPref('category.0.xxx'));
+		}
+		if (oldPrefs.getPrefType('category.0.other') != oldPrefs.PREF_INVALID)
+		{
+		nzbdStatus.setPreference('category.0.other', oldPrefs.getCharPref('category.0.other'));
+		}
+		if (oldPrefs.getPrefType('category.avail') != oldPrefs.PREF_INVALID)
+		{
+		nzbdStatus.setPreference('category.avail', oldPrefs.getCharPref('category.avail'));
 		}
 
-		nzbdStatus.setPreference('leftClick', oldPrefs.getCharPref('leftClick'));
-		nzbdStatus.setPreference('middleClick', oldPrefs.getCharPref('middleClick'));
-		nzbdStatus.setPreference('prompt.sendFile', oldPrefs.getCharPref('askAboutEnable'));
-		nzbdStatus.setPreference('servers.0.url', oldPrefs.getCharPref('sabUrl'));
-		nzbdStatus.setPreference('servers.0.apikey', oldPrefs.getCharPref('apikey'));
-		nzbdStatus.setPreference('category.0.anime', oldPrefs.getCharPref('category.0.anime'));
-		nzbdStatus.setPreference('category.0.apps', oldPrefs.getCharPref('category.0.apps'));
-		nzbdStatus.setPreference('category.0.console', oldPrefs.getCharPref('category.0.console'));
-		nzbdStatus.setPreference('category.0.documentaries', oldPrefs.getCharPref('category.0.documentaries'));
-		nzbdStatus.setPreference('category.0.games', oldPrefs.getCharPref('category.0.games'));
-		nzbdStatus.setPreference('category.0.movies', oldPrefs.getCharPref('category.0.movies'));
-		nzbdStatus.setPreference('category.0.music', oldPrefs.getCharPref('category.0.music'));
-		nzbdStatus.setPreference('category.0.pc', oldPrefs.getCharPref('category.0.pc'));
-		nzbdStatus.setPreference('category.0.tv', oldPrefs.getCharPref('category.0.tv'));
-		nzbdStatus.setPreference('category.0.xxx', oldPrefs.getCharPref('category.0.xxx'));
-		nzbdStatus.setPreference('category.0.other', oldPrefs.getCharPref('category.0.other'));
-		nzbdStatus.setPreference('category.avail', oldPrefs.getCharPref('category.avail'));
-
-		nzbdStatus.setPreference('importOldSettings', false);
 	},
 
 	// Read the server details into the cache
