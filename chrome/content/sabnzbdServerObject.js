@@ -422,6 +422,10 @@ sabnzbdServerObject.prototype = {
 		{
 			fullUrl += '&cat='+eventDetails.category;
 		}
+		if (eventDetails.reportname != null)
+		{
+			fullUrl += '&nzbname='+eventDetails.reportname;
+		}
 
 		var processingResponse = this.processingResponse;
 		var queueHttp = this.queueHttp;
