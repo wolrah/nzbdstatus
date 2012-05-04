@@ -1,0 +1,6 @@
+nzbdStatus
+
+Provides easy controls for instances of the SABnzbd usenet binary downloader.
+Also adds quick-download buttons to popular usenet index sites.
+
+Forked to fix bugs affecting current versions of Firefox.
