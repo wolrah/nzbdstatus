@@ -1395,13 +1395,9 @@ nzbdStatus.logger('in processingResponse');
 		{
 			return 'nzbmatrix';
 		}
-		if (host.search('beta.nzbs.org') > -1)
-		{
-			return 'newznab';
-		}
 		if (host.search('nzbs.org') > -1)
 		{
-			return 'nzbsorg';
+			return 'newznab';
 		}
 		if ((host.search('nzbindex.nl') > -1) || (host.search('nzbindex.com') > -1))
 		{
