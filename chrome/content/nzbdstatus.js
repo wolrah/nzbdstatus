@@ -2319,18 +2319,41 @@ var newznabhost = gBrowser.currentURI.prePath;
 		}
 		e.currentTarget.getElementsByTagName('input')[0].click();
 	},
+	
+	// Get current position of element
+	// Lightly adapted from http://www.quirksmode.org/js/findpos.html for which the author disclaims copyright.
+	
+	findPos: function(obj)
+	{
+		var curleft = curtop = 0;
+		if (obj.offsetParent)
+		{
+			do
+			{
+				curleft += obj.offsetLeft;
+				curtop += obj.offsetTop;
+			}
+			while (obj = obj.offsetParent);
+			return [curleft, curtop];
+		}
+		else
+		{
+			return [obj.offsetLeft, obj.offsetTop];
+		}
+	},
 
 	// Show the server list just right of the one click icon
 	showServerList: function(e)
 	{
 		var doc = e.target.ownerDocument, targ = e.target;
+		var elementpos = nzbdStatus.findPos(e.originalTarget);
 		var sList = doc.getElementById('nzbdserverList');
 		sList.setAttribute('data-url', targ.getAttribute('data-url'));
 		sList.setAttribute('data-category', targ.getAttribute('data-category'));
 		sList.setAttribute('data-name', targ.getAttribute('data-name'));
 		sList.style.display = 'block';
-		sList.style.left = (e.originalTarget.x + targ.offsetWidth) + 'px';
-		sList.style.top = (e.originalTarget.y - Math.floor((sList.offsetHeight - targ.offsetHeight) / 2)) + 'px';
+		sList.style.left = (elementpos[0] + targ.offsetWidth) + 'px';
+		sList.style.top = (elementpos[1] - Math.floor((sList.offsetHeight - targ.offsetHeight) / 2)) + 'px';
 		return;
 	},
 
