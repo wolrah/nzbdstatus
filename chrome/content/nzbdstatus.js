@@ -1434,6 +1434,10 @@ nzbdStatus.logger('in processingResponse');
 		{
 			return 'nzbmatrix';
 		}
+		if (host.search('beta.nzbs.org') > -1)
+		{
+			return 'newznab';
+		}
 		if (host.search('nzbs.org') > -1)
 		{
 			return 'nzbsorg';
@@ -1480,7 +1484,7 @@ nzbdStatus.logger('in processingResponse');
 		}
 		if (host.search('nzb.su') > -1)
 		{
-			return 'nzbsu';
+			return 'newznab';
 		}
 		return false;
 	},
@@ -1719,8 +1723,8 @@ nzbdStatus.logger('in processingResponse');
 			case 'fanzub':
 				nzbdStatus.onFanzubLoad(doc);
 				return;
-			case 'nzbsu':
-				nzbdStatus.onNzbSuLoad(doc);
+			case 'newznab':
+				nzbdStatus.onNewznabLoad(doc);
 				return;
 		}
 
@@ -2171,7 +2175,7 @@ nzbdStatus.logger('in processingResponse');
 		}
 	},
 
-	onNzbSuLoad: function(doc)
+	onNewznabLoad: function(doc)
 	{
 		try {
 //		http://nzb.su/download/testtest/nzb/b6eedaa6d6e1eaf60332cb270eaaf4c6.nzb
@@ -2181,6 +2185,7 @@ nzbdStatus.logger('in processingResponse');
 //var win = window.top.getBrowser().selectedBrowser.contentWindow;
 //   var win = content;
 var win = gBrowser.contentWindow;
+var newznabhost = gBrowser.currentURI.prePath;
 
 		var results = nzbdStatus.selectNodes(doc, doc, '//tr[contains(@id,"guid")]');
 		if (results.length == 0)
@@ -2196,13 +2201,13 @@ var win = gBrowser.contentWindow;
 			{
 				continue;
 			}
-			url = 'http://nzb.su/api?t=get&id='+postId[1]+'&apikey='+win.wrappedJSObject.RSSTOKEN;
+			url = newznabhost+'/api?t=get&id='+postId[1]+'&apikey='+win.wrappedJSObject.RSSTOKEN;
 			newIcon = nzbdStatus.makeSendIcon(doc, url);
 			reportname = oldIcon.getElementsByTagName('label')[0].textContent;
 			newIcon.setAttribute('data-name', reportname);
 			oldIcon.getElementsByTagName('td')[0].appendChild(newIcon);
 		}
-		} catch(e) { nzbdStatus.errorLogger('onNzbSuLoad',e); }
+		} catch(e) { nzbdStatus.errorLogger('onNewznabLoad',e); }
 	},
 
 	// Newzbin's individual report view
