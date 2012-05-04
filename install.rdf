@@ -3,7 +3,7 @@
 	<Description about="urn:mozilla:install-manifest">
 		<!-- Extension Settings -->
 		<em:id>sabnzbdstatus@dq5studios.com</em:id>
-		<em:version>2.0b2-wolrah1</em:version>
+		<em:version>2.0b4</em:version>
 		<em:type>2</em:type>
 		<em:homepageURL>https://sourceforge.net/projects/nzbdstatus/</em:homepageURL>
 		<em:iconURL>chrome://nzbdstatus/skin/icon.png</em:iconURL>
