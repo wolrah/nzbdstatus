@@ -489,6 +489,35 @@ sabnzbdServerObject.prototype = {
 */
 		} catch(e) { this.errorLogger('sab.sendFile',e); }
 	},
+	
+	// Process a Send Newzbin ID event
+	sendNewzbinId: function(eventDetails)
+	{
+		try{
+		var fullUrl = this.url + 'api?mode=addid';
+		fullUrl += '&name='+eventDetails.newzbinId;
+		if (this.loginNeeded)
+		{
+			fullUrl += '&ma_username='+encodeURIComponent(this.username)+'&ma_password='+encodeURIComponent(this.password);
+		}
+		if (this.apikeyNeeded)
+		{
+			fullUrl += '&apikey='+this.apikey;
+		}
+		if ((eventDetails.category != null) && (eventDetails.category != 'None'))
+		{
+			fullUrl += '&cat='+eventDetails.category;
+		}
+
+		var processingResponse = this.processingResponse;
+		var queueHttp = this.queueHttp;
+		queueHttp.open('GET', fullUrl, true);
+		queueHttp.onload = function() { processingResponse(this.responseText, eventDetails) };
+		queueHttp.send(null);
+
+		} catch(e) { this.errorLogger('sab.sendNewzbinId',e); }
+
+	},
 
 	processingResponse: function(responseText, eventDetails)
 	{

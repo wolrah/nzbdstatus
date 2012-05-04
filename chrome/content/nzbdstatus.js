@@ -948,45 +948,6 @@ return;
 
 	},
 
-	// Process a Send Newzbin ID event
-	sendNewzbinId: function(eventDetails)
-	{
-
-		var serverDetails = this.servers[eventDetails.serverId];
-		var fullUrl = serverDetails.url, requestTimeout = nzbdStatus.getPreference('servers.timeoutSecs');
-
-		switch (serverDetails.type)
-		{
-			case 'sabnzbd':
-				fullUrl += 'api?mode=addid&name='+eventDetails.newzbinId;
-				if (serverDetails.username != null || serverDetails.password != null)
-				{
-					fullUrl += '&ma_username='+serverDetails.username+'&ma_password='+serverDetails.password;
-				}
-				if (serverDetails.apikey != '')
-				{
-					fullUrl += '&apikey='+serverDetails.apikey;
-				}
-				// Optional: &cat=<category>&pp=<job-option>&script=<script>
-				break;
-			case 'hellanzb':
-			case 'nzbget':
-			default:
-				// Something that's not been implemented yet
-				dump('Unsupported server type `'+serverDetails.type+'` requested\n');
-				break;
-		}
-
-		var processingHttp = nzbdStatus.processingHttp;
-		processingHttp.open('GET', fullUrl, true);
-		processingHttp.onload = function() { nzbdStatus.processingResponse(this.responseText, eventDetails, serverDetails) };
-		serverDetails.timeout = setTimeout(function() { nzbdStatus.abortRequestProcessing(processingHttp, eventDetails, serverDetails) }, requestTimeout*1000);
-		processingHttp.send(null);
-
-	},
-
-
-
 	sendPause: function(eventDetails)
 	{
 
@@ -1425,7 +1386,7 @@ nzbdStatus.logger('in processingResponse');
 	// A string representing the site if supported, false otherwise
 	supportedSite: function(host)
 	{
-		if (((host.search('newzbin.com') > -1) || (host.search('newzxxx.com') > -1))
+		if (((host.search('newzbin2.es') > -1) || (host.search('newzxxx.com') > -1))
 		 && (host.search('v2.newzbin.com') == -1))
 		{
 			return 'newzbin';
@@ -1618,7 +1579,7 @@ nzbdStatus.logger('in processingResponse');
 		switch (siteAt)
 		{
 			case 'newzbin':
-				return (href.search(/newz(bin|xxx)\.com\/browse\/post\/(\d+)/i) > -1);
+				return (href.search(/newz(bin2|xxx)\.(com|es)\/browse\/post\/(\d+)/i) > -1);
 				break;
 			case 'nzbmatrix':
 				return (href.search(/nzbmatrix\.com\/nzb-d(ownload|etails).php\?id=(\d+)/i) > -1);
@@ -2541,16 +2502,17 @@ var newznabhost = gBrowser.currentURI.prePath;
 		}
 
 		var siteSrc = nzbdStatus.supportedSite(doc.location.host);
+		var icon = nzbdStatus.selectSingleNode(doc, doc, '//img[@data-url="'+url+'"]');
 		switch (siteSrc)
 		{
 			case 'newzbin':
-				url = 'http://www.newzbin.com/browse/post/' + url + '/';
+				//url = 'http://www.newzbin2.es/browse/post/' + url + '/';
+				nzbdStatus.queueNewzbinId(serverid, url, icon, category, reportname);
 				break;
+			default:
+				nzbdStatus.queueUrl(serverid, url, icon, category, reportname);
 		}
-		var icon = nzbdStatus.selectSingleNode(doc, doc, '//img[@data-url="'+url+'"]');
-
-		nzbdStatus.queueUrl(serverid, url, icon, category, reportname);
-
+		
 		} catch(e) { nzbdStatus.errorLogger('eventOneClick',e); }
 	},
 
@@ -2572,6 +2534,23 @@ var newznabhost = gBrowser.currentURI.prePath;
 		nzbdStatus.queueEvent(newEvent);
 
 		} catch(e) { nzbdStatus.errorLogger('queuePostId',e); }
+	},
+	
+	queueNewzbinId: function(serverid, postid, icon, category)
+	{
+		try {
+		var newEvent = {
+		 action: 'sendNewzbinId',
+		 serverid: serverid,
+		 category: category,
+		 newzbinId: postid,
+		 icon: icon,
+		 tries: 0,
+		 callback: nzbdStatus.processingResponse
+		 };
+		nzbdStatus.queueEvent(newEvent);
+
+		} catch(e) { nzbdStatus.errorLogger('queueNewzbinId',e); }
 	},
 
 	// Process a right click event
@@ -2777,6 +2756,9 @@ var newznabhost = gBrowser.currentURI.prePath;
 					break;
 				case 'sendFile':
 					server.sendFile(currentEvent);
+					break;
+				case 'sendNewzbinId':
+					server.sendNewzbinId(currentEvent);
 					break;
 				case 'sendPause':
 					server.pause(currentEvent);
