@@ -1,2 +1,5 @@
 #!/bin/bash
-7z a -tzip nzbdstatus-`date -u +%Y%m%d%H%M%S`.xpi * -r -mx=9 -xr\!.git -x\!\*.bat -x\!\*.sh -x\!\*.xpi -x\!\*~ -x\!\*.svg
+TIMESTAMP=`date -u +%Y%m%d%H%M%S`
+VERSION=`sed -n -e 's/.*<em:version>\(.*\)<\/em:version>.*/\1/p' install.rdf`
+
+7z a -tzip nzbdstatus-$VERSION-$TIMESTAMP.xpi * -r -mx=9 -xr\!.git -xr\!.svn -x\!\*.bat -x\!\*.sh -x\!\*.xpi -x\!\*~ -x\!\*.svg
