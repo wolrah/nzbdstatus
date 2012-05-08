@@ -1443,6 +1443,10 @@ nzbdStatus.logger('in processingResponse');
 		{
 			return 'newznab';
 		}
+		if (host.search('dognzb.cr') > -1)
+		{
+			return 'dognzb';
+		}
 		return false;
 	},
 
@@ -1682,6 +1686,9 @@ nzbdStatus.logger('in processingResponse');
 				return;
 			case 'newznab':
 				nzbdStatus.onNewznabLoad(doc);
+				return;
+			case 'dognzb':
+				nzbdStatus.onDogNzbLoad(doc);
 				return;
 		}
 
@@ -2165,6 +2172,36 @@ var newznabhost = gBrowser.currentURI.prePath;
 			oldIcon.getElementsByTagName('td')[0].appendChild(newIcon);
 		}
 		} catch(e) { nzbdStatus.errorLogger('onNewznabLoad',e); }
+	},
+	
+	onDogNzbLoad: function(doc)
+	{
+		try {
+			var win = gBrowser.contentWindow;
+
+			var results = nzbdStatus.selectNodes(doc, doc, '//div[contains(@onClick,"doOneDownload")]');
+			var rsstoken = nzbdStatus.selectNodes(doc, doc, '//input[@name="rsstoken"]')[0].value;
+			if (results.length == 0)
+			{
+				return;
+			}
+			var reportname = null, url, oldIcon, postId, newIcon, rowcount = results.length, link;
+			for (i = 0; i < rowcount; i++)
+			{
+				oldIcon = results[i];
+				postId = oldIcon.attributes[1].textContent.match(/'([a-f0-9]+)'/i)[1];
+				if (postId == null)
+				{
+					continue;
+				}
+				link = nzbdStatus.selectNodes(doc, doc, '//a[contains(@href,"/details/'+postId+'")]')[0];
+				reportname = link.innerHTML;
+				url = 'http://dognzb.cr/fetch/'+postId+'/'+rsstoken;
+				newIcon = nzbdStatus.makeSendIcon(doc, url);
+				newIcon.setAttribute('data-name', reportname);
+				oldIcon.parentElement.appendChild(newIcon);
+			}
+		} catch(e) { nzbdStatus.errorLogger('onDogNzbLoad',e); }
 	},
 
 	// Newzbin's individual report view
